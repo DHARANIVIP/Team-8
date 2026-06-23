@@ -1,0 +1,410 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─────────────────────────────────────────
+   BASE RESET & ROOT TOKENS
+───────────────────────────────────────── */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --accent:          #ff9e42;
+  --accent-soft:     #ff9757;
+  --text-primary:    #cccccc;
+  --text-secondary:  #bbbbbb;
+  --text-muted:      #aaaaaa;
+  --bg:              #0d0d0d;
+  --surface:         #111111;
+  --surface-alt:     #1a1a1a;
+  --border:          #1f1f1f;
+  --border-focus:    #2a2a2a;
+}
+
+html, body {
+  width: 100%;
+  min-height: 100vh;
+  background-color: var(--bg);
+  color: var(--text-primary);
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─────────────────────────────────────────
+   TYPOGRAPHY
+───────────────────────────────────────── */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-primary);
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+p {
+  color: var(--text-secondary);
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--accent-soft);
+}
+
+/* ─────────────────────────────────────────
+   CARD UTILITY
+───────────────────────────────────────── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px 24px;
+}
+
+.card-hover {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-hover:hover {
+  border-color: var(--accent);
+  box-shadow: 0 0 14px rgba(255, 158, 66, 0.15);
+}
+
+/* ─────────────────────────────────────────
+   BUTTONS
+───────────────────────────────────────── */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--accent);
+  color: #0d0d0d;
+  font-family: 'Segoe UI', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 10px 22px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.15s ease;
+  white-space: nowrap;
+}
+
+.btn-primary:hover {
+  background: var(--accent-soft);
+  transform: translateY(-1px);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  color: var(--accent);
+  font-family: 'Segoe UI', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 10px 22px;
+  border-radius: 6px;
+  border: 1px solid var(--accent);
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.15s ease;
+  white-space: nowrap;
+}
+
+.btn-outline:hover {
+  background: rgba(255, 158, 66, 0.08);
+  transform: translateY(-1px);
+}
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: 'Segoe UI', sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 1px solid var(--border-focus);
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.btn-ghost:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* ─────────────────────────────────────────
+   FORM INPUTS
+───────────────────────────────────────── */
+.input-field {
+  width: 100%;
+  background: var(--surface-alt);
+  border: 1px solid var(--border-focus);
+  border-radius: 6px;
+  padding: 11px 14px 11px 40px;
+  color: var(--text-primary);
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.input-field::placeholder {
+  color: var(--text-muted);
+}
+
+.input-field:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(255, 158, 66, 0.12);
+}
+
+.input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.input-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-size: 15px;
+  pointer-events: none;
+}
+
+.input-icon-right {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.input-icon-right:hover {
+  color: var(--accent);
+}
+
+/* ─────────────────────────────────────────
+   BADGES & PILLS
+───────────────────────────────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.badge-accent {
+  background: rgba(255, 158, 66, 0.15);
+  color: var(--accent);
+  border: 1px solid rgba(255, 158, 66, 0.3);
+}
+
+.badge-muted {
+  background: var(--surface-alt);
+  color: var(--text-muted);
+  border: 1px solid var(--border-focus);
+}
+
+.badge-success {
+  background: rgba(80, 200, 120, 0.12);
+  color: #50c878;
+  border: 1px solid rgba(80, 200, 120, 0.25);
+}
+
+/* ─────────────────────────────────────────
+   SECTION LABEL
+───────────────────────────────────────── */
+.section-label {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 14px;
+}
+
+/* ─────────────────────────────────────────
+   AUTH PAGE BACKGROUND (rain animation slot)
+───────────────────────────────────────── */
+.auth-bg {
+  min-height: 100vh;
+  width: 100%;
+  background: radial-gradient(ellipse at center, #141414 0%, #080808 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  /* Rain animation will be layered here in a later phase */
+}
+
+/* ─────────────────────────────────────────
+   AUTH CARD
+───────────────────────────────────────── */
+.auth-card {
+  background: var(--surface);
+  border: 1px solid var(--border-focus);
+  border-radius: 10px;
+  padding: 36px 40px;
+  width: 420px;
+}
+
+/* ─────────────────────────────────────────
+   DIVIDER
+───────────────────────────────────────── */
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-muted);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border-focus);
+}
+
+/* ─────────────────────────────────────────
+   SCROLLBAR
+───────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2a2a2a;
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
+}
+
+/* ─────────────────────────────────────────
+   ANIMATIONS
+───────────────────────────────────────── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes ticker {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease forwards;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.5s ease forwards;
+}
+
+/* ─────────────────────────────────────────
+   LAYOUT CONTAINER (desktop fixed-width)
+───────────────────────────────────────── */
+.page-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* ─────────────────────────────────────────
+   TICKER STRIP
+───────────────────────────────────────── */
+.ticker-track {
+  display: flex;
+  gap: 48px;
+  animation: ticker 30s linear infinite;
+  white-space: nowrap;
+}
+
+.ticker-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.ticker-item span.value {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+/* ─────────────────────────────────────────
+   SKILL PILL TAG
+───────────────────────────────────────── */
+.skill-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 14px;
+  background: var(--surface-alt);
+  border: 1px solid var(--border-focus);
+  border-radius: 999px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  transition: border-color 0.2s, color 0.2s;
+  cursor: default;
+}
+
+.skill-pill:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* ─────────────────────────────────────────
+   PASSWORD STRENGTH BAR
+───────────────────────────────────────── */
+.strength-bar {
+  height: 3px;
+  border-radius: 999px;
+  margin-top: 6px;
+  background: var(--border-focus);
+  overflow: hidden;
+}
+
+.strength-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.3s ease, background 0.3s ease;
+}
