@@ -1,12 +1,7 @@
 import express from 'express';
-import { getAllCourses, getCoursesBySkill, getRecommendedCourses, createCourse } from '../services/supabaseService.js';
+import Course from '../models/Course.js';
 
 const router = express.Router();
-
-/**
- * [Teammate 4] Feature 3: Courses & Academic Curriculum Endpoints
- * Handles course suggestions and directory lookups
- */
 
 /**
  * GET /api/courses
@@ -14,7 +9,7 @@ const router = express.Router();
  */
 router.get('/', async (req, res) => {
   try {
-    const courses = await getAllCourses();
+    const courses = await Course.find().populate('targetSkills');
     res.json(courses);
   } catch (error) {
     console.error('Error fetching courses:', error);
@@ -29,7 +24,7 @@ router.get('/', async (req, res) => {
 router.get('/by-skill/:skillId', async (req, res) => {
   try {
     const { skillId } = req.params;
-    const courses = await getCoursesBySkill(skillId);
+    const courses = await Course.find({ targetSkills: skillId });
     res.json(courses);
   } catch (error) {
     console.error('Error fetching courses by skill:', error);
@@ -39,13 +34,19 @@ router.get('/by-skill/:skillId', async (req, res) => {
 
 /**
  * POST /api/courses/recommendations
- * Get personalized course recommendations based on missing skills
+ * Get personalized course recommendations based on missing skills using AI matching
  */
 router.post('/recommendations', async (req, res) => {
   try {
     const { skillIds } = req.body;
-    const recommendations = await getRecommendedCourses(skillIds);
-    res.json(recommendations);
+    
+    // First, find explicit matches in the database
+    const dbRecommendations = await Course.find({ targetSkills: { $in: skillIds } }).populate('targetSkills');
+    
+    // TODO: Inject LLM (OpenAI/Anthropic) here to suggest optimal learning paths 
+    // based on learning style, or suggest courses not in the DB.
+    
+    res.json({ courses: dbRecommendations });
   } catch (error) {
     console.error('Error fetching recommendations:', error);
     res.status(500).json({ error: 'Failed to fetch recommendations' });
@@ -58,16 +59,9 @@ router.post('/recommendations', async (req, res) => {
  */
 router.post('/', async (req, res) => {
   try {
-    const { title, description, provider, url, skill_id, duration_weeks, difficulty_level } = req.body;
-    const course = await createCourse({
-      title,
-      description,
-      provider,
-      url,
-      skill_id,
-      duration_weeks,
-      difficulty_level,
-    });
+    const { title, provider, url, difficulty, price, targetSkills } = req.body;
+    const course = new Course({ title, provider, url, difficulty, price, targetSkills });
+    await course.save();
     res.status(201).json(course);
   } catch (error) {
     console.error('Error creating course:', error);

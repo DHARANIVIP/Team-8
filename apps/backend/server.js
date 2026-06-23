@@ -1,6 +1,7 @@
+import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
+import connectDB from './config/db.js';
 
 // Import routes
 import categoriesRouter from './routes/categories.js';
@@ -9,7 +10,8 @@ import coursesRouter from './routes/courses.js';
 import compareRouter from './routes/compare.js';
 import aiRouter from './routes/ai.js';
 
-dotenv.config();
+// Connect to MongoDB
+connectDB();
 
 const app = express();
 const PORT = process.env.PORT || 3001;

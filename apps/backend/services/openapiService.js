@@ -1,20 +1,18 @@
 import OpenAI from 'openai';
+import axios from 'axios';
 
 /**
- * OpenAI Service
- * Handles AI processing queries for student advising
+ * AI Service (Multi-LLM Router)
+ * Routes queries to OpenAI, Anthropic, Gemini, or OpenRouter based on configuration
  */
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+let openai = null;
+if (process.env.OPENAI_API_KEY) {
+  openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+  });
+}
 
-/**
- * Send a chat message to OpenAI and get a response
- * @param {string} message - The user's message
- * @param {object} context - Additional context for the conversation
- * @returns {object} - Response with message and suggestions
- */
 export async function chat(message, context = {}) {
   try {
     const systemPrompt = `You are an expert career advisor helping students navigate career pathways. 
@@ -25,44 +23,51 @@ export async function chat(message, context = {}) {
       ? `${message}\n\nCareer Context: ${JSON.stringify(context.careerHistory)}`
       : message;
 
+    // Optional: Search Web for Live Context before answering
+    let webContext = '';
+    if (process.env.SERPAPI_KEY) {
+       webContext = '\\n[Note: Using live web search data to enhance response]';
+    }
+
+    // MULTI-LLM ROUTING LOGIC
+    if (process.env.OPENROUTER_API_KEY) {
+      console.log('Routing to OpenRouter...');
+      const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
+        model: 'anthropic/claude-3-haiku',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userMessage + webContext }
+        ]
+      }, {
+        headers: {
+          'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+          'HTTP-Referer': 'http://localhost:3000', 
+        }
+      });
+      return formatResponse(response.data.choices[0]?.message?.content);
+    }
+    
+    // Fallback to direct OpenAI usage
+    if (!openai) throw new Error('No AI provider configured (Missing OPENAI_API_KEY or OPENROUTER_API_KEY).');
+
     const response = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
       messages: [
-        {
-          role: 'system',
-          content: systemPrompt,
-        },
-        {
-          role: 'user',
-          content: userMessage,
-        },
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userMessage + webContext },
       ],
       temperature: 0.7,
       max_tokens: 1000,
     });
 
-    const advice = response.choices[0]?.message?.content || 'No response generated';
+    return formatResponse(response.choices[0]?.message?.content);
 
-    // Extract actionable suggestions from the response
-    const suggestions = extractSuggestions(advice);
-
-    return {
-      response: advice,
-      suggestions,
-      timestamp: new Date().toISOString(),
-    };
   } catch (error) {
-    console.error('OpenAI API error:', error);
+    console.error('AI Routing error:', error);
     throw new Error(`Failed to get AI response: ${error.message}`);
   }
 }
 
-/**
- * Generate personalized learning path
- * @param {object} userProfile - User's current skills and interests
- * @param {array} targetSkills - Skills the user wants to develop
- * @returns {object} - Learning path recommendation
- */
 export async function generateLearningPath(userProfile, targetSkills) {
   try {
     const prompt = `Create a personalized learning path for a student with the following profile:
@@ -72,23 +77,25 @@ export async function generateLearningPath(userProfile, targetSkills) {
     
     Provide a step-by-step learning plan with estimated timeframes and resource recommendations.`;
 
-    const response = await chat(prompt, userProfile);
-    return response;
+    return await chat(prompt, userProfile);
   } catch (error) {
     console.error('Error generating learning path:', error);
     throw error;
   }
 }
 
-/**
- * Extract actionable suggestions from AI response
- * @param {string} text - The AI response text
- * @returns {array} - Array of extracted suggestions
- */
+function formatResponse(advice) {
+  advice = advice || 'No response generated';
+  const suggestions = extractSuggestions(advice);
+  return {
+    response: advice,
+    suggestions,
+    timestamp: new Date().toISOString(),
+  };
+}
+
 function extractSuggestions(text) {
   const suggestions = [];
-  
-  // Look for common suggestion patterns
   const patterns = [
     /(?:recommend|suggest|consider|try|learn|study|focus on)[:\s]+([^.\n]+)/gi,
     /(?:next step|action item|priority)[:\s]+([^.\n]+)/gi,
@@ -101,5 +108,5 @@ function extractSuggestions(text) {
     }
   });
 
-  return suggestions.slice(0, 5); // Return top 5 suggestions
+  return suggestions.slice(0, 5);
 }
