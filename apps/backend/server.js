@@ -10,6 +10,7 @@ import coursesRouter from './routes/courses.js';
 import compareRouter from './routes/compare.js';
 import aiRouter from './routes/ai.js';
 import authRouter from './routes/auth.js';
+import profileRouter from './routes/profile.js';
 
 // Connect to MongoDB
 connectDB();
@@ -53,6 +54,11 @@ app.use('/api/compare', compareRouter);
  * [Teammate 1] Supplemental student coaching handler
  */
 app.use('/api/ai', aiRouter);
+
+/**
+ * User Profile endpoints
+ */
+app.use('/api/profile', profileRouter);
 
 // Health check
 app.get('/health', (req, res) => {

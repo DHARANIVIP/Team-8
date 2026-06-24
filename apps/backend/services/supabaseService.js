@@ -167,6 +167,22 @@ export async function getUserProfile(userId) {
     .select('*')
     .eq('user_id', userId)
     .single();
+  if (error) {
+    if (error.code === 'PGRST116') {
+      // Return null when no rows are found, so route can create a default profile
+      return null;
+    }
+    throw error;
+  }
+  return data;
+}
+
+export async function createUserProfile(profile) {
+  const { data, error } = await supabase
+    .from('user_profiles')
+    .insert([profile])
+    .select()
+    .single();
   if (error) throw error;
   return data;
 }

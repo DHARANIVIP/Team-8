@@ -9,6 +9,8 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  border-radius: 0px !important; /* Force rectangular styling globally */
+  box-shadow: none !important; /* Remove all glowing neon shadows globally */
 }
 
 :root {
@@ -63,18 +65,21 @@ a:hover {
 ───────────────────────────────────────── */
 .card {
   background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  border: 1px solid var(--accent) !important;
+  border-radius: 0px !important;
   padding: 20px 24px;
+  box-shadow: 0 0 6px rgba(255, 158, 66, 0.1) !important;
+  transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .card-hover {
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .card-hover:hover {
-  border-color: var(--accent);
-  box-shadow: 0 0 14px rgba(255, 158, 66, 0.15);
+  border-color: var(--accent-soft) !important;
+  background: var(--surface-alt) !important;
+  box-shadow: 0 0 14px rgba(255, 158, 66, 0.2) !important;
 }
 
 /* ─────────────────────────────────────────
@@ -84,21 +89,24 @@ a:hover {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: var(--accent);
-  color: #0d0d0d;
+  background: transparent !important;
+  color: var(--accent) !important;
   font-family: 'Segoe UI', sans-serif;
   font-weight: 700;
   font-size: 14px;
   padding: 10px 22px;
-  border-radius: 6px;
-  border: none;
+  border-radius: 0px !important;
+  border: 1px solid var(--accent) !important;
+  box-shadow: 0 0 6px rgba(255, 158, 66, 0.15) !important;
   cursor: pointer;
-  transition: background 0.2s ease, transform 0.15s ease;
+  transition: background 0.2s ease, transform 0.15s ease, border-color 0.2s ease, box-shadow 0.2s ease;
   white-space: nowrap;
 }
 
 .btn-primary:hover {
-  background: var(--accent-soft);
+  background: rgba(255, 158, 66, 0.08) !important;
+  border-color: var(--accent-soft) !important;
+  box-shadow: 0 0 12px rgba(255, 158, 66, 0.35) !important;
   transform: translateY(-1px);
 }
 
@@ -110,21 +118,24 @@ a:hover {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: transparent;
-  color: var(--accent);
+  background: transparent !important;
+  color: var(--accent) !important;
   font-family: 'Segoe UI', sans-serif;
   font-weight: 600;
   font-size: 14px;
   padding: 10px 22px;
-  border-radius: 6px;
-  border: 1px solid var(--accent);
+  border-radius: 0px !important;
+  border: 1px solid var(--accent) !important;
+  box-shadow: 0 0 6px rgba(255, 158, 66, 0.15) !important;
   cursor: pointer;
-  transition: background 0.2s ease, transform 0.15s ease;
+  transition: background 0.2s ease, transform 0.15s ease, border-color 0.2s ease, box-shadow 0.2s ease;
   white-space: nowrap;
 }
 
 .btn-outline:hover {
-  background: rgba(255, 158, 66, 0.08);
+  background: rgba(255, 158, 66, 0.08) !important;
+  border-color: var(--accent-soft) !important;
+  box-shadow: 0 0 12px rgba(255, 158, 66, 0.35) !important;
   transform: translateY(-1px);
 }
 
@@ -132,46 +143,55 @@ a:hover {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: transparent;
-  color: var(--text-secondary);
+  background: transparent !important;
+  color: var(--text-secondary) !important;
   font-family: 'Segoe UI', sans-serif;
   font-weight: 500;
   font-size: 14px;
   padding: 8px 16px;
-  border-radius: 6px;
-  border: 1px solid var(--border-focus);
+  border-radius: 0px !important;
+  border: 1px solid var(--accent) !important;
+  box-shadow: 0 0 6px rgba(255, 158, 66, 0.12) !important;
   cursor: pointer;
-  transition: border-color 0.2s, color 0.2s;
+  transition: border-color 0.2s, color 0.2s, background-color 0.2s, box-shadow 0.2s;
 }
 
 .btn-ghost:hover {
-  border-color: var(--accent);
-  color: var(--accent);
+  border-color: var(--accent-soft) !important;
+  color: var(--accent) !important;
+  background: rgba(255, 158, 66, 0.05) !important;
+  box-shadow: 0 0 10px rgba(255, 158, 66, 0.3) !important;
 }
 
 /* ─────────────────────────────────────────
    FORM INPUTS
 ───────────────────────────────────────── */
-.input-field {
+.input-field, select, textarea {
   width: 100%;
   background: var(--surface-alt);
-  border: 1px solid var(--border-focus);
-  border-radius: 6px;
+  border: 1px solid var(--accent) !important; /* Solid accent border */
+  border-radius: 0px !important;
   padding: 11px 14px 11px 40px;
   color: var(--text-primary);
   font-family: 'Segoe UI', sans-serif;
   font-size: 14px;
   outline: none;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 0 5px rgba(255, 158, 66, 0.1) !important;
+  transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .input-field::placeholder {
   color: var(--text-muted);
 }
 
-.input-field:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(255, 158, 66, 0.12);
+.input-field:focus, select:focus, textarea:focus {
+  border-color: var(--accent-soft) !important;
+  box-shadow: 0 0 10px rgba(255, 158, 66, 0.25) !important;
+}
+
+.input-field:hover, select:hover, textarea:hover {
+  border-color: var(--accent-soft) !important;
+  box-shadow: 0 0 8px rgba(255, 158, 66, 0.18) !important;
 }
 
 .input-wrapper {
@@ -210,28 +230,32 @@ a:hover {
   display: inline-flex;
   align-items: center;
   padding: 3px 10px;
-  border-radius: 999px;
+  border-radius: 0px !important; /* Rectangular badges */
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.02em;
+  box-shadow: none !important;
 }
 
 .badge-accent {
-  background: rgba(255, 158, 66, 0.15);
+  background: rgba(255, 158, 66, 0.12);
   color: var(--accent);
-  border: 1px solid rgba(255, 158, 66, 0.3);
+  border: 1px solid var(--accent) !important;
+  box-shadow: 0 0 5px rgba(255, 158, 66, 0.15) !important;
 }
 
 .badge-muted {
   background: var(--surface-alt);
   color: var(--text-muted);
-  border: 1px solid var(--border-focus);
+  border: 1px solid var(--border-focus) !important;
+  box-shadow: none !important;
 }
 
 .badge-success {
-  background: rgba(80, 200, 120, 0.12);
+  background: rgba(80, 200, 120, 0.1);
   color: #50c878;
-  border: 1px solid rgba(80, 200, 120, 0.25);
+  border: 1px solid rgba(80, 200, 120, 0.25) !important;
+  box-shadow: 0 0 5px rgba(80, 200, 120, 0.15) !important;
 }
 
 /* ─────────────────────────────────────────
@@ -266,10 +290,11 @@ a:hover {
 ───────────────────────────────────────── */
 .auth-card {
   background: var(--surface);
-  border: 1px solid var(--border-focus);
-  border-radius: 10px;
+  border: 1px solid var(--accent) !important; /* Solid accent border */
+  border-radius: 0px !important;
   padding: 36px 40px;
   width: 420px;
+  box-shadow: none !important;
 }
 
 /* ─────────────────────────────────────────
@@ -380,21 +405,20 @@ a:hover {
   padding: 5px 14px;
   background: var(--surface-alt);
   border: 1px solid var(--border-focus);
-  border-radius: 999px;
+  border-radius: 0px !important; /* Rectangular skill pills */
   font-size: 13px;
   color: var(--text-secondary);
-  transition: border-color 0.2s, color 0.2s;
+  transition: border-color 0.2s, color 0.2s, box-shadow 0.2s;
   cursor: default;
+  box-shadow: none !important;
 }
 
 .skill-pill:hover {
-  border-color: var(--accent);
+  border-color: var(--accent) !important;
   color: var(--accent);
+  box-shadow: 0 0 8px rgba(255, 158, 66, 0.2) !important;
 }
 
-/* ─────────────────────────────────────────
-   PASSWORD STRENGTH BAR
-───────────────────────────────────────── */
 .strength-bar {
   height: 3px;
   border-radius: 999px;
@@ -407,4 +431,59 @@ a:hover {
   height: 100%;
   border-radius: 999px;
   transition: width 0.3s ease, background 0.3s ease;
+}
+
+/* ─────────────────────────────────────────
+   DASHBOARD SPECIAL CUSTOM THEME (Rectangular, Border-only, Cyberpunk Glow)
+───────────────────────────────────────── */
+/* Standard button tags global override for HUD Cyberpunk style */
+button, input[type="button"], input[type="submit"] {
+  border: 1px solid var(--accent) !important;
+  border-radius: 0px !important;
+  background: transparent !important;
+  color: var(--accent) !important;
+  box-shadow: 0 0 6px rgba(255, 158, 66, 0.15) !important;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s, background-color 0.2s, box-shadow 0.2s;
+}
+button:hover, input[type="button"]:hover, input[type="submit"]:hover {
+  background: rgba(255, 158, 66, 0.08) !important;
+  border-color: var(--accent-soft) !important;
+  box-shadow: 0 0 12px rgba(255, 158, 66, 0.35) !important;
+}
+
+/* Dashboard Header links (Profile, Settings) */
+nav a[href*="profile"], nav a[href*="settings"] {
+  border: 1px solid var(--accent) !important;
+  border-radius: 0px !important;
+  background: transparent !important;
+  color: var(--accent) !important;
+  box-shadow: 0 0 6px rgba(255, 158, 66, 0.12) !important;
+  transition: border-color 0.2s, color 0.2s, background-color 0.2s, box-shadow 0.2s;
+}
+nav a[href*="profile"]:hover, nav a[href*="settings"]:hover {
+  background: rgba(255, 158, 66, 0.08) !important;
+  border-color: var(--accent-soft) !important;
+  box-shadow: 0 0 12px rgba(255, 158, 66, 0.3) !important;
+}
+
+/* Specifically make sure red Sign Out buttons keep their red outline/text style globally with HUD glow */
+a[href*="login"][style*="ef4444"],
+a[href*="login"][style*="239,68"],
+button[style*="ef4444"],
+button[style*="239,68"] {
+  background: transparent !important;
+  border: 1px solid #ef4444 !important;
+  border-radius: 0px !important;
+  color: #ef4444 !important;
+  box-shadow: 0 0 6px rgba(239, 68, 68, 0.15) !important;
+  transition: border-color 0.2s, color 0.2s, background-color 0.2s, box-shadow 0.2s;
+}
+a[href*="login"][style*="ef4444"]:hover,
+a[href*="login"][style*="239,68"]:hover,
+button[style*="ef4444"]:hover,
+button[style*="239,68"]:hover {
+  background: rgba(239, 68, 68, 0.08) !important;
+  border-color: #f87171 !important;
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.35) !important;
 }

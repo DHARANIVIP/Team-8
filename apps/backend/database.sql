@@ -53,7 +53,7 @@ CREATE TABLE courses (
 -- 4. Comparisons Table (Saves User Side-by-Side Comparisons)
 CREATE TABLE comparisons (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID NOT NULL,
+    user_id VARCHAR(100) NOT NULL,
     career_id_1 UUID REFERENCES careers(id) ON DELETE CASCADE,
     career_id_2 UUID REFERENCES careers(id) ON DELETE CASCADE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
@@ -62,7 +62,7 @@ CREATE TABLE comparisons (
 -- 5. User Profiles Table (User Custom Profile & Interests)
 CREATE TABLE user_profiles (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID UNIQUE NOT NULL,
+    user_id VARCHAR(100) UNIQUE NOT NULL,
     current_skills TEXT[] DEFAULT '{}',
     experience_level VARCHAR(100),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
