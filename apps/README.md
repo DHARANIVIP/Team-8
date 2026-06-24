@@ -2,6 +2,40 @@
 
 A modern, full-stack web application designed to guide students through career pathways using skill mapping, AI-powered advising, and course recommendations.
 
+## 📐 System Architecture Diagram
+
+Our platform uses a **hybrid database architecture**, separating user authentication and management from application-specific advising data:
+
+```mermaid
+graph TD
+    subgraph Client [Frontend - Next.js React App]
+        UI[User Interface]
+        Fetch[Client Services / API Client]
+    end
+
+    subgraph API [Backend - Express.js API Server]
+        Server[Express Server]
+        AuthRouter[Auth Router /api/auth]
+        AppRouter[App Services Routers]
+        GeminiService[Gemini API Advisor Service]
+    end
+
+    subgraph Storage [Database Layer - Hybrid Storage]
+        MongoDB[(MongoDB Atlas DB)]
+        Postgres[(PostgreSQL Database)]
+        pgAdmin[[pgAdmin 4/5 Client Panel]]
+    end
+
+    UI --> Fetch
+    Fetch -->|/api/auth/*| AuthRouter
+    Fetch -->|/api/categories, /api/skills, /api/courses, /api/compare| AppRouter
+    
+    AuthRouter -->|Store & Validate User Credentials| MongoDB
+    AppRouter -->|Fetch & Query Career Roadmaps & Logs| Postgres
+    pgAdmin -.->|Manage & Query Tables| Postgres
+    AppRouter -->|Generate Learning Advice| GeminiService
+```
+
 ## 📦 Project Structure
 
 This is a **monorepo** with shared root configuration and separate frontend/backend applications:
@@ -145,20 +179,30 @@ Tables created in `supabase/migrations/20260622_init_schema.sql`:
 
 ## 🔐 Environment Variables
 
-Create `.env.local` in the project root:
+Create your environment configuration files:
+1. `.env.local` in the project root (for Next.js frontend).
+2. `.env` in the `apps/backend/` directory (for Express backend).
 
+### Backend `.env` configuration (`apps/backend/.env`):
 ```env
-# Supabase
+# MongoDB - Used for User Authentication (Signup, Signin, Reset Password)
+MONGODB_URI=mongodb://your_username:your_password@cluster.mongodb.net/database_name
+
+# PostgreSQL / Supabase - Used for Advisor Data (Careers, Skills, Courses, Comparisons)
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 
-# OpenAI
-OPENAI_API_KEY=your_openai_key
+# Gemini AI API Configuration
+GEMINI_API_KEY=AIzaSy...   # Google AI Studio API Key (must start with AIzaSy)
 
-# API
-NEXT_PUBLIC_API_URL=http://localhost:3001
+# Server Config
 PORT=3001
+JWT_SECRET=your_jwt_signing_secret_key
+```
+
+### Frontend `.env.local` configuration (`apps/frontend/.env.local`):
+```env
+NEXT_PUBLIC_API_URL=http://localhost:3001
 ```
 
 ## 📚 API Documentation

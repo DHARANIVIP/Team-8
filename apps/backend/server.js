@@ -9,6 +9,7 @@ import skillsRouter from './routes/skills.js';
 import coursesRouter from './routes/courses.js';
 import compareRouter from './routes/compare.js';
 import aiRouter from './routes/ai.js';
+import authRouter from './routes/auth.js';
 
 // Connect to MongoDB
 connectDB();
@@ -25,6 +26,8 @@ app.use(express.json());
  * [Teammate 1] Entry point for server execution
  * Routes organized by feature domain
  */
+
+app.use('/api/auth', authRouter);
 
 /**
  * [Teammate 2] Feature 1: Category endpoints
