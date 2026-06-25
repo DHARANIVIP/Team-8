@@ -11,6 +11,7 @@ import compareRouter from './routes/compare.js';
 import aiRouter from './routes/ai.js';
 import authRouter from './routes/auth.js';
 import profileRouter from './routes/profile.js';
+import roadmapsRouter from './routes/roadmaps.js';
 
 // Connect to MongoDB
 connectDB();
@@ -59,6 +60,11 @@ app.use('/api/ai', aiRouter);
  * User Profile endpoints
  */
 app.use('/api/profile', profileRouter);
+
+/**
+ * Learning Roadmaps endpoints (roadmap.sh)
+ */
+app.use('/api/roadmaps', roadmapsRouter);
 
 // Health check
 app.get('/health', (req, res) => {
