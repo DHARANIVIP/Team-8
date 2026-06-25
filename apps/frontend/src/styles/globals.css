@@ -272,7 +272,7 @@ a:hover {
 }
 
 /* ─────────────────────────────────────────
-   AUTH PAGE BACKGROUND (rain animation slot)
+   AUTH PAGE BACKGROUND
 ───────────────────────────────────────── */
 .auth-bg {
   min-height: 100vh;
@@ -282,7 +282,6 @@ a:hover {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  /* Rain animation will be layered here in a later phase */
 }
 
 /* ─────────────────────────────────────────

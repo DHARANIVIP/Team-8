@@ -1,25 +1,36 @@
 import express from 'express';
-import { getAllSkills, getSkillsByCareer, createSkill, calculateSkillMatrix } from '../services/supabaseService.js';
+import { getAllSkills, getSkillsByCareer, createSkill, calculateSkillMatrix, getCategoryById, syncCareerCache } from '../services/supabaseService.js';
 
 const router = express.Router();
 
 /**
  * GET /api/skills
- * Retrieve all skills or filter by career ID
+ * Retrieve all skills or filter by career ID (With on-demand O*NET sync)
  */
 router.get('/', async (req, res) => {
   try {
     const { careerId } = req.query;
     
     if (careerId) {
-      const skills = await getSkillsByCareer(careerId);
+      let skills = await getSkillsByCareer(careerId);
+      
+      // If no skills exist, dynamically sync them
+      if (!skills || skills.length === 0) {
+        const career = await getCategoryById(careerId);
+        if (career) {
+          console.log(`⚠️ No skills cached for career: "${career.name}". Syncing skills now...`);
+          const syncResult = await syncCareerCache(career.name);
+          skills = syncResult.skills;
+        }
+      }
+      
       return res.json(skills);
     }
     
     const skills = await getAllSkills();
     res.json(skills);
   } catch (error) {
-    console.error('⚠️ PostgreSQL connection failed. Returning mock skills.');
+    console.error('⚠️ Skills retrieval failed. Returning mock data.', error.message);
     
     const mockSkills = [
       { id: '1', name: 'Python', category: 'Languages', description: 'General scientific language', difficulty_level: 'Easy' },

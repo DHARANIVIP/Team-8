@@ -2,6 +2,7 @@ import express from 'express';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import User from '../models/User.js';
+import { protect } from '../middleware/auth.js';
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'mastermind_super_secret_jwt_key';
@@ -157,6 +158,47 @@ router.post('/reset-password', async (req, res) => {
   } catch (error) {
     console.error('Reset password error:', error);
     res.status(500).json({ error: 'Failed to reset password' });
+  }
+});
+
+/**
+ * PUT /api/auth/update-account
+ * Update current authenticated user's account settings (name, email, password) in MongoDB
+ */
+router.put('/update-account', protect, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { name, email, password } = req.body;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found in database' });
+    }
+
+    if (name) user.name = name;
+    if (email) {
+      const emailExists = await User.findOne({ email, _id: { $ne: userId } });
+      if (emailExists) {
+        return res.status(409).json({ error: 'This email is already registered with another account' });
+      }
+      user.email = email;
+    }
+    if (password) {
+      user.setPassword(password);
+    }
+
+    await user.save();
+    res.json({
+      message: 'Account details updated successfully',
+      user: {
+        id: user._id,
+        email: user.email,
+        name: user.name
+      }
+    });
+  } catch (error) {
+    console.error('Update account error:', error);
+    res.status(500).json({ error: 'Failed to update account details' });
   }
 });
 

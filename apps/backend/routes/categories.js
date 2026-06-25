@@ -1,8 +1,18 @@
 import express from 'express';
-import { getAllCategories, getCategoryById, createCategory } from '../services/supabaseService.js';
+import { getAllCategories, getCategoryById, createCategory, syncCareerCache } from '../services/supabaseService.js';
 import { getIndustryNews } from '../services/industryService.js';
 
 const router = express.Router();
+
+// List of standard careers to ensure are cached in the system
+const STANDARD_CAREERS = [
+  'Software Engineer',
+  'Data Scientist',
+  'UX Designer',
+  'Cybersecurity Analyst',
+  'Product Manager',
+  'Cloud Architect'
+];
 
 /**
  * GET /api/categories
@@ -10,12 +20,25 @@ const router = express.Router();
  */
 router.get('/', async (req, res) => {
   try {
-    // Fetch careers from PostgreSQL database (acting as career categories)
-    const categories = await getAllCategories();
+    let categories = await getAllCategories();
+    
+    // Check if we are missing any standard careers in the cache
+    const cachedNames = categories.map(c => c.name);
+    const missingCareers = STANDARD_CAREERS.filter(name => !cachedNames.includes(name));
+
+    if (missingCareers.length > 0) {
+      console.log(`⚠️ Missing standard careers in cache: ${missingCareers.join(', ')}. Syncing now...`);
+      for (const name of missingCareers) {
+        await syncCareerCache(name);
+      }
+      // Re-fetch populated list
+      categories = await getAllCategories();
+    }
+
     const news = await getIndustryNews('Technology Career Trends');
     res.json({ categories, latestNews: news });
   } catch (error) {
-    console.error('⚠️ PostgreSQL connection failed. Returning mock data for frontend development.');
+    console.error('⚠️ Category retrieval failed. Returning mock data.', error.message);
     
     // Mock Data Fallback
     const mockCategories = [

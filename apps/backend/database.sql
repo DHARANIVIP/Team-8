@@ -99,3 +99,29 @@ INSERT INTO courses (title, provider, url, difficulty, price, skill_id) VALUES
 -- Courses for Python
 INSERT INTO courses (title, provider, url, difficulty, price, skill_id) VALUES
 ('Python for Everybody Specialization', 'Coursera', 'https://www.coursera.org/specializations/python-for-everybody', 'Beginner', 'Free', 'd1193d20-80c1-4f80-bdc2-7cb8e293dbef');
+
+
+-- =========================================================================
+-- DATABASE UPGRADE / MIGRATIONS (Run on existing instances)
+-- =========================================================================
+
+-- Upgrade careers table
+ALTER TABLE careers ADD COLUMN IF NOT EXISTS onet_code VARCHAR(50) UNIQUE;
+ALTER TABLE careers ADD COLUMN IF NOT EXISTS education_requirement TEXT;
+ALTER TABLE careers ADD COLUMN IF NOT EXISTS work_environment TEXT;
+ALTER TABLE careers ADD COLUMN IF NOT EXISTS future_outlook VARCHAR(100);
+ALTER TABLE careers ADD COLUMN IF NOT EXISTS last_sync TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;
+
+-- Upgrade courses table
+ALTER TABLE courses ADD COLUMN IF NOT EXISTS rating DECIMAL(3, 2);
+ALTER TABLE courses ADD COLUMN IF NOT EXISTS duration_weeks INT;
+ALTER TABLE courses ADD COLUMN IF NOT EXISTS certificate_included BOOLEAN DEFAULT TRUE;
+
+-- Upgrade user_profiles table
+ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS target_career VARCHAR(255);
+ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS salary_goal VARCHAR(50);
+ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS email_updates BOOLEAN DEFAULT TRUE;
+ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS market_alerts BOOLEAN DEFAULT FALSE;
+ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS weekly_digest BOOLEAN DEFAULT TRUE;
+ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS compact_mode BOOLEAN DEFAULT FALSE;
+

@@ -1,5 +1,5 @@
 import express from 'express';
-import { getAllCourses, getCoursesBySkill, createCourse, getRecommendedCourses } from '../services/supabaseService.js';
+import { getAllCourses, getCoursesBySkill, createCourse, getRecommendedCourses, getSkillById, syncCoursesCache } from '../services/supabaseService.js';
 
 const router = express.Router();
 
@@ -12,7 +12,7 @@ router.get('/', async (req, res) => {
     const courses = await getAllCourses();
     res.json(courses);
   } catch (error) {
-    console.error('⚠️ PostgreSQL connection failed. Returning mock courses.');
+    console.error('⚠️ Courses retrieval failed. Returning mock data.', error.message);
     
     const mockCourses = [
       { id: '1', title: 'JavaScript: The Advanced Concepts', provider: 'Udemy', url: '#', difficulty: 'Advanced', price: '₹455', skill_id: 'c7078e8e-d9c1-4b13-911e-0899f8d1634b' },
@@ -25,15 +25,24 @@ router.get('/', async (req, res) => {
 
 /**
  * GET /api/courses/by-skill/:skillId
- * Retrieve courses associated with a specific skill
+ * Retrieve courses associated with a specific skill (With on-demand search sync)
  */
 router.get('/by-skill/:skillId', async (req, res) => {
   try {
     const { skillId } = req.params;
-    const courses = await getCoursesBySkill(skillId);
+    let courses = await getCoursesBySkill(skillId);
+    
+    if (!courses || courses.length === 0) {
+      const skill = await getSkillById(skillId);
+      if (skill) {
+        console.log(`⚠️ Course cache miss for skill: "${skill.name}". Syncing courses...`);
+        courses = await syncCoursesCache(skillId, skill.name);
+      }
+    }
+    
     res.json(courses);
   } catch (error) {
-    console.error('Error fetching courses by skill:', error);
+    console.error('Error fetching courses by skill:', error.message);
     res.status(500).json({ error: 'Failed to fetch courses' });
   }
 });
@@ -50,10 +59,25 @@ router.post('/recommendations', async (req, res) => {
       return res.status(400).json({ error: 'skillIds must be an array' });
     }
 
+    // Ensure all missing skills have their courses synced/cached in the DB
+    for (const skillId of skillIds) {
+      try {
+        const cached = await getCoursesBySkill(skillId);
+        if (!cached || cached.length === 0) {
+          const skill = await getSkillById(skillId);
+          if (skill) {
+            await syncCoursesCache(skillId, skill.name);
+          }
+        }
+      } catch (err) {
+        console.warn(`Could not sync courses for skillId ${skillId}:`, err.message);
+      }
+    }
+
     const recommendations = await getRecommendedCourses(skillIds);
     res.json({ courses: recommendations });
   } catch (error) {
-    console.error('Error fetching recommendations. Returning empty recommendations list.', error);
+    console.error('Error fetching recommendations:', error.message);
     res.json({ courses: [] });
   }
 });

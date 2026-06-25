@@ -1,4 +1,4 @@
-import 'dotenv/config';
+import 'dotenv/config'; // trigger reload
 import express from 'express';
 import cors from 'cors';
 import connectDB from './config/db.js';
