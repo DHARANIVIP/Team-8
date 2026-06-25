@@ -1,8 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import DashboardNavbar from '@/components/DashboardNavbar';
+import { getCurrentUser, isAuthenticated } from '@/lib/services/auth-service';
+import { getProfile, updateProfile } from '@/lib/services/profile-service';
 
 /* ── tiny reusable section card ── */
 function Section({ children }: { children: React.ReactNode }) {
@@ -30,15 +33,14 @@ function SectionTitle({ icon, children }: { icon: React.ReactNode; children: Rea
   );
 }
 
-function InputField({ label, placeholder, value, type = 'text' }: { label?: string; placeholder: string; value?: string; type?: string }) {
-  const [val, setVal] = useState(value ?? '');
+function InputField({ label, placeholder, value, type = 'text', onChange }: { label?: string; placeholder: string; value?: string; type?: string; onChange?: (val: string) => void }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', flex: 1 }}>
       {label && <label style={{ color: '#aaaaaa', fontSize: '12px', fontWeight: 500 }}>{label}</label>}
       <input
         type={type}
-        value={val}
-        onChange={(e) => setVal(e.target.value)}
+        value={value}
+        onChange={(e) => onChange && onChange(e.target.value)}
         placeholder={placeholder}
         style={{
           background: '#0d0d0d',
@@ -58,20 +60,23 @@ function InputField({ label, placeholder, value, type = 'text' }: { label?: stri
   );
 }
 
-function AccentBtn({ children, small }: { children: React.ReactNode; small?: boolean }) {
+function AccentBtn({ children, small, onClick, type = 'button' }: { children: React.ReactNode; small?: boolean; onClick?: () => void; type?: 'button' | 'submit' }) {
   return (
-    <button style={{
-      background: '#ff9e42',
-      color: '#0d0d0d',
-      border: 'none',
-      borderRadius: '6px',
-      padding: small ? '7px 16px' : '9px 22px',
-      fontWeight: 700,
-      fontSize: small ? '12px' : '13px',
-      cursor: 'pointer',
-      whiteSpace: 'nowrap' as const,
-      transition: 'background 0.18s',
-    }}
+    <button
+      type={type}
+      onClick={onClick}
+      style={{
+        background: '#ff9e42',
+        color: '#0d0d0d',
+        border: 'none',
+        borderRadius: '6px',
+        padding: small ? '7px 16px' : '9px 22px',
+        fontWeight: 700,
+        fontSize: small ? '12px' : '13px',
+        cursor: 'pointer',
+        whiteSpace: 'nowrap' as const,
+        transition: 'background 0.18s',
+      }}
       onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = '#ff9757')}
       onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = '#ff9e42')}
     >{children}</button>
@@ -167,10 +172,16 @@ function ToggleRow({ label, sub, checked }: { label: string; sub?: string; check
 function SkillTag({ name, onRemove }: { name: string; onRemove: () => void }) {
   return (
     <span style={{
-      display: 'inline-flex', alignItems: 'center', gap: '6px',
-      background: 'rgba(255,158,66,0.10)', border: '1px solid rgba(255,158,66,0.30)',
-      borderRadius: '999px', padding: '4px 12px',
-      color: '#ff9e42', fontSize: '12px', fontWeight: 600,
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: '6px',
+      background: 'rgba(255,158,66,0.10)',
+      border: '1px solid rgba(255,158,66,0.30)',
+      borderRadius: '999px',
+      padding: '4px 12px',
+      color: '#ff9e42',
+      fontSize: '12px',
+      fontWeight: 600,
     }}>
       {name}
       <button onClick={onRemove} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ff9e42', fontSize: '14px', lineHeight: 1, padding: 0 }}>×</button>
@@ -180,14 +191,48 @@ function SkillTag({ name, onRemove }: { name: string; onRemove: () => void }) {
 
 /* ══════════════════════════════════════
    PAGE
-══════════════════════════════════════ */
+   ══════════════════════════════════════ */
 export default function ProfilePage() {
-  const [displayName, setDisplayName] = useState('DHARANI V');
-  const [skills, setSkills] = useState(['Python', 'React', 'TypeScript', 'Data Analysis', 'Machine Learning']);
+  const router = useRouter();
+  
+  const [displayName, setDisplayName] = useState('Student');
+  const [email, setEmail] = useState('email@example.com');
+  const [skills, setSkills] = useState<string[]>([]);
+  const [experienceLevel, setExperienceLevel] = useState('Beginner');
   const [newSkill, setNewSkill] = useState('');
   const [targetCareer, setTargetCareer] = useState('Software Engineer');
   const [salaryGoal, setSalaryGoal] = useState('₹15L+');
   const [saved, setSaved] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  // Client-side authentication check and initial state loading
+  useEffect(() => {
+    if (!isAuthenticated()) {
+      router.push('/login');
+      return;
+    }
+
+    const user = getCurrentUser();
+    if (user) {
+      setDisplayName(user.name);
+      setEmail(user.email);
+    }
+
+    async function loadProfile() {
+      try {
+        const data = await getProfile();
+        if (data) {
+          setSkills(data.current_skills || []);
+          setExperienceLevel(data.experience_level || 'Beginner');
+        }
+      } catch (err) {
+        console.error('Failed to load profile details from DB:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadProfile();
+  }, [router]);
 
   function addSkill() {
     const s = newSkill.trim();
@@ -195,9 +240,14 @@ export default function ProfilePage() {
     setNewSkill('');
   }
 
-  function saveProfile() {
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+  async function saveProfile() {
+    try {
+      await updateProfile({ current_skills: skills, experience_level: experienceLevel });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch (err) {
+      console.error('Failed to save profile changes:', err);
+    }
   }
 
   return (
@@ -252,15 +302,15 @@ export default function ProfilePage() {
             width: '72px', height: '72px', borderRadius: '50%',
             background: 'linear-gradient(135deg, #ff9e42, #ff9757)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '28px', fontWeight: 800, color: '#0d0d0d',
+            fontSize: '24px', fontWeight: 800, color: '#0d0d0d',
             flexShrink: 0, border: '3px solid rgba(255,158,66,0.3)',
           }}>
-            DV
+            {displayName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'ST'}
           </div>
 
           <div style={{ flex: 1 }}>
             <h2 style={{ color: '#cccccc', fontWeight: 800, fontSize: '22px', margin: '0 0 4px' }}>{displayName}</h2>
-            <p style={{ color: '#666', fontSize: '13px', margin: '0 0 8px' }}>vvdharani57@gmail.com · Last active: Recently</p>
+            <p style={{ color: '#666', fontSize: '13px', margin: '0 0 8px' }}>{email} · Last active: Recently</p>
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
               <span style={{ background: 'rgba(255,158,66,0.12)', border: '1px solid rgba(255,158,66,0.3)', borderRadius: '999px', padding: '3px 10px', color: '#ff9e42', fontSize: '11px', fontWeight: 700 }}>
                 🎯 {targetCareer}
@@ -305,14 +355,14 @@ export default function ProfilePage() {
                   onFocus={(e) => (e.target.style.borderColor = '#ff9e42')}
                   onBlur={(e) => (e.target.style.borderColor = '#2a2a2a')}
                 />
-                <AccentBtn small>Save</AccentBtn>
+                <AccentBtn small onClick={saveProfile}>Save</AccentBtn>
               </div>
             </div>
             <div>
               <label style={{ color: '#aaaaaa', fontSize: '12px', fontWeight: 500, display: 'block', marginBottom: '6px' }}>Account Email</label>
               <p style={{ color: '#888', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ff9e42" strokeWidth="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
-                vvdharani57@gmail.com
+                {email}
               </p>
             </div>
           </Section>
@@ -361,18 +411,18 @@ export default function ProfilePage() {
               </select>
             </div>
             <div>
-              <label style={{ color: '#aaaaaa', fontSize: '12px', fontWeight: 500, display: 'block', marginBottom: '6px' }}>Salary Goal</label>
+              <label style={{ color: '#aaaaaa', fontSize: '12px', fontWeight: 500, display: 'block', marginBottom: '6px' }}>Experience Level</label>
               <select
-                value={salaryGoal}
-                onChange={(e) => setSalaryGoal(e.target.value)}
+                value={experienceLevel}
+                onChange={(e) => setExperienceLevel(e.target.value)}
                 style={{
                   width: '100%', background: '#0d0d0d', border: '1px solid #2a2a2a',
                   borderRadius: '6px', padding: '9px 14px', color: '#cccccc', fontSize: '14px',
                   outline: 'none', cursor: 'pointer',
                 }}
               >
-                {['₹5L–₹10L', '₹10L–₹15L', '₹15L+', '₹25L+', '₹40L+'].map((s) => (
-                  <option key={s} value={s}>{s}</option>
+                {['Beginner', 'Intermediate', 'Advanced'].map((lvl) => (
+                  <option key={lvl} value={lvl}>{lvl}</option>
                 ))}
               </select>
             </div>
@@ -421,7 +471,7 @@ export default function ProfilePage() {
               onFocus={(e) => (e.target.style.borderColor = '#ff9e42')}
               onBlur={(e) => (e.target.style.borderColor = '#2a2a2a')}
             />
-            <AccentBtn small>+ Add</AccentBtn>
+            <AccentBtn small onClick={addSkill}>+ Add</AccentBtn>
           </div>
         </Section>
 

@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { signout } from '@/lib/services/auth-service';
 
 const navLinks = [
   { href: '/dashboard',            label: 'Dashboard' },
@@ -9,6 +10,7 @@ const navLinks = [
   { href: '/dashboard/skills',     label: 'Skills' },
   { href: '/dashboard/courses',    label: 'Courses' },
   { href: '/dashboard/compare',    label: 'Compare' },
+  { href: '/dashboard/roadmaps',   label: 'Roadmaps' },
 ];
 
 /* ── theme token ── */
@@ -18,6 +20,13 @@ const ACCENT_BORDER = 'rgba(255,158,66,0.55)';
 
 export default function DashboardNavbar() {
   const pathname = usePathname();
+  const router = useRouter();
+
+  const handleSignOut = (e: React.MouseEvent) => {
+    e.preventDefault();
+    signout();
+    router.push('/login');
+  };
 
   return (
     <nav style={{
@@ -40,8 +49,41 @@ export default function DashboardNavbar() {
         </Link>
       </div>
 
-      {/* ── Center: Empty ── */}
+      {/* ── Center: Navigation ── */}
       <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+        {navLinks.map((link) => {
+          const isActive = pathname === link.href;
+          return (
+            <Link
+              key={link.href}
+              href={link.href}
+              style={{
+                fontSize: '12px',
+                padding: '6px 14px',
+                borderRadius: '6px',
+                color: isActive ? '#000000' : '#cccccc',
+                background: isActive ? ACCENT : 'transparent',
+                fontWeight: 500,
+                textDecoration: 'none',
+                transition: 'all 0.15s ease',
+              }}
+              onMouseEnter={(e) => {
+                if (!isActive) {
+                  (e.currentTarget as HTMLElement).style.color = ACCENT;
+                  (e.currentTarget as HTMLElement).style.background = ACCENT_RGBA;
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isActive) {
+                  (e.currentTarget as HTMLElement).style.color = '#cccccc';
+                  (e.currentTarget as HTMLElement).style.background = 'transparent';
+                }
+              }}
+            >
+              {link.label}
+            </Link>
+          );
+        })}
       </div>
 
       {/* ── Right: Profile · Settings · Sign Out ── */}
@@ -116,6 +158,7 @@ export default function DashboardNavbar() {
         {/* Sign Out */}
         <Link
           href="/login"
+          onClick={handleSignOut}
           style={{
             display: 'inline-flex',
             alignItems: 'center',
