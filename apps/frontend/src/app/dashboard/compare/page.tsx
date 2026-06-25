@@ -1,62 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import DashboardNavbar from '@/components/DashboardNavbar';
+import { isAuthenticated } from '@/lib/services/auth-service';
 
-
-// ── Data ─────────────────────────────────────────────────────────────────────
-const careerData: Record<string, {
-  salary: string; salaryMin: number; salaryMax: number;
-  growth: string; industry: string;
-  skills: string[]; softSkills: string[];
-  education: string; jobOutlook: string;
-}> = {
-  'Software Engineer': {
-    salary:'₹8L – ₹25L', salaryMin:8, salaryMax:25,
-    growth:'28%', industry:'Technology',
-    skills:['Python','JavaScript','AWS','Docker','Git','React','SQL'],
-    softSkills:['Problem Solving','Communication','Team Work'],
-    education:'B.Tech / BCA / Bootcamp', jobOutlook:'Excellent',
-  },
-  'Data Scientist': {
-    salary:'₹10L – ₹30L', salaryMin:10, salaryMax:30,
-    growth:'36%', industry:'Data & AI',
-    skills:['Python','SQL','Machine Learning','TensorFlow','Statistics','Tableau'],
-    softSkills:['Analytical Thinking','Communication','Curiosity'],
-    education:'B.Tech / B.Sc Statistics / M.Sc', jobOutlook:'Excellent',
-  },
-  'UX Designer': {
-    salary:'₹6L – ₹18L', salaryMin:6, salaryMax:18,
-    growth:'22%', industry:'Design',
-    skills:['Figma','Prototyping','User Research','CSS','Wireframing','Adobe XD'],
-    softSkills:['Empathy','Creativity','Communication'],
-    education:'Design Degree / Certification', jobOutlook:'Good',
-  },
-  'Cybersecurity Analyst': {
-    salary:'₹7L – ₹22L', salaryMin:7, salaryMax:22,
-    growth:'33%', industry:'Security',
-    skills:['Networking','SIEM','Pen Testing','SOC','Risk Analysis','Forensics'],
-    softSkills:['Attention to Detail','Problem Solving','Ethics'],
-    education:'B.Tech / Security Certification', jobOutlook:'Very Good',
-  },
-  'Product Manager': {
-    salary:'₹12L – ₹35L', salaryMin:12, salaryMax:35,
-    growth:'25%', industry:'Business',
-    skills:['Roadmapping','Agile','SQL','Market Research','Communication','Jira'],
-    softSkills:['Leadership','Strategic Thinking','Empathy'],
-    education:'MBA / Engineering Degree', jobOutlook:'Excellent',
-  },
-  'Cloud Architect': {
-    salary:'₹15L – ₹40L', salaryMin:15, salaryMax:40,
-    growth:'31%', industry:'Technology',
-    skills:['AWS','Azure','Kubernetes','Terraform','Networking','Docker'],
-    softSkills:['Architecture Thinking','Communication','Leadership'],
-    education:'B.Tech + Cloud Certifications', jobOutlook:'Excellent',
-  },
-};
-
-const careerOptions = Object.keys(careerData);
 
 // ── Overlap Gauge ─────────────────────────────────────────────────────────────
 function OverlapGauge({ pct }: { pct: number }) {
@@ -98,27 +47,120 @@ function SalaryBar({ label, min, max, maxAll }: { label:string; min:number; max:
   );
 }
 
+import { getCategories } from '@/lib/services/career-service';
+import { calculateComparisonMetrics } from '@/lib/services/compare-service';
+
+const parseSalaryLPA = (salaryStr: string) => {
+  if (!salaryStr) return { min: 6, max: 15 };
+  const matches = salaryStr.match(/\d+/g);
+  if (matches && matches.length >= 2) {
+    return { min: parseInt(matches[0]), max: parseInt(matches[1]) };
+  } else if (matches && matches.length === 1) {
+    return { min: parseInt(matches[0]), max: Math.round(parseInt(matches[0]) * 1.5) };
+  }
+  return { min: 6, max: 15 };
+};
+
+const getIndustryForCareer = (careerName: string) => {
+  const name = careerName.toLowerCase();
+  if (name.includes('software') || name.includes('cloud') || name.includes('architect') || name.includes('engineer')) {
+    if (name.includes('data')) return 'Data & AI';
+    return 'Technology';
+  }
+  if (name.includes('data') || name.includes('scientist') || name.includes('ai') || name.includes('analyst')) {
+    if (name.includes('cyber') || name.includes('security')) return 'Security';
+    return 'Data & AI';
+  }
+  if (name.includes('design') || name.includes('ux') || name.includes('ui') || name.includes('designer')) return 'Design';
+  if (name.includes('product') || name.includes('manager') || name.includes('business')) return 'Business';
+  return 'Technology';
+};
+
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function ComparePage() {
-  const [careerA, setCareerA] = useState('Software Engineer');
-  const [careerB, setCareerB] = useState('Data Scientist');
+  const router = useRouter();
+  const [careersList, setCareersList] = useState<any[]>([]);
+  const [careerA, setCareerA] = useState('');
+  const [careerB, setCareerB] = useState('');
   const [compared, setCompared] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const dataA = careerData[careerA];
-  const dataB = careerData[careerB];
+  // Results State
+  const [metrics, setMetrics] = useState<any>(null);
 
-  const commonSkills  = dataA.skills.filter((s) => dataB.skills.includes(s));
-  const uniqueA       = dataA.skills.filter((s) => !dataB.skills.includes(s));
-  const uniqueB       = dataB.skills.filter((s) => !dataA.skills.includes(s));
-  const overlapPct    = Math.round((commonSkills.length / Math.max(dataA.skills.length, dataB.skills.length)) * 100);
-  const maxSalary     = 45;
+  useEffect(() => {
+    if (!isAuthenticated()) {
+      router.push('/login');
+      return;
+    }
+
+    async function loadCareers() {
+      try {
+        const data = await getCategories();
+        const list = data.categories || [];
+        setCareersList(list);
+        if (list.length >= 2) {
+          setCareerA(list[0].id);
+          setCareerB(list[1].id);
+        }
+      } catch (err: any) {
+        console.error('Failed to load career choices:', err);
+      }
+    }
+    loadCareers();
+  }, [router]);
+
+  const handleCompare = async () => {
+    if (!careerA || !careerB) return;
+    setLoading(true);
+    setError('');
+    try {
+      const data = await calculateComparisonMetrics(careerA, careerB);
+      setMetrics(data);
+      setCompared(true);
+    } catch (err: any) {
+      setError('Failed to compute comparison profiles. Please check database tables.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const selectedCareerAName = careersList.find(c => c.id === careerA)?.name || 'Career A';
+  const selectedCareerBName = careersList.find(c => c.id === careerB)?.name || 'Career B';
+
+  const career1Data = metrics?.career1 || {};
+  const career2Data = metrics?.career2 || {};
+  const commonSkills = metrics?.commonSkills || [];
+  const uniqueA = metrics?.uniqueSkillsCareer1 || [];
+  const uniqueB = metrics?.uniqueSkillsCareer2 || [];
+  const overlapPct = metrics?.skillOverlap ?? 0;
+
+  const salA = parseSalaryLPA(career1Data.salary);
+  const salB = parseSalaryLPA(career2Data.salary);
+  const maxSalary = Math.max(salA.max, salB.max, 45);
+
+  const dataA = {
+    industry: getIndustryForCareer(career1Data.title || selectedCareerAName),
+    salary: career1Data.salary || '₹6L – ₹15L',
+    growth: career1Data.growth || '20%',
+    salaryMin: salA.min,
+    salaryMax: salA.max
+  };
+  const dataB = {
+    industry: getIndustryForCareer(career2Data.title || selectedCareerBName),
+    salary: career2Data.salary || '₹6L – ₹15L',
+    growth: career2Data.growth || '20%',
+    salaryMin: salB.min,
+    salaryMax: salB.max
+  };
 
   const rows = [
-    { label:'Industry',     a: dataA.industry,    b: dataB.industry },
-    { label:'Avg Salary',   a: dataA.salary,      b: dataB.salary },
-    { label:'Growth Rate',  a: dataA.growth,      b: dataB.growth },
-    { label:'Education',    a: dataA.education,   b: dataB.education },
-    { label:'Job Outlook',  a: dataA.jobOutlook,  b: dataB.jobOutlook },
+    { label:'Education standard',  a: career1Data.education || 'Bachelor\'s Degree', b: career2Data.education || 'Bachelor\'s Degree' },
+    { label:'Work Environment',    a: career1Data.environment || 'Hybrid/Office',    b: career2Data.environment || 'Hybrid/Office' },
+    { label:'Growth Rate',         a: career1Data.growth || '25%',                  b: career2Data.growth || '25%' },
+    { label:'Demand outlook',      a: career1Data.demand || 'High',                  b: career2Data.demand || 'High' },
+    { label:'Growth prospect',     a: career1Data.outlook || 'Favorable',             b: career2Data.outlook || 'Favorable' },
   ];
 
   return (
@@ -161,7 +203,7 @@ export default function ComparePage() {
                 onChange={(e) => { setCareerA(e.target.value); setCompared(false); }}
                 style={{ width:'100%', background:'#1a1a1a', border:'1px solid #2a2a2a', borderRadius:'6px', padding:'10px 14px', color:'#cccccc', fontSize:'14px', outline:'none', cursor:'pointer' }}
               >
-                {careerOptions.map((c) => <option key={c} value={c}>{c}</option>)}
+                {careersList.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </div>
 
@@ -176,19 +218,32 @@ export default function ComparePage() {
                 onChange={(e) => { setCareerB(e.target.value); setCompared(false); }}
                 style={{ width:'100%', background:'#1a1a1a', border:'1px solid #2a2a2a', borderRadius:'6px', padding:'10px 14px', color:'#cccccc', fontSize:'14px', outline:'none', cursor:'pointer' }}
               >
-                {careerOptions.map((c) => <option key={c} value={c}>{c}</option>)}
+                {careersList.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </div>
 
             <button
               className="btn-primary"
-              style={{ fontSize:'14px', padding:'11px 24px', justifyContent:'center' }}
-              onClick={() => setCompared(true)}
+              disabled={loading || !careerA || !careerB}
+              style={{ fontSize:'14px', padding:'11px 24px', justifyContent:'center', cursor: loading ? 'not-allowed' : 'pointer' }}
+              onClick={handleCompare}
             >
-              Compare →
+              {loading ? 'Comparing...' : 'Compare →'}
             </button>
           </div>
         </div>
+
+        {error && (
+          <div style={{ padding: '20px', background: 'rgba(239,68,68,0.06)', border: '1px solid #ef4444', color: '#ef4444', marginBottom: '20px', textAlign: 'center' }}>
+            {error}
+          </div>
+        )}
+
+        {loading && (
+          <div className="card" style={{ padding: '48px', textAlign: 'center', opacity: 0.7 }}>
+            <p style={{ color: '#ff9e42', fontSize: '15px', fontWeight: 600 }}>Syncing and analyzing O*NET career metrics in the background...</p>
+          </div>
+        )}
 
         {/* Results */}
         {compared && careerA !== careerB && (
@@ -198,7 +253,7 @@ export default function ComparePage() {
             <div style={{ display:'grid', gridTemplateColumns:'1fr auto 1fr', gap:'16px', alignItems:'center' }}>
               {/* Career A */}
               <div className="card" style={{ padding:'24px', textAlign:'center' }}>
-                <h2 style={{ color:'#ff9e42', fontWeight:800, fontSize:'18px', marginBottom:'6px' }}>{careerA}</h2>
+                <h2 style={{ color:'#ff9e42', fontWeight:800, fontSize:'18px', marginBottom:'6px' }}>{selectedCareerAName}</h2>
                 <p style={{ color:'#aaaaaa', fontSize:'13px', marginBottom:'10px' }}>{dataA.industry}</p>
                 <p style={{ color:'#cccccc', fontWeight:800, fontSize:'22px' }}>{dataA.salary}</p>
                 <p style={{ color:'#ff9e42', fontSize:'13px', marginTop:'4px' }}>↑ {dataA.growth} growth</p>
@@ -211,7 +266,7 @@ export default function ComparePage() {
 
               {/* Career B */}
               <div className="card" style={{ padding:'24px', textAlign:'center' }}>
-                <h2 style={{ color:'#ff9757', fontWeight:800, fontSize:'18px', marginBottom:'6px' }}>{careerB}</h2>
+                <h2 style={{ color:'#ff9757', fontWeight:800, fontSize:'18px', marginBottom:'6px' }}>{selectedCareerBName}</h2>
                 <p style={{ color:'#aaaaaa', fontSize:'13px', marginBottom:'10px' }}>{dataB.industry}</p>
                 <p style={{ color:'#cccccc', fontWeight:800, fontSize:'22px' }}>{dataB.salary}</p>
                 <p style={{ color:'#ff9757', fontSize:'13px', marginTop:'4px' }}>↑ {dataB.growth} growth</p>
@@ -222,8 +277,8 @@ export default function ComparePage() {
             <div className="card" style={{ padding:'24px 28px' }}>
               <span className="section-label">SALARY COMPARISON</span>
               <div style={{ display:'flex', flexDirection:'column', gap:'14px' }}>
-                <SalaryBar label={careerA} min={dataA.salaryMin} max={dataA.salaryMax} maxAll={maxSalary} />
-                <SalaryBar label={careerB} min={dataB.salaryMin} max={dataB.salaryMax} maxAll={maxSalary} />
+                <SalaryBar label={selectedCareerAName} min={dataA.salaryMin} max={dataA.salaryMax} maxAll={maxSalary} />
+                <SalaryBar label={selectedCareerBName} min={dataB.salaryMin} max={dataB.salaryMax} maxAll={maxSalary} />
               </div>
               <p style={{ color:'#555', fontSize:'11px', marginTop:'10px' }}>Values in LPA (Lakhs Per Annum)</p>
             </div>
@@ -234,8 +289,8 @@ export default function ComparePage() {
               <div style={{ display:'flex', flexDirection:'column', gap:'0' }}>
                 <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', borderBottom:'1px solid #1f1f1f', paddingBottom:'10px', marginBottom:'4px' }}>
                   <span style={{ color:'#aaaaaa', fontSize:'12px', textTransform:'uppercase', letterSpacing:'0.08em' }}>Metric</span>
-                  <span style={{ color:'#ff9e42', fontSize:'12px', textTransform:'uppercase', letterSpacing:'0.08em' }}>{careerA}</span>
-                  <span style={{ color:'#ff9757', fontSize:'12px', textTransform:'uppercase', letterSpacing:'0.08em' }}>{careerB}</span>
+                  <span style={{ color:'#ff9e42', fontSize:'12px', textTransform:'uppercase', letterSpacing:'0.08em' }}>{selectedCareerAName}</span>
+                  <span style={{ color:'#ff9757', fontSize:'12px', textTransform:'uppercase', letterSpacing:'0.08em' }}>{selectedCareerBName}</span>
                 </div>
                 {rows.map((row) => (
                   <div key={row.label} style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', padding:'12px 0', borderBottom:'1px solid #111' }}>
@@ -264,7 +319,7 @@ export default function ComparePage() {
               {/* Unique A */}
               <div className="card" style={{ padding:'20px 22px' }}>
                 <p style={{ color:'#ff9e42', fontSize:'11px', fontWeight:700, letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:'12px' }}>
-                  Only in {careerA} ({uniqueA.length})
+                  Only in {selectedCareerAName} ({uniqueA.length})
                 </p>
                 <div style={{ display:'flex', flexWrap:'wrap', gap:'6px' }}>
                   {uniqueA.map((s) => (
@@ -276,7 +331,7 @@ export default function ComparePage() {
               {/* Unique B */}
               <div className="card" style={{ padding:'20px 22px' }}>
                 <p style={{ color:'#ff9757', fontSize:'11px', fontWeight:700, letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:'12px' }}>
-                  Only in {careerB} ({uniqueB.length})
+                  Only in {selectedCareerBName} ({uniqueB.length})
                 </p>
                 <div style={{ display:'flex', flexWrap:'wrap', gap:'6px' }}>
                   {uniqueB.map((s) => (
