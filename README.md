@@ -1,4 +1,4 @@
-﻿# 🧠 Mastermind — Career Pathway Guidance System
+# 🧠 Mastermind — Career Pathway Guidance System
 
 > A modern, full-stack web application that guides students through career pathways using **skill mapping**, **AI-powered advising**, **course recommendations**, and **interactive learning roadmaps**.
 
@@ -45,11 +45,10 @@ This is a **monorepo** with separate `frontend` and `backend` applications under
 ```
 Team8/
 ├── .gitignore                          # Root monorepo ignore rules
+├── .gitattributes                      # Line ending rules (LF)
 ├── README.md                           # This file
 │
 └── apps/
-    ├── .env.local.example              # Shared env template
-    │
     ├── backend/                        # Node.js + Express API Server
     │   ├── server.js                   # Entry point (ESM)
     │   ├── .env                        # Backend secrets (NOT committed)
@@ -307,11 +306,8 @@ npm run lint      # Run ESLint
 
 ### Port already in use
 ```bash
-# Find and kill the process using port 3001 (backend)
-npx kill-port 3001
-
-# Find and kill the process using port 3000 (frontend)
-npx kill-port 3000
+npx kill-port 3001   # Backend
+npx kill-port 3000   # Frontend
 ```
 
 ### MongoDB connection error

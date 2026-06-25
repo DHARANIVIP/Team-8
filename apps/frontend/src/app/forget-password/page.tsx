@@ -32,137 +32,153 @@ export default function ForgetPasswordPage() {
   };
 
   return (
-    <div className="auth-bg" style={{ position: 'relative', minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+    <div className="auth-bg" style={{ position: 'relative', overflow: 'hidden' }}>
+      {/* Background ambient glowing spheres */}
+      <div style={{
+        position: 'absolute',
+        width: '350px',
+        height: '350px',
+        background: 'radial-gradient(circle, rgba(255, 158, 66, 0.08) 0%, rgba(255, 158, 66, 0) 70%)',
+        top: '15%',
+        left: '15%',
+        borderRadius: '50%',
+        filter: 'blur(50px)',
+        zIndex: 0,
+        pointerEvents: 'none'
+      }} />
+      <div style={{
+        position: 'absolute',
+        width: '400px',
+        height: '400px',
+        background: 'radial-gradient(circle, rgba(255, 158, 66, 0.06) 0%, rgba(255, 158, 66, 0) 70%)',
+        bottom: '15%',
+        right: '10%',
+        borderRadius: '50%',
+        filter: 'blur(60px)',
+        zIndex: 0,
+        pointerEvents: 'none'
+      }} />
 
-      <div className="auth-card animate-fade-in" style={{
-        zIndex: 1,
-        border: '1px solid #ff9e42',
-        boxShadow: '0 0 25px rgba(255,158,66,0.15)',
-        width: '440px',
-        padding: '40px',
-        background: 'rgba(13,13,13,0.92)'
-      }}>
-        <h1 style={{
-          color: '#ffffff',
-          fontSize: '28px',
-          fontWeight: 'bold',
-          marginBottom: '10px',
-          textAlign: 'center',
-          letterSpacing: '0.5px'
-        }}>
-          Reset password
-        </h1>
-
-        <p style={{
-          color: '#888888',
-          fontSize: '13px',
-          textAlign: 'center',
-          lineHeight: '1.5',
-          marginBottom: '26px'
-        }}>
-          Enter your email address and we&apos;ll send you a link to reset your password.
-        </p>
-
-        {error && (
-          <div style={{
-            background: 'rgba(239,68,68,0.1)',
-            border: '1px solid #ef4444',
-            color: '#ef4444',
-            padding: '10px',
-            fontSize: '12px',
-            marginBottom: '16px',
+      <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+        <div className="auth-card animate-fade-in">
+          <h1 style={{
+            color: '#ffffff',
+            fontSize: '28px',
+            fontWeight: 800,
+            marginBottom: '10px',
             textAlign: 'center',
+            letterSpacing: '0.5px',
+            textShadow: '0 0 8px rgba(255, 158, 66, 0.25)'
           }}>
-            {error}
-          </div>
-        )}
+            Reset password
+          </h1>
 
-        {message && (
-          <div style={{
-            background: 'rgba(255,158,66,0.1)',
-            border: '1px solid #ff9e42',
-            color: '#ff9e42',
-            padding: '12px',
+          <p style={{
+            color: 'var(--text-secondary)',
             fontSize: '13px',
-            marginBottom: '16px',
             textAlign: 'center',
-            lineHeight: 1.5
+            lineHeight: '1.5',
+            marginBottom: '26px'
           }}>
-            <p style={{ margin: '0 0 8px 0' }}>{message}</p>
-            {resetToken && (
-              <div>
-                <p style={{ color: '#888', fontSize: '11px', margin: '4px 0' }}>Development Mode Reset Link:</p>
-                <Link
-                  href={`/reset-password?token=${resetToken}`}
-                  style={{
-                    color: '#ff9e42',
-                    textDecoration: 'underline',
-                    fontWeight: 'bold',
-                    fontSize: '12px',
-                    wordBreak: 'break-all'
-                  }}
-                >
-                  Click here to Reset Password
-                </Link>
-              </div>
-            )}
-          </div>
-        )}
+            Enter your email address and we&apos;ll send you a link to reset your password.
+          </p>
 
-        <form onSubmit={handleSubmit}>
-          {/* Email */}
-          <div style={{ marginBottom: '22px' }}>
-            <div className="input-wrapper">
-              <span className="input-icon">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ff9e42" strokeWidth="2">
-                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-                  <polyline points="22,6 12,13 2,6" />
-                </svg>
-              </span>
-              <input
-                className="input-field"
-                type="email"
-                placeholder="Email address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                style={{
-                  borderColor: '#ff9e42',
-                  background: '#090909',
-                  paddingLeft: '40px',
-                  color: '#ffffff'
-                }}
-              />
-            </div>
-          </div>
-
-          {/* Submit */}
-          <button
-            className="btn-primary"
-            type="submit"
-            disabled={loading}
-            style={{
-              width: '100%',
-              justifyContent: 'center',
-              fontSize: '14px',
+          {error && (
+            <div style={{
+              background: 'rgba(239, 68, 68, 0.08)',
+              border: '1px solid rgba(239, 68, 68, 0.3)',
+              borderRadius: '6px',
+              color: '#ef4444',
               padding: '12px',
-              background: '#ff9e42',
-              color: '#0d0d0d',
-              border: 'none',
-              fontWeight: 700,
-              cursor: loading ? 'not-allowed' : 'pointer',
-              boxShadow: '0 0 10px rgba(255,158,66,0.3)',
-              marginBottom: '20px'
-            }}
-          >
-            {loading ? 'Sending link...' : 'Send reset link'}
-          </button>
-        </form>
+              fontSize: '13px',
+              marginBottom: '16px',
+              textAlign: 'center',
+            }}>
+              {error}
+            </div>
+          )}
 
-        <div style={{ textAlign: 'center' }}>
-          <Link href="/login" style={{ color: '#ff9e42', fontSize: '13px', textDecoration: 'none', fontWeight: 600 }}>
-            Back to sign in
-          </Link>
+          {message && (
+            <div style={{
+              background: 'rgba(255, 158, 66, 0.08)',
+              border: '1px solid rgba(255, 158, 66, 0.3)',
+              borderRadius: '6px',
+              color: 'var(--accent)',
+              padding: '12px',
+              fontSize: '13px',
+              marginBottom: '16px',
+              textAlign: 'center',
+              lineHeight: 1.5
+            }}>
+              <p style={{ margin: '0 0 8px 0' }}>{message}</p>
+              {resetToken && (
+                <div style={{ borderTop: '1px solid rgba(255, 158, 66, 0.15)', paddingTop: '8px', marginTop: '8px' }}>
+                  <p style={{ color: 'var(--text-muted)', fontSize: '11px', margin: '4px 0' }}>Development Mode Reset Link:</p>
+                  <Link
+                    href={`/reset-password?token=${resetToken}`}
+                    style={{
+                      color: 'var(--accent)',
+                      textDecoration: 'underline',
+                      fontWeight: 'bold',
+                      fontSize: '12px',
+                      wordBreak: 'break-all'
+                    }}
+                  >
+                    Click here to Reset Password
+                  </Link>
+                </div>
+              )}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit}>
+            {/* Email */}
+            <div style={{ marginBottom: '22px' }}>
+              <div className="input-wrapper">
+                <span className="input-icon">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                    <polyline points="22,6 12,13 2,6" />
+                  </svg>
+                </span>
+                <input
+                  className="input-field"
+                  type="email"
+                  placeholder="Email address"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  style={{
+                    paddingLeft: '40px'
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Submit */}
+            <button
+              className="btn-primary"
+              type="submit"
+              disabled={loading}
+              style={{
+                width: '100%',
+                justifyContent: 'center',
+                fontSize: '14px',
+                padding: '12px',
+                border: 'none',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                marginBottom: '20px'
+              }}
+            >
+              {loading ? 'Sending link...' : 'Send reset link'}
+            </button>
+          </form>
+
+          <div style={{ textAlign: 'center' }}>
+            <Link href="/login" style={{ color: 'var(--accent)', fontSize: '13px', textDecoration: 'none', fontWeight: 600 }}>
+              Back to sign in
+            </Link>
+          </div>
         </div>
       </div>
     </div>
