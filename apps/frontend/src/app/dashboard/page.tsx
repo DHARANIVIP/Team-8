@@ -240,12 +240,13 @@ export default function DashboardPage() {
             {/* ── Quick Actions ── */}
             <section className="card" style={{ padding: '24px 28px' }}>
               <span className="section-label">QUICK ACTIONS</span>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '12px' }}>
                 {[
                   { icon: '◈', title: 'Career Categories', sub: 'Browse all career paths',   link: '/dashboard/categories' },
                   { icon: '◉', title: 'Skill Map',          sub: 'Find your skill gaps',      link: '/dashboard/skills' },
                   { icon: '◎', title: 'Courses',            sub: 'Recommended learning',      link: '/dashboard/courses' },
                   { icon: '⊞', title: 'Compare Careers',   sub: 'Side-by-side metrics',      link: '/dashboard/compare' },
+                  { icon: '🗺', title: 'Learning Roadmaps',  sub: 'Step-by-step developer guides', link: '/dashboard/roadmaps' },
                 ].map((a) => (
                   <Link key={a.title} href={a.link} style={{ textDecoration: 'none' }}>
                     <div className="card card-hover" style={{ padding: '18px 16px', display: 'flex', flexDirection: 'column', gap: '8px', cursor: 'pointer', height: '100%' }}>
