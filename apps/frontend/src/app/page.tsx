@@ -6,24 +6,30 @@ import Link from 'next/link';
 function Navbar() {
   return (
     <nav style={{
-      borderBottom: '1px solid #1f1f1f',
-      padding: '0 40px',
-      height: '52px',
+      borderBottom: '1px solid rgba(255, 158, 66, 0.15)',
+      padding: '0 24px',
+      height: '56px',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
-      background: '#0d0d0d',
+      background: 'rgba(10, 10, 10, 0.8)',
+      backdropFilter: 'blur(12px)',
+      position: 'sticky',
+      top: 0,
+      zIndex: 100,
     }}>
-      <span style={{ color: '#cccccc', fontWeight: 700, fontSize: '16px', letterSpacing: '-0.02em' }}>
-        Mastermind
-      </span>
-      <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-        <Link href="/login" className="btn-ghost" style={{ fontSize: '13px', padding: '6px 16px' }}>
-          Sign In
-        </Link>
-        <Link href="/signup" className="btn-primary" style={{ fontSize: '13px', padding: '7px 18px' }}>
-          Get Started →
-        </Link>
+      <div style={{ maxWidth: '1100px', width: '100%', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '18px', letterSpacing: '-0.03em', fontFamily: 'Outfit, sans-serif' }}>
+          Mastermind
+        </span>
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          <Link href="/login" className="btn-ghost" style={{ fontSize: '13px', padding: '6px 16px' }}>
+            Sign In
+          </Link>
+          <Link href="/signup" className="btn-primary" style={{ fontSize: '13px', padding: '7px 18px' }}>
+            Get Started →
+          </Link>
+        </div>
       </div>
     </nav>
   );
@@ -32,21 +38,52 @@ function Navbar() {
 // ── HeroSection ──────────────────────────────────────────────────────────────
 function HeroSection() {
   return (
-    <section className="card" style={{ margin: '20px 40px', padding: '40px 48px' }}>
-      <span className="section-label">CAREER GUIDANCE PORTAL</span>
-      <h1 style={{ fontSize: '42px', fontWeight: 800, lineHeight: 1.15, marginBottom: '18px', color: '#cccccc' }}>
-        Explore Careers,<br />Build Your Future.
-      </h1>
-      <p style={{ fontSize: '15px', color: '#aaaaaa', maxWidth: '520px', marginBottom: '30px', lineHeight: 1.7 }}>
-        One platform for career roadmaps, skill gap analysis, course recommendations, and side-by-side career comparison. Designed for students who want clarity after graduation.
-      </p>
-      <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-        <Link href="/signup" className="btn-primary" style={{ fontSize: '14px' }}>
-          Get Started →
-        </Link>
-        <Link href="/login" className="btn-outline" style={{ fontSize: '14px' }}>
-          Sign In
-        </Link>
+    <section className="card animate-fade-in" style={{ padding: '48px 40px', position: 'relative', overflow: 'hidden' }}>
+      <div style={{ position: 'absolute', top: '-100px', right: '-100px', width: '400px', height: '400px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(255, 158, 66, 0.08) 0%, transparent 70%)', pointerEvents: 'none' }} />
+      
+      <div style={{
+        display: 'flex',
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: '40px',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        position: 'relative',
+        zIndex: 1
+      }}>
+        {/* Left Column: Text Content */}
+        <div style={{ flex: '1 1 500px', minWidth: '300px' }}>
+          <span className="section-label">CAREER GUIDANCE PORTAL</span>
+          <h1 style={{ fontSize: '46px', fontWeight: 800, lineHeight: 1.1, marginBottom: '20px', color: '#ffffff', fontFamily: 'Outfit, sans-serif' }}>
+            Explore Careers,<br />Build Your Future.
+          </h1>
+          <p style={{ fontSize: '15px', color: 'var(--text-secondary)', maxWidth: '560px', marginBottom: '32px', lineHeight: 1.7 }}>
+            One platform for career roadmaps, skill gap analysis, course recommendations, and side-by-side career comparison. Designed for students who want clarity after graduation.
+          </p>
+          <div style={{ display: 'flex', gap: '14px', alignItems: 'center' }}>
+            <Link href="/signup" className="btn-primary" style={{ fontSize: '14px' }}>
+              Get Started →
+            </Link>
+            <Link href="/login" className="btn-outline" style={{ fontSize: '14px' }}>
+              Sign In
+            </Link>
+          </div>
+        </div>
+
+        {/* Right Column: Illustration Image */}
+        <div style={{ flex: '1 1 400px', minWidth: '300px', display: 'flex', justifyContent: 'center' }}>
+          <img
+            src="/landingpage copy.png"
+            alt="Career Guidance Portal Illustration"
+            style={{
+              width: '100%',
+              maxWidth: '480px',
+              height: 'auto',
+              border: '1px solid rgba(255, 158, 66, 0.15)',
+              boxShadow: '0 0 24px rgba(255, 158, 66, 0.1)'
+            }}
+          />
+        </div>
       </div>
     </section>
   );
@@ -62,15 +99,15 @@ const features = [
 
 function FeaturePreview() {
   return (
-    <section className="card" style={{ margin: '0 40px', padding: '32px 48px' }}>
+    <section className="card" style={{ padding: '36px 40px' }}>
       <span className="section-label">WHAT YOU GET</span>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
         {features.map((f) => (
-          <div key={f.title} style={{ display: 'flex', alignItems: 'flex-start', gap: '14px' }}>
-            <span style={{ color: '#ff9e42', fontSize: '18px', marginTop: '1px' }}>{f.icon}</span>
+          <div key={f.title} style={{ display: 'flex', alignItems: 'flex-start', gap: '16px' }}>
+            <span style={{ color: 'var(--accent)', fontSize: '20px', marginTop: '1px', textShadow: '0 0 10px var(--accent-glow)' }}>{f.icon}</span>
             <div>
-              <p style={{ color: '#cccccc', fontWeight: 600, fontSize: '14px', marginBottom: '2px' }}>{f.title}</p>
-              <p style={{ color: '#aaaaaa', fontSize: '13px', lineHeight: 1.6 }}>{f.desc}</p>
+              <p style={{ color: '#ffffff', fontWeight: 600, fontSize: '15px', marginBottom: '3px', fontFamily: 'Outfit, sans-serif' }}>{f.title}</p>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '13px', lineHeight: 1.6 }}>{f.desc}</p>
             </div>
           </div>
         ))}
@@ -92,7 +129,7 @@ const stats = [
 function StatsTicker() {
   const items = [...stats, ...stats]; // duplicate for seamless loop
   return (
-    <section className="card" style={{ margin: '0 40px', overflow: 'hidden', padding: '16px 0' }}>
+    <section className="card" style={{ overflow: 'hidden', padding: '18px 0' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '0' }}>
         <span className="section-label" style={{ marginBottom: 0, marginLeft: '24px', marginRight: '24px', whiteSpace: 'nowrap' }}>
           PLATFORM STATS
@@ -100,7 +137,7 @@ function StatsTicker() {
         <div style={{ overflow: 'hidden', flex: 1 }}>
           <div className="ticker-track">
             {items.map((s, i) => (
-              <span key={i} className="ticker-item">
+              <span key={i} className="ticker-item" style={{ fontFamily: 'Inter, sans-serif' }}>
                 {s.label}: <span className="value">{s.value}</span>
               </span>
             ))}
@@ -132,13 +169,13 @@ const cards = [
 
 function FeatureCards() {
   return (
-    <section style={{ margin: '0 40px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+    <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
       {cards.map((c) => (
-        <div key={c.title} className="card card-hover" style={{ padding: '28px 24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          <span style={{ fontSize: '24px', color: '#ff9e42' }}>{c.icon}</span>
-          <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#cccccc' }}>{c.title}</h3>
-          <p style={{ fontSize: '13px', color: '#aaaaaa', lineHeight: 1.65, flex: 1 }}>{c.desc}</p>
-          <Link href={c.link} style={{ color: '#ff9e42', fontSize: '13px', fontWeight: 600 }}>
+        <div key={c.title} className="card card-hover" style={{ padding: '32px 24px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <span style={{ fontSize: '28px', color: 'var(--accent)', textShadow: '0 0 10px var(--accent-glow)' }}>{c.icon}</span>
+          <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#ffffff', fontFamily: 'Outfit, sans-serif' }}>{c.title}</h3>
+          <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.65, flex: 1 }}>{c.desc}</p>
+          <Link href={c.link} style={{ color: 'var(--accent)', fontSize: '13px', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
             {c.cta} →
           </Link>
         </div>
@@ -150,11 +187,11 @@ function FeatureCards() {
 // ── Footer ────────────────────────────────────────────────────────────────────
 function Footer() {
   return (
-    <footer className="card" style={{ margin: '0 40px 40px', padding: '20px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-      <span style={{ color: '#aaaaaa', fontSize: '13px' }}>© 2026 Mastermind — Team 8 Student Career Guidance Portal</span>
-      <div style={{ display: 'flex', gap: '20px' }}>
-        <a href="https://github.com" target="_blank" rel="noreferrer" style={{ color: '#aaaaaa', fontSize: '13px' }}>GitHub</a>
-        <Link href="/dashboard" style={{ color: '#ff9e42', fontSize: '13px' }}>Dashboard</Link>
+    <footer className="card" style={{ padding: '24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
+      <span style={{ color: 'var(--text-muted)', fontSize: '13px' }}>© 2026 Mastermind — Team 8 Student Career Guidance Portal</span>
+      <div style={{ display: 'flex', gap: '24px' }}>
+        <a href="https://github.com" target="_blank" rel="noreferrer" style={{ color: 'var(--text-muted)', fontSize: '13px' }}>GitHub</a>
+        <Link href="/dashboard" style={{ color: 'var(--accent)', fontSize: '13px', fontWeight: 600 }}>Dashboard</Link>
       </div>
     </footer>
   );
@@ -163,9 +200,9 @@ function Footer() {
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function Home() {
   return (
-    <div style={{ background: '#0d0d0d', minHeight: '100vh' }}>
+    <div style={{ background: '#0a0a0a', minHeight: '100vh' }}>
       <Navbar />
-      <main style={{ display: 'flex', flexDirection: 'column', gap: '16px', paddingTop: '20px' }}>
+      <main className="page-container animate-slide-up" style={{ display: 'flex', flexDirection: 'column', gap: '20px', paddingTop: '24px', paddingBottom: '40px' }}>
         <HeroSection />
         <FeaturePreview />
         <StatsTicker />

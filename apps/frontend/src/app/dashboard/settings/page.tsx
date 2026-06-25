@@ -11,14 +11,11 @@ import { getCategories } from '@/lib/services/career-service';
 /* ─── helpers ─── */
 function Section({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{
-      background: '#111111',
-      border: '1px solid #1f1f1f',
-      borderRadius: '10px',
-      padding: '28px 32px',
+    <div className="card" style={{
       display: 'flex',
       flexDirection: 'column',
-      gap: '18px',
+      gap: '20px',
+      padding: '28px 32px'
     }}>
       {children}
     </div>
@@ -27,9 +24,9 @@ function Section({ children }: { children: React.ReactNode }) {
 
 function SectionTitle({ icon, children }: { icon: React.ReactNode; children: React.ReactNode }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', paddingBottom: '8px', borderBottom: '1px solid #1a1a1a' }}>
-      <span style={{ color: '#ff9e42', fontSize: '20px' }}>{icon}</span>
-      <h2 style={{ color: '#cccccc', fontWeight: 800, fontSize: '20px', margin: 0 }}>{children}</h2>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', paddingBottom: '12px', borderBottom: '1px solid var(--border-dark)' }}>
+      <span style={{ color: 'var(--accent)', fontSize: '20px', display: 'inline-flex' }}>{icon}</span>
+      <h2 style={{ color: '#ffffff', fontWeight: 700, fontSize: '18px', margin: 0, fontFamily: 'Outfit, sans-serif' }}>{children}</h2>
     </div>
   );
 }
@@ -39,27 +36,18 @@ function FieldInput({
 }: { label?: string; placeholder: string; value?: string; type?: string; readOnly?: boolean; onChange?: (val: string) => void }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', flex: 1 }}>
-      {label && <label style={{ color: '#aaaaaa', fontSize: '12px', fontWeight: 500 }}>{label}</label>}
+      {label && <label style={{ color: 'var(--text-secondary)', fontSize: '12px', fontWeight: 600 }}>{label}</label>}
       <input
         type={type}
         value={value ?? ''}
         readOnly={readOnly}
         onChange={(e) => onChange && onChange(e.target.value)}
         placeholder={placeholder}
+        className="input-field"
         style={{
-          background: '#0d0d0d',
-          border: '1px solid #2a2a2a',
-          borderRadius: '6px',
-          padding: '9px 14px',
-          color: readOnly ? '#666' : '#cccccc',
-          fontSize: '14px',
-          outline: 'none',
-          width: '100%',
-          transition: 'border-color 0.2s',
+          color: readOnly ? 'var(--text-muted)' : 'var(--text-primary)',
           cursor: readOnly ? 'default' : 'text',
         }}
-        onFocus={(e) => !readOnly && (e.target.style.borderColor = '#ff9e42')}
-        onBlur={(e) => (e.target.style.borderColor = '#2a2a2a')}
       />
     </div>
   );
@@ -67,27 +55,27 @@ function FieldInput({
 
 function CheckRow({ label, checked, onChange }: { label: string; checked?: boolean; onChange?: (checked: boolean) => void }) {
   return (
-    <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
+    <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', userSelect: 'none' }}>
       <span
         onClick={() => onChange && onChange(!checked)}
         style={{
-          width: '16px', height: '16px', borderRadius: '4px', flexShrink: 0,
-          border: `1px solid ${checked ? '#ff9e42' : '#2a2a2a'}`,
-          background: checked ? '#ff9e42' : 'transparent',
+          width: '18px', height: '18px', borderRadius: '4px', flexShrink: 0,
+          border: `1px solid ${checked ? 'var(--accent)' : 'var(--border-dark)'}`,
+          background: checked ? 'var(--accent)' : 'transparent',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          cursor: 'pointer', transition: 'all 0.15s',
+          cursor: 'pointer', transition: 'all 0.2s',
         }}
       >
-        {checked && <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><polyline points="1.5 6 4.5 9 10.5 3" stroke="#0d0d0d" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+        {checked && <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><polyline points="1.5 6 4.5 9 10.5 3" stroke="#0a0a0a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
       </span>
-      <span style={{ color: '#bbbbbb', fontSize: '13px' }}>{label}</span>
+      <span style={{ color: 'var(--text-secondary)', fontSize: '13px', fontWeight: 500 }}>{label}</span>
     </label>
   );
 }
 
 /* ════════════════════════════════════
    PAGE
-════════════════════════════════════ */
+   ════════════════════════════════════ */
 export default function SettingsPage() {
   const router = useRouter();
 
@@ -249,47 +237,35 @@ export default function SettingsPage() {
   }
 
   function handleAccountDelete() {
-    // Client-side simulation of account deletion
     signout();
     router.push('/login?message=Account deleted successfully');
   }
 
   return (
-    <div style={{ background: '#0d0d0d', minHeight: '100vh' }}>
+    <div style={{ background: '#0a0a0a', minHeight: '100vh' }}>
       <DashboardNavbar />
 
-      <main style={{ maxWidth: '780px', margin: '0 auto', padding: '28px 40px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      <main className="page-container animate-slide-up" style={{ maxWidth: '780px', padding: '24px 0', display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
         {/* ── Page header ── */}
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          paddingBottom: '16px', borderBottom: '1px solid #1f1f1f', marginBottom: '24px'
+          paddingBottom: '20px', borderBottom: '1px solid rgba(255, 158, 66, 0.15)', marginBottom: '24px'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
-            <Link href="/dashboard" style={{
-              display: 'inline-flex', alignItems: 'center', gap: '8px',
-              color: '#cccccc', fontSize: '13px', fontWeight: 600, textDecoration: 'none',
-              border: '1px solid #ff9e42', borderRadius: '4px', padding: '8px 16px',
-              background: 'transparent', transition: 'all 0.18s',
-            }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,158,66,0.1)'; }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
-            >
-              ← Back to Dashboard
-            </Link>
-            <h1 style={{ color: '#ffffff', fontWeight: 700, fontSize: '24px', margin: 0, letterSpacing: '0.5px' }}>Settings</h1>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <h1 style={{ color: '#ffffff', fontWeight: 700, fontSize: '24px', margin: 0, letterSpacing: '0.5px', fontFamily: 'Outfit, sans-serif' }}>Settings</h1>
           </div>
         </div>
 
         {globalError && (
-          <div style={{ padding: '16px', background: 'rgba(239,68,68,0.06)', border: '1px solid #ef4444', color: '#ef4444', fontSize: '14px', borderRadius: '6px', textAlign: 'center' }}>
+          <div style={{ padding: '16px', background: 'rgba(239,68,68,0.06)', border: '1px solid #ef4444', color: '#ef4444', fontSize: '14px', borderRadius: '6px', textAlign: 'center', fontFamily: 'Outfit, sans-serif' }}>
             {globalError}
           </div>
         )}
 
         {loading ? (
-          <div className="card" style={{ padding: '48px', textAlign: 'center', opacity: 0.7 }}>
-            <p style={{ color: '#ff9e42', fontSize: '15px', fontWeight: 600 }}>Loading settings profile...</p>
+          <div className="card" style={{ padding: '48px', textAlign: 'center', opacity: 0.8 }}>
+            <p style={{ color: 'var(--accent)', fontSize: '15px', fontWeight: 600, fontFamily: 'Outfit, sans-serif' }}>Loading settings profile...</p>
           </div>
         ) : (
           <>
@@ -301,39 +277,31 @@ export default function SettingsPage() {
                 </svg>
               }>Profile Settings</SectionTitle>
 
-              <div style={{ display: 'flex', gap: '14px' }}>
+              <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
                 <FieldInput label="Display name" placeholder="Your name" value={displayName} onChange={setDisplayName} />
                 <FieldInput label="Avatar URL" placeholder="https://…" value={avatarUrl} onChange={setAvatarUrl} />
               </div>
 
               <div>
-                <label style={{ color: '#aaaaaa', fontSize: '12px', fontWeight: 500, display: 'block', marginBottom: '6px' }}>
-                  Skills <span style={{ color: '#555' }}>(comma separated)</span>
+                <label style={{ color: 'var(--text-secondary)', fontSize: '12px', fontWeight: 600, display: 'block', marginBottom: '6px' }}>
+                  Skills <span style={{ color: 'var(--text-muted)', fontWeight: 500 }}>(comma separated)</span>
                 </label>
                 <input
                   value={skills}
                   onChange={(e) => setSkills(e.target.value)}
                   placeholder="e.g. Python, Machine Learning, SQL"
-                  style={{
-                    width: '100%', background: '#0d0d0d', border: '1px solid #2a2a2a',
-                    borderRadius: '6px', padding: '9px 14px', color: '#cccccc', fontSize: '14px', outline: 'none',
-                    transition: 'border-color 0.2s',
-                  }}
-                  onFocus={(e) => (e.target.style.borderColor = '#ff9e42')}
-                  onBlur={(e) => (e.target.style.borderColor = '#2a2a2a')}
+                  className="input-field"
                 />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '14px' }}>
                 <div>
-                  <label style={{ color: '#aaaaaa', fontSize: '12px', fontWeight: 500, display: 'block', marginBottom: '6px' }}>Target Career</label>
+                  <label style={{ color: 'var(--text-secondary)', fontSize: '12px', fontWeight: 600, display: 'block', marginBottom: '6px' }}>Target Career</label>
                   <select
                     value={targetCareer}
                     onChange={(e) => setTargetCareer(e.target.value)}
-                    style={{
-                      width: '100%', background: '#0d0d0d', border: '1px solid #2a2a2a',
-                      borderRadius: '6px', padding: '9px 14px', color: '#cccccc', fontSize: '14px', outline: 'none', cursor: 'pointer',
-                    }}
+                    className="input-field"
+                    style={{ cursor: 'pointer' }}
                   >
                     {categories.length > 0 ? (
                       categories.map((c) => (
@@ -348,14 +316,12 @@ export default function SettingsPage() {
                 </div>
 
                 <div>
-                  <label style={{ color: '#aaaaaa', fontSize: '12px', fontWeight: 500, display: 'block', marginBottom: '6px' }}>Experience Level</label>
+                  <label style={{ color: 'var(--text-secondary)', fontSize: '12px', fontWeight: 600, display: 'block', marginBottom: '6px' }}>Experience Level</label>
                   <select
                     value={experienceLevel}
                     onChange={(e) => setExperienceLevel(e.target.value)}
-                    style={{
-                      width: '100%', background: '#0d0d0d', border: '1px solid #2a2a2a',
-                      borderRadius: '6px', padding: '9px 14px', color: '#cccccc', fontSize: '14px', outline: 'none', cursor: 'pointer',
-                    }}
+                    className="input-field"
+                    style={{ cursor: 'pointer' }}
                   >
                     {['Student', 'Fresher (0–1y)', 'Junior (1–3y)', 'Mid-level (3–5y)', 'Senior (5y+)'].map((c) => (
                       <option key={c} value={c}>{c}</option>
@@ -365,14 +331,12 @@ export default function SettingsPage() {
               </div>
 
               <div>
-                <label style={{ color: '#aaaaaa', fontSize: '12px', fontWeight: 500, display: 'block', marginBottom: '6px' }}>Salary Goal</label>
+                <label style={{ color: 'var(--text-secondary)', fontSize: '12px', fontWeight: 600, display: 'block', marginBottom: '6px' }}>Salary Goal</label>
                 <select
                   value={salaryGoal}
                   onChange={(e) => setSalaryGoal(e.target.value)}
-                  style={{
-                    width: '100%', background: '#0d0d0d', border: '1px solid #2a2a2a',
-                    borderRadius: '6px', padding: '9px 14px', color: '#cccccc', fontSize: '14px', outline: 'none', cursor: 'pointer',
-                  }}
+                  className="input-field"
+                  style={{ cursor: 'pointer' }}
                 >
                   {['₹5L–₹10L', '₹10L–₹15L', '₹15L+', '₹25L+', '₹40L+'].map((c) => (
                     <option key={c} value={c}>{c}</option>
@@ -383,14 +347,10 @@ export default function SettingsPage() {
               <div>
                 <button
                   onClick={saveProfileData}
-                  style={{
-                    background: '#ff9e42', color: '#0d0d0d', border: 'none', borderRadius: '6px',
-                    padding: '9px 22px', fontWeight: 700, fontSize: '13px', cursor: 'pointer', transition: 'background 0.18s',
-                  }}
-                  onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = '#ff9757')}
-                  onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = '#ff9e42')}
+                  className="btn-primary"
+                  style={{ fontSize: '13px' }}
                 >
-                  {profileSaved ? '✓ Profile Saved!' : 'Save profile'}
+                  {profileSaved ? '✓ Profile Saved!' : 'Save Profile'}
                 </button>
               </div>
             </Section>
@@ -403,7 +363,7 @@ export default function SettingsPage() {
                 </svg>
               }>Preferences</SectionTitle>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
                 <CheckRow label="Email alerts for job/news updates" checked={emailUpdates} onChange={setEmailUpdates} />
                 <CheckRow label="Market movement alerts" checked={marketAlerts} onChange={setMarketAlerts} />
                 <CheckRow label="Weekly summary digest" checked={weeklyDigest} onChange={setWeeklyDigest} />
@@ -413,26 +373,20 @@ export default function SettingsPage() {
               {/* Theme */}
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#aaaaaa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
                   </svg>
-                  <span style={{ color: '#aaaaaa', fontSize: '13px', fontWeight: 500 }}>Theme preference</span>
+                  <span style={{ color: 'var(--text-secondary)', fontSize: '13px', fontWeight: 600 }}>Theme preference</span>
                 </div>
                 <div style={{ display: 'flex', gap: '8px' }}>
                   {(['Dark', 'Light'] as const).map((t) => (
                     <button
                       key={t}
                       onClick={() => setTheme(t)}
+                      className={theme === t ? 'btn-primary' : 'btn-ghost'}
                       style={{
                         padding: '7px 22px',
-                        borderRadius: '6px',
-                        border: `1px solid ${theme === t ? '#ff9e42' : '#2a2a2a'}`,
-                        background: theme === t ? '#ff9e42' : 'transparent',
-                        color: theme === t ? '#0d0d0d' : '#aaaaaa',
-                        fontWeight: 700,
                         fontSize: '13px',
-                        cursor: 'pointer',
-                        transition: 'all 0.18s',
                       }}
                     >
                       {t}
@@ -444,14 +398,10 @@ export default function SettingsPage() {
               <div>
                 <button
                   onClick={savePrefData}
-                  style={{
-                    background: '#ff9e42', color: '#0d0d0d', border: 'none', borderRadius: '6px',
-                    padding: '9px 22px', fontWeight: 700, fontSize: '13px', cursor: 'pointer', transition: 'background 0.18s',
-                  }}
-                  onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = '#ff9757')}
-                  onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = '#ff9e42')}
+                  className="btn-primary"
+                  style={{ fontSize: '13px' }}
                 >
-                  {prefSaved ? '✓ Preferences Saved!' : 'Save preferences'}
+                  {prefSaved ? '✓ Preferences Saved!' : 'Save Preferences'}
                 </button>
               </div>
             </Section>
@@ -466,29 +416,22 @@ export default function SettingsPage() {
 
               {/* Change Email */}
               <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#aaaaaa" strokeWidth="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
-                  <span style={{ color: '#aaaaaa', fontSize: '12px', fontWeight: 600 }}>Change Email Address</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" strokeWidth="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                  <span style={{ color: 'var(--text-secondary)', fontSize: '12px', fontWeight: 600 }}>Change Email Address</span>
                 </div>
-                <div style={{ display: 'flex', gap: '10px' }}>
+                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                   <input
                     value={newEmail}
                     type="email"
                     onChange={(e) => setNewEmail(e.target.value)}
-                    style={{
-                      flex: 1, background: '#0d0d0d', border: '1px solid #2a2a2a',
-                      borderRadius: '6px', padding: '9px 14px', color: '#cccccc', fontSize: '14px', outline: 'none',
-                    }}
-                    onFocus={(e) => (e.target.style.borderColor = '#ff9e42')}
-                    onBlur={(e) => (e.target.style.borderColor = '#2a2a2a')}
+                    className="input-field"
+                    style={{ flex: 1, minWidth: '200px' }}
                   />
                   <button
                     onClick={handleEmailUpdate}
-                    style={{
-                      background: '#ff9e42', color: '#0d0d0d', border: 'none', borderRadius: '6px', padding: '7px 16px', fontWeight: 700, fontSize: '12px', cursor: 'pointer', transition: 'background 0.18s'
-                    }}
-                    onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = '#ff9757')}
-                    onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = '#ff9e42')}
+                    className="btn-primary"
+                    style={{ fontSize: '12px', padding: '8px 18px' }}
                   >
                     {emailUpdated ? 'Updated!' : 'Update'}
                   </button>
@@ -497,42 +440,31 @@ export default function SettingsPage() {
 
               {/* Change Password */}
               <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#aaaaaa" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                  <span style={{ color: '#aaaaaa', fontSize: '12px', fontWeight: 600 }}>Change Password</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                  <span style={{ color: 'var(--text-secondary)', fontSize: '12px', fontWeight: 600 }}>Change Password</span>
                 </div>
-                <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
                   <input
                     type="password"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     placeholder="New password"
-                    style={{
-                      flex: 1, background: '#0d0d0d', border: '1px solid #2a2a2a',
-                      borderRadius: '6px', padding: '9px 14px', color: '#cccccc', fontSize: '14px', outline: 'none',
-                    }}
-                    onFocus={(e) => (e.target.style.borderColor = '#ff9e42')}
-                    onBlur={(e) => (e.target.style.borderColor = '#2a2a2a')}
+                    className="input-field"
+                    style={{ flex: 1, minWidth: '180px' }}
                   />
                   <input
                     type="password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="Confirm new password"
-                    style={{
-                      flex: 1, background: '#0d0d0d', border: '1px solid #2a2a2a',
-                      borderRadius: '6px', padding: '9px 14px', color: '#cccccc', fontSize: '14px', outline: 'none',
-                    }}
-                    onFocus={(e) => (e.target.style.borderColor = '#ff9e42')}
-                    onBlur={(e) => (e.target.style.borderColor = '#2a2a2a')}
+                    className="input-field"
+                    style={{ flex: 1, minWidth: '180px' }}
                   />
                   <button
                     onClick={handlePasswordUpdate}
-                    style={{
-                      background: '#ff9e42', color: '#0d0d0d', border: 'none', borderRadius: '6px', padding: '7px 16px', fontWeight: 700, fontSize: '12px', cursor: 'pointer', transition: 'background 0.18s'
-                    }}
-                    onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = '#ff9757')}
-                    onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = '#ff9e42')}
+                    className="btn-primary"
+                    style={{ fontSize: '12px', padding: '8px 18px' }}
                   >
                     {passwordUpdated ? 'Updated!' : 'Update'}
                   </button>
@@ -541,30 +473,24 @@ export default function SettingsPage() {
 
               {/* Session */}
               <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px' }}>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#aaaaaa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
                   </svg>
-                  <span style={{ color: '#aaaaaa', fontSize: '12px', fontWeight: 600 }}>Session Control</span>
+                  <span style={{ color: 'var(--text-secondary)', fontSize: '12px', fontWeight: 600 }}>Session Control</span>
                 </div>
-                <div style={{ display: 'flex', gap: '10px' }}>
+                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                   <button
                     onClick={() => { signout(); router.push('/login'); }}
-                    style={{
-                      background: 'transparent', color: '#ff9e42', border: '1px solid #ff9e4255', borderRadius: '6px', padding: '7px 18px', fontWeight: 600, fontSize: '13px', cursor: 'pointer', transition: 'all 0.18s'
-                    }}
-                    onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,158,66,0.1)'; }}
-                    onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
+                    className="btn-outline"
+                    style={{ fontSize: '13px', padding: '7px 18px' }}
                   >
                     Sign out
                   </button>
                   <Link href="/dashboard/profile" style={{ textDecoration: 'none' }}>
                     <button
-                      style={{
-                        background: 'transparent', color: '#ff9e42', border: '1px solid #ff9e4255', borderRadius: '6px', padding: '7px 18px', fontWeight: 600, fontSize: '13px', cursor: 'pointer', transition: 'all 0.18s'
-                      }}
-                      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,158,66,0.1)'; }}
-                      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
+                      className="btn-outline"
+                      style={{ fontSize: '13px', padding: '7px 18px' }}
                     >
                       Open profile page
                     </button>
@@ -580,11 +506,11 @@ export default function SettingsPage() {
                 border: '1px solid rgba(239,68,68,0.18)',
                 borderRadius: '8px',
               }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '12px' }}>
-                  <span style={{ color: '#ef4444', fontSize: '14px' }}>🗑</span>
-                  <span style={{ color: '#ef4444', fontWeight: 700, fontSize: '14px' }}>Danger Zone</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                  <span style={{ color: '#ef4444', fontSize: '14px', display: 'inline-flex' }}>🗑</span>
+                  <span style={{ color: '#ef4444', fontWeight: 700, fontSize: '14px', fontFamily: 'Outfit, sans-serif' }}>Danger Zone</span>
                 </div>
-                <p style={{ color: '#666', fontSize: '12px', marginBottom: '12px', lineHeight: 1.6 }}>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '16px', lineHeight: 1.6 }}>
                   Deletes your local authentication token and signs you out of all devices. This cannot be undone.
                 </p>
                 {!showDelete ? (
@@ -599,7 +525,7 @@ export default function SettingsPage() {
                       fontWeight: 700,
                       fontSize: '13px',
                       cursor: 'pointer',
-                      transition: 'all 0.18s',
+                      transition: 'all 0.2s ease',
                     }}
                     onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = 'rgba(239,68,68,0.22)')}
                     onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = 'rgba(239,68,68,0.12)')}
@@ -607,8 +533,8 @@ export default function SettingsPage() {
                     Delete account
                   </button>
                 ) : (
-                  <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                    <span style={{ color: '#ef4444', fontSize: '13px' }}>Are you sure?</span>
+                  <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+                    <span style={{ color: '#ef4444', fontSize: '13px', fontWeight: 600 }}>Are you sure?</span>
                     <button
                       onClick={handleAccountDelete}
                       style={{
@@ -620,9 +546,9 @@ export default function SettingsPage() {
                     </button>
                     <button
                       onClick={() => setShowDelete(false)}
+                      className="btn-ghost"
                       style={{
-                        background: 'transparent', color: '#aaaaaa', border: '1px solid #2a2a2a', borderRadius: '6px',
-                        padding: '7px 18px', fontWeight: 600, fontSize: '13px', cursor: 'pointer',
+                        padding: '7px 18px', fontSize: '13px',
                       }}
                     >
                       Cancel
