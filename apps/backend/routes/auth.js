@@ -5,6 +5,7 @@ import passport from 'passport';
 import User from '../models/User.js';
 import { protect } from '../middleware/auth.js';
 import '../config/passport.js';
+import { sendPasswordResetEmail } from '../services/emailService.js';
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'mastermind_super_secret_jwt_key';
@@ -171,10 +172,23 @@ router.post('/forget-password', async (req, res) => {
     user.resetPasswordExpires = Date.now() + 3600000; // 1 hour expiry
     await user.save();
 
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+
+    // Check if email credentials are configured
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+      console.warn('⚠️  EMAIL_USER or EMAIL_PASS not set in .env — falling back to dev mode (token in response)');
+      return res.json({
+        message: 'Password reset token generated successfully',
+        resetToken, // dev-only fallback
+        resetUrl: `${frontendUrl}/reset-password?token=${resetToken}`
+      });
+    }
+
+    // Send real email
+    await sendPasswordResetEmail(email, resetToken, frontendUrl);
+
     res.json({
-      message: 'Password reset token generated successfully',
-      resetToken,
-      resetUrl: `http://localhost:3001/api/auth/reset-password?token=${resetToken}`
+      message: 'Password reset link sent to your email!'
     });
   } catch (error) {
     console.error('Forget password error:', error);

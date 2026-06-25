@@ -105,19 +105,41 @@ export default function SignupPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [toastVisible, setToastVisible] = useState(false);
+  const [toastMsg, setToastMsg] = useState({ title: '', subtitle: '' });
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
+  const triggerToast = (title: string, subtitle: string, redirectTo: string | null = null) => {
+    setToastMsg({ title, subtitle });
+    setShowToast(true);
+    setTimeout(() => setToastVisible(true), 10);
+    setTimeout(() => {
+      setToastVisible(false);
+      setTimeout(() => {
+        setShowToast(false);
+        if (redirectTo) router.push(redirectTo);
+      }, 300);
+    }, 2800);
+  };
+
+  const dismissToast = () => {
+    setToastVisible(false);
+    setTimeout(() => setShowToast(false), 300);
+  };
+
   const handleGoogleLogin = () => {
-    window.location.href = `${API_URL}/api/auth/google`;
+    triggerToast('Redirecting to Google', 'Connecting with your Google account...');
+    setTimeout(() => { window.location.href = `${API_URL}/api/auth/google`; }, 800);
   };
 
   const handleGithubLogin = () => {
-    window.location.href = `${API_URL}/api/auth/github`;
+    triggerToast('Redirecting to GitHub', 'Connecting with your GitHub account...');
+    setTimeout(() => { window.location.href = `${API_URL}/api/auth/github`; }, 800);
   };
 
   const strength = getStrength(password);
-  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -132,7 +154,7 @@ export default function SignupPage() {
 
     try {
       await signup(name, email, password);
-      router.push('/login?signupSuccess=true');
+      triggerToast('Account created!', 'Redirecting you to sign in...', '/login?signupSuccess=true');
     } catch (err: any) {
       setError(err.message || 'Registration failed. Please try again.');
     } finally {
@@ -142,6 +164,62 @@ export default function SignupPage() {
 
   return (
     <div className="auth-bg auth-container-seoul" style={{ position: 'relative', overflow: 'hidden' }}>
+      {/* Toast Notification */}
+      {showToast && (
+        <div style={{
+          position: 'fixed',
+          bottom: '32px',
+          right: '32px',
+          zIndex: 9999,
+          transition: 'all 0.35s cubic-bezier(0.16, 1, 0.3, 1)',
+          opacity: toastVisible ? 1 : 0,
+          transform: toastVisible ? 'translateY(0) scale(1)' : 'translateY(16px) scale(0.97)',
+          pointerEvents: toastVisible ? 'auto' : 'none',
+        }}>
+          <div style={{
+            background: '#fefce8',
+            border: '2px solid var(--accent)',
+            borderRadius: '8px',
+            padding: '16px 20px',
+            minWidth: '300px',
+            maxWidth: '380px',
+            boxShadow: '0 8px 32px rgba(255, 158, 66, 0.25), 0 4px 12px rgba(0,0,0,0.3)',
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: '12px',
+          }}>
+            <div style={{ flex: 1 }}>
+              <p style={{ color: '#1a1a1a', fontWeight: 700, fontSize: '15px', marginBottom: '4px', fontFamily: 'Seoul Namsan, Seoul Hangang, Seoul, sans-serif' }}>
+                {toastMsg.title}
+              </p>
+              <p style={{ color: '#4a4a4a', fontSize: '13px', fontFamily: 'Seoul Namsan, Seoul Hangang, Seoul, sans-serif' }}>
+                {toastMsg.subtitle}
+              </p>
+            </div>
+            <button
+              onClick={dismissToast}
+              style={{
+                background: 'transparent',
+                border: '1px solid #d4d4d4',
+                color: '#666',
+                width: '24px',
+                height: '24px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                fontSize: '13px',
+                fontWeight: 700,
+                borderRadius: '4px',
+                flexShrink: 0,
+                padding: 0,
+              }}
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
       <style dangerouslySetInnerHTML={{__html: `
         .auth-container-seoul, 
         .auth-container-seoul h1, 
