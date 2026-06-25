@@ -1,8 +1,77 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { forgetPassword } from '@/lib/services/auth-service';
+
+function MatrixBackground() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let intervalId: NodeJS.Timeout;
+    
+    const resizeCanvas = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    const charArr = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝ'.split('');
+    const fontSize = 14;
+    const columns = Math.floor(canvas.width / fontSize) + 1;
+    const drops: number[] = Array(columns).fill(1);
+
+    const draw = () => {
+      ctx.fillStyle = 'rgba(10, 10, 10, 0.1)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.fillStyle = 'rgba(255, 158, 66, 0.15)'; // Mild orange matrix code rain
+      ctx.font = `${fontSize}px monospace`;
+
+      for (let i = 0; i < drops.length; i++) {
+        const text = charArr[Math.floor(Math.random() * charArr.length)];
+        const x = i * fontSize;
+        const y = drops[i] * fontSize;
+
+        ctx.fillText(text, x, y);
+
+        if (y > canvas.height && Math.random() > 0.975) {
+          drops[i] = 0;
+        }
+        drops[i]++;
+      }
+    };
+
+    intervalId = setInterval(draw, 33);
+
+    return () => {
+      clearInterval(intervalId);
+      window.removeEventListener('resize', resizeCanvas);
+    };
+  }, []);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        zIndex: 0,
+        pointerEvents: 'none',
+        opacity: 0.8,
+      }}
+    />
+  );
+}
 
 export default function ForgetPasswordPage() {
   const [email, setEmail] = useState('');
@@ -32,38 +101,27 @@ export default function ForgetPasswordPage() {
   };
 
   return (
-    <div className="auth-bg" style={{ position: 'relative', overflow: 'hidden' }}>
-      {/* Background ambient glowing spheres */}
-      <div style={{
-        position: 'absolute',
-        width: '350px',
-        height: '350px',
-        background: 'radial-gradient(circle, rgba(255, 158, 66, 0.08) 0%, rgba(255, 158, 66, 0) 70%)',
-        top: '15%',
-        left: '15%',
-        borderRadius: '50%',
-        filter: 'blur(50px)',
-        zIndex: 0,
-        pointerEvents: 'none'
-      }} />
-      <div style={{
-        position: 'absolute',
-        width: '400px',
-        height: '400px',
-        background: 'radial-gradient(circle, rgba(255, 158, 66, 0.06) 0%, rgba(255, 158, 66, 0) 70%)',
-        bottom: '15%',
-        right: '10%',
-        borderRadius: '50%',
-        filter: 'blur(60px)',
-        zIndex: 0,
-        pointerEvents: 'none'
-      }} />
+    <div className="auth-bg auth-container-seoul" style={{ position: 'relative', overflow: 'hidden' }}>
+      <style dangerouslySetInnerHTML={{__html: `
+        .auth-container-seoul, 
+        .auth-container-seoul h1, 
+        .auth-container-seoul h2, 
+        .auth-container-seoul p, 
+        .auth-container-seoul label, 
+        .auth-container-seoul input, 
+        .auth-container-seoul button, 
+        .auth-container-seoul a, 
+        .auth-container-seoul span {
+          font-family: 'Seoul Namsan', 'Seoul Hangang', 'Seoul', sans-serif !important;
+        }
+      `}} />
+      <MatrixBackground />
 
       <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
-        <div className="auth-card animate-fade-in">
+        <div className="auth-card animate-fade-in" style={{ borderRadius: '0px', border: '1px solid rgba(255, 158, 66, 0.15)', background: 'var(--surface)' }}>
           <h1 style={{
             color: '#ffffff',
-            fontSize: '28px',
+            fontSize: '20px',
             fontWeight: 800,
             marginBottom: '10px',
             textAlign: 'center',
@@ -87,7 +145,7 @@ export default function ForgetPasswordPage() {
             <div style={{
               background: 'rgba(239, 68, 68, 0.08)',
               border: '1px solid rgba(239, 68, 68, 0.3)',
-              borderRadius: '6px',
+              borderRadius: '0px',
               color: '#ef4444',
               padding: '12px',
               fontSize: '13px',
@@ -102,7 +160,7 @@ export default function ForgetPasswordPage() {
             <div style={{
               background: 'rgba(255, 158, 66, 0.08)',
               border: '1px solid rgba(255, 158, 66, 0.3)',
-              borderRadius: '6px',
+              borderRadius: '0px',
               color: 'var(--accent)',
               padding: '12px',
               fontSize: '13px',
@@ -149,7 +207,10 @@ export default function ForgetPasswordPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   style={{
-                    paddingLeft: '40px'
+                    paddingLeft: '40px',
+                    borderRadius: '0px',
+                    border: '1px solid rgba(255, 158, 66, 0.3)',
+                    background: 'rgba(10, 10, 10, 0.7)'
                   }}
                 />
               </div>
@@ -163,8 +224,12 @@ export default function ForgetPasswordPage() {
               style={{
                 width: '100%',
                 justifyContent: 'center',
-                fontSize: '14px',
+                fontSize: '13px',
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
                 padding: '12px',
+                borderRadius: '0px',
                 border: 'none',
                 cursor: loading ? 'not-allowed' : 'pointer',
                 marginBottom: '20px'
