@@ -48,6 +48,7 @@ export default function SignupPage() {
   };
 
   const strength = getStrength(password);
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
