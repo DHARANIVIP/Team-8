@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 function EyeIcon({ open }: { open: boolean }) {
   return open ? (
@@ -19,6 +20,7 @@ function EyeIcon({ open }: { open: boolean }) {
 
 export default function LoginPage() {
   const [showPw, setShowPw] = useState(false);
+  const router = useRouter();
 
   return (
     <div className="auth-bg">
@@ -77,7 +79,11 @@ export default function LoginPage() {
         </div>
 
         {/* Submit */}
-        <button className="btn-primary" style={{ width: '100%', justifyContent: 'center', fontSize: '14px', padding: '12px' }}>
+        <button
+          className="btn-primary"
+          style={{ width: '100%', justifyContent: 'center', fontSize: '14px', padding: '12px' }}
+          onClick={() => router.push('/mentor')}
+        >
           Sign In
         </button>
 

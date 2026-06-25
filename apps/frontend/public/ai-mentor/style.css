@@ -20,15 +20,15 @@
   --bg-module-btn:  #000000;
   --bg-module-hover:#000000;
 
-  /* Accent: Postman uses orange-red; we keep NexusCareer's electric orange */
-  --accent:         #FF6B35;
-  --accent-muted:   rgba(255,107,53,0.15);
-  --accent-glow:    rgba(255,107,53,0.08);
+  /* Accent: Mastermind project golden orange */
+  --accent:         #ff9e42;
+  --accent-muted:   rgba(255,158,66,0.15);
+  --accent-glow:    rgba(255,158,66,0.08);
 
   /* Text */
-  --text-primary:   #e8e8f0;
-  --text-secondary: #9090b0;
-  --text-muted:     #5a5a7a;
+  --text-primary:   #cccccc;
+  --text-secondary: #bbbbbb;
+  --text-muted:     #aaaaaa;
   --text-accent:    #FF6B35;
 
   /* Borders */
@@ -624,6 +624,76 @@ html, body {
   transition: border-color 0.15s;
 }
 .input-box-wrap:focus-within { border-color: var(--accent); }
+
+/* ── COMPLETION PANE ── */
+.completion-pane {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  padding: 40px;
+  background: #0d0d0d;
+  color: #cccccc;
+  font-family: 'Inter', sans-serif;
+}
+
+.completion-content {
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+}
+
+.completion-icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 24px;
+  background: var(--accent);
+  color: #0d0d0d;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  font-weight: 700;
+}
+
+.completion-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #cccccc;
+  margin-bottom: 12px;
+}
+
+.completion-message {
+  font-size: 14px;
+  color: #aaaaaa;
+  margin-bottom: 32px;
+  line-height: 1.5;
+}
+
+.btn-next-dashboard {
+  width: 100%;
+  padding: 14px 20px;
+  background: var(--accent);
+  color: #0d0d0d;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-next-dashboard:hover {
+  background: #ffaa55;
+  transform: translateY(-2px);
+}
+
+.btn-next-dashboard:active {
+  transform: translateY(0);
+}
 
 .input-prefix { flex-shrink: 0; display: flex; align-items: center; padding-bottom: 2px; }
 
