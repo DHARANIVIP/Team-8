@@ -25,13 +25,36 @@ export async function chat(message, context = {}) {
       return formatResponse("I am currently in mock mode because the Gemini API key is missing. Focus on learning modern technologies like React and Node.js!");
     }
 
-    // Initialize Gemini model
-    const model = genAI.getGenerativeModel({ 
-      model: "gemini-1.5-flash",
-      systemInstruction: systemInstruction 
-    });
+    // Initialize Gemini model with fallback models list
+    const modelsToTry = [
+      'gemini-1.5-flash-latest',
+      'gemini-1.5-flash',
+      'gemini-2.0-flash',
+      'gemini-pro',
+      'gemini-1.0-pro'
+    ];
+    let result = null;
+    let lastError = null;
 
-    const result = await model.generateContent(userMessage);
+    for (const modelName of modelsToTry) {
+      try {
+        console.log(`🤖 Attempting chatbot AI query using model: "${modelName}"...`);
+        const model = genAI.getGenerativeModel({ 
+          model: modelName,
+          systemInstruction: systemInstruction 
+        });
+        result = await model.generateContent(userMessage);
+        if (result) break;
+      } catch (err) {
+        console.warn(`⚠️ Chatbot model "${modelName}" failed. Error:`, err.message || err);
+        lastError = err;
+      }
+    }
+
+    if (!result) {
+      throw lastError || new Error('All models failed to generate content');
+    }
+
     const responseText = result.response.text();
 
     return formatResponse(responseText);
