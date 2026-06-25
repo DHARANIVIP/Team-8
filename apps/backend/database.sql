@@ -53,7 +53,7 @@ CREATE TABLE courses (
 -- 4. Comparisons Table (Saves User Side-by-Side Comparisons)
 CREATE TABLE comparisons (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id VARCHAR(100) NOT NULL,
+    user_id UUID NOT NULL,
     career_id_1 UUID REFERENCES careers(id) ON DELETE CASCADE,
     career_id_2 UUID REFERENCES careers(id) ON DELETE CASCADE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
@@ -62,7 +62,7 @@ CREATE TABLE comparisons (
 -- 5. User Profiles Table (User Custom Profile & Interests)
 CREATE TABLE user_profiles (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id VARCHAR(100) UNIQUE NOT NULL,
+    user_id UUID UNIQUE NOT NULL,
     current_skills TEXT[] DEFAULT '{}',
     experience_level VARCHAR(100),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
@@ -124,4 +124,41 @@ ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS email_updates BOOLEAN DEFAULT
 ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS market_alerts BOOLEAN DEFAULT FALSE;
 ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS weekly_digest BOOLEAN DEFAULT TRUE;
 ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS compact_mode BOOLEAN DEFAULT FALSE;
+
+
+-- =========================================================================
+-- ROADMAPS SCHEMA (ROADMAP.SH INTEGRATION)
+-- =========================================================================
+
+-- 1. Main Roadmaps Table
+CREATE TABLE IF NOT EXISTS roadmaps (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name VARCHAR(255) NOT NULL UNIQUE,
+    category VARCHAR(100) NOT NULL,
+    description TEXT,
+    difficulty_level VARCHAR(50) DEFAULT 'Intermediate',
+    estimated_duration VARCHAR(100) DEFAULT '6 Months',
+    last_sync TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 2. Roadmap Nodes Table
+CREATE TABLE IF NOT EXISTS roadmap_nodes (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    roadmap_id UUID REFERENCES roadmaps(id) ON DELETE CASCADE,
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    sequence_order INT NOT NULL,
+    parent_node_id UUID REFERENCES roadmap_nodes(id) ON DELETE SET NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 3. Roadmap Resources Table
+CREATE TABLE IF NOT EXISTS roadmap_resources (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    node_id UUID REFERENCES roadmap_nodes(id) ON DELETE CASCADE,
+    title VARCHAR(255) NOT NULL,
+    url TEXT NOT NULL,
+    resource_type VARCHAR(50) DEFAULT 'Link',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
 

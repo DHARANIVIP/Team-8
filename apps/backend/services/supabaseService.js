@@ -14,19 +14,20 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 export function mongoIdToUuid(mongoId) {
-  if (!mongoId || typeof mongoId !== 'string') return mongoId;
+  if (!mongoId) return mongoId;
+  const strId = typeof mongoId === 'string' ? mongoId : mongoId.toString();
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  if (uuidRegex.test(mongoId)) return mongoId;
+  if (uuidRegex.test(strId)) return strId;
   
-  if (mongoId.length === 24) {
-    const part1 = mongoId.substring(0, 8);
-    const part2 = mongoId.substring(8, 12);
-    const part3 = mongoId.substring(12, 16);
-    const part4 = mongoId.substring(16, 20);
-    const part5 = mongoId.substring(20, 24) + '00000000';
+  if (strId.length === 24) {
+    const part1 = strId.substring(0, 8);
+    const part2 = strId.substring(8, 12);
+    const part3 = strId.substring(12, 16);
+    const part4 = strId.substring(16, 20);
+    const part5 = strId.substring(20, 24) + '00000000';
     return `${part1}-${part2}-${part3}-${part4}-${part5}`;
   }
-  return mongoId;
+  return strId;
 }
 
 // ===== CATEGORIES =====
@@ -516,4 +517,3 @@ export async function syncCoursesCache(skillId, skillName) {
     return [];
   }
 }
-
