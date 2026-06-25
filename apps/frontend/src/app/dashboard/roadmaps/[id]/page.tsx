@@ -44,12 +44,15 @@ export default function RoadmapDetailPage() {
   const [completedNodes, setCompletedNodes] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'interactive' | 'pdf'>('interactive');
+
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
   const fetchRoadmapDetails = async () => {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch(`http://localhost:3001/api/roadmaps/${id}`);
+      const res = await fetch(`${API_URL}/api/roadmaps/${id}`);
       if (!res.ok) throw new Error('Failed to retrieve roadmap details');
       const data = await res.json();
       setRoadmap(data);
@@ -94,15 +97,45 @@ export default function RoadmapDetailPage() {
     return Math.round((completed / roadmap.nodes.length) * 100);
   };
 
+  const pdfFilename = 
+    id === 'frontend' || (roadmap && roadmap.name.toLowerCase().includes('frontend')) ? 'frontend.pdf' :
+    id === 'backend' || (roadmap && roadmap.name.toLowerCase().includes('backend')) ? 'backend.pdf' :
+    id === 'devops' || (roadmap && roadmap.name.toLowerCase().includes('devops')) ? 'devops.pdf' :
+    id === 'ai-ml' || (roadmap && (roadmap.name.toLowerCase().includes('ai') || roadmap.name.toLowerCase().includes('machine') || roadmap.name.toLowerCase().includes('learning'))) ? 'machine-learning.pdf' :
+    id === 'claude-code' || (roadmap && roadmap.name.toLowerCase().includes('claude')) ? 'claude-code.pdf' :
+    id === 'vibe-coding' || (roadmap && roadmap.name.toLowerCase().includes('vibe')) ? 'vibe-coding.pdf' : null;
+
   return (
-    <div style={{ background: '#0d0d0d', minHeight: '100vh', color: '#ffffff', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+    <div style={{ background: '#0a0a0a', minHeight: '100vh' }}>
       <DashboardNavbar />
 
-      <main style={{ maxWidth: '1100px', margin: '0 auto', padding: '30px 40px' }}>
+      <main className="page-container animate-slide-up" style={{ padding: '24px 0' }}>
         
         {/* Navigation Breadcrumb */}
         <div style={{ marginBottom: '20px' }}>
-          <Link href="/dashboard/roadmaps" style={{ color: ACCENT, textDecoration: 'none', fontSize: '12px', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+          <Link href="/dashboard/roadmaps" style={{
+            color: ACCENT,
+            textDecoration: 'none',
+            fontSize: '12px',
+            fontWeight: 600,
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            padding: '8px 16px',
+            border: `1px solid ${ACCENT}`,
+            borderRadius: '6px',
+            background: 'rgba(255, 158, 66, 0.03)',
+            transition: 'all 0.2s ease',
+          }}
+          onMouseOver={(e) => {
+            e.currentTarget.style.background = 'rgba(255, 158, 66, 0.1)';
+            e.currentTarget.style.boxShadow = `0 0 12px ${ACCENT_RGBA}`;
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.background = 'rgba(255, 158, 66, 0.03)';
+            e.currentTarget.style.boxShadow = 'none';
+          }}
+          >
             ← Back to Roadmaps
           </Link>
         </div>
@@ -165,8 +198,88 @@ export default function RoadmapDetailPage() {
               </div>
             </div>
 
-            {/* Split timeline layout */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '24px', alignItems: 'start' }}>
+            {/* Tab Switcher (Only if PDF is available) */}
+            {pdfFilename && (
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', borderBottom: '1px solid #1f1f1f', paddingBottom: '12px' }}>
+                <button
+                  onClick={() => setActiveTab('interactive')}
+                  style={{
+                    padding: '8px 18px',
+                    background: activeTab === 'interactive' ? 'rgba(255, 158, 66, 0.1)' : 'transparent',
+                    border: `1px solid ${activeTab === 'interactive' ? '#ff9e42' : '#2c2c2e'}`,
+                    color: activeTab === 'interactive' ? '#ff9e42' : '#888888',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  🗺️ Interactive Path
+                </button>
+                <button
+                  onClick={() => setActiveTab('pdf')}
+                  style={{
+                    padding: '8px 18px',
+                    background: activeTab === 'pdf' ? 'rgba(255, 158, 66, 0.1)' : 'transparent',
+                    border: `1px solid ${activeTab === 'pdf' ? '#ff9e42' : '#2c2c2e'}`,
+                    color: activeTab === 'pdf' ? '#ff9e42' : '#888888',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  📄 Official PDF Roadmap
+                </button>
+              </div>
+            )}
+
+            {activeTab === 'pdf' && pdfFilename ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 20px', background: '#121212', border: '1px solid #1f1f1f', borderRadius: '8px' }}>
+                  <span style={{ fontSize: '13px', color: '#aaaaaa' }}>Viewing original PDF roadmap: <strong>{pdfFilename}</strong></span>
+                  <a 
+                    href={`/${pdfFilename}`} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    style={{
+                      padding: '8px 16px',
+                      background: '#ff9e42',
+                      color: '#000000',
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      borderRadius: '6px',
+                      textDecoration: 'none',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      transition: 'opacity 0.2s'
+                    }}
+                  >
+                    <span>📥</span> Open / Download PDF
+                  </a>
+                </div>
+                
+                <div style={{ border: '1px solid #1f1f1f', borderRadius: '8px', overflow: 'hidden', height: '80vh', background: '#121212' }}>
+                  <iframe
+                    src={`/${pdfFilename}#toolbar=1`}
+                    width="100%"
+                    height="100%"
+                    style={{ border: 'none' }}
+                  />
+                </div>
+              </div>
+            ) : (
+              /* Split timeline layout */
+              <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '24px', alignItems: 'start' }}>
               
               {/* Left Column: Timeline list */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', position: 'relative' }}>
@@ -340,8 +453,8 @@ export default function RoadmapDetailPage() {
                   </div>
                 )}
               </div>
-
             </div>
+            )}
           </div>
         )}
       </main>

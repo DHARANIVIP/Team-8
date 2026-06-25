@@ -1,11 +1,67 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
+import passport from 'passport';
 import User from '../models/User.js';
 import { protect } from '../middleware/auth.js';
+import '../config/passport.js';
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'mastermind_super_secret_jwt_key';
+
+// ── Google OAuth Routes ──
+router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+
+router.get('/google/callback',
+  passport.authenticate('google', { session: false, failureRedirect: '/login?error=oauth_failed' }),
+  (req, res) => {
+    try {
+      const token = jwt.sign(
+        { userId: req.user._id, email: req.user.email },
+        JWT_SECRET,
+        { expiresIn: '24h' }
+      );
+      
+      const userObj = {
+        id: req.user._id,
+        email: req.user.email,
+        name: req.user.name
+      };
+      
+      res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/login?token=${token}&user=${encodeURIComponent(JSON.stringify(userObj))}`);
+    } catch (err) {
+      console.error('Google OAuth callback signing error:', err);
+      res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/login?error=oauth_failed`);
+    }
+  }
+);
+
+// ── GitHub OAuth Routes ──
+router.get('/github', passport.authenticate('github', { scope: ['user:email'] }));
+
+router.get('/github/callback',
+  passport.authenticate('github', { session: false, failureRedirect: '/login?error=oauth_failed' }),
+  (req, res) => {
+    try {
+      const token = jwt.sign(
+        { userId: req.user._id, email: req.user.email },
+        JWT_SECRET,
+        { expiresIn: '24h' }
+      );
+      
+      const userObj = {
+        id: req.user._id,
+        email: req.user.email,
+        name: req.user.name
+      };
+      
+      res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/login?token=${token}&user=${encodeURIComponent(JSON.stringify(userObj))}`);
+    } catch (err) {
+      console.error('GitHub OAuth callback signing error:', err);
+      res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/login?error=oauth_failed`);
+    }
+  }
+);
 
 /**
  * POST /api/auth/signup
