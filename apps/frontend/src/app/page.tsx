@@ -41,7 +41,7 @@ function HeroSection() {
         One platform for career roadmaps, skill gap analysis, course recommendations, and side-by-side career comparison. Designed for students who want clarity after graduation.
       </p>
       <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-        <Link href="/dashboard" className="btn-primary" style={{ fontSize: '14px' }}>
+        <Link href="/signup" className="btn-primary" style={{ fontSize: '14px' }}>
           Get Started →
         </Link>
         <Link href="/login" className="btn-outline" style={{ fontSize: '14px' }}>

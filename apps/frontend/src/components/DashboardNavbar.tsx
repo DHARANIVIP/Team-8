@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { signout } from '@/lib/services/auth-service';
 
 const navLinks = [
   { href: '/dashboard',            label: 'Dashboard' },
@@ -18,6 +19,13 @@ const ACCENT_BORDER = 'rgba(255,158,66,0.55)';
 
 export default function DashboardNavbar() {
   const pathname = usePathname();
+  const router = useRouter();
+
+  const handleSignOut = (e: React.MouseEvent) => {
+    e.preventDefault();
+    signout();
+    router.push('/login');
+  };
 
   return (
     <nav style={{
@@ -116,6 +124,7 @@ export default function DashboardNavbar() {
         {/* Sign Out */}
         <Link
           href="/login"
+          onClick={handleSignOut}
           style={{
             display: 'inline-flex',
             alignItems: 'center',
