@@ -1,12 +1,20 @@
+﻿# Node.js
 node_modules/
-.next/
-out/
-build/
-dist/
+
+# Environment secrets — never commit
+.env
+.env.*
+!.env.example
+
+# Logs
 *.log
-.env.local
-.env.*.local
+logs/
+
+# OS
 .DS_Store
+Thumbs.db
+
+# Editor
 .idea/
 .vscode/
 *.swp

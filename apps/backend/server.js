@@ -1,6 +1,7 @@
+import 'dotenv/config'; // trigger reload
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
+import connectDB from './config/db.js';
 
 // Import routes
 import categoriesRouter from './routes/categories.js';
@@ -8,8 +9,12 @@ import skillsRouter from './routes/skills.js';
 import coursesRouter from './routes/courses.js';
 import compareRouter from './routes/compare.js';
 import aiRouter from './routes/ai.js';
+import authRouter from './routes/auth.js';
+import profileRouter from './routes/profile.js';
+import roadmapsRouter from './routes/roadmaps.js';
 
-dotenv.config();
+// Connect to MongoDB
+connectDB();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -23,6 +28,8 @@ app.use(express.json());
  * [Teammate 1] Entry point for server execution
  * Routes organized by feature domain
  */
+
+app.use('/api/auth', authRouter);
 
 /**
  * [Teammate 2] Feature 1: Category endpoints
@@ -48,6 +55,16 @@ app.use('/api/compare', compareRouter);
  * [Teammate 1] Supplemental student coaching handler
  */
 app.use('/api/ai', aiRouter);
+
+/**
+ * User Profile endpoints
+ */
+app.use('/api/profile', profileRouter);
+
+/**
+ * Learning Roadmaps endpoints (roadmap.sh)
+ */
+app.use('/api/roadmaps', roadmapsRouter);
 
 // Health check
 app.get('/health', (req, res) => {
