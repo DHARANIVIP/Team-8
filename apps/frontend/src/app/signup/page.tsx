@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { signup } from '@/lib/services/auth-service';
@@ -26,6 +26,75 @@ function getStrength(pw: string) {
   return { width: '100%', color: '#10b981' };
 }
 
+function MatrixBackground() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let intervalId: NodeJS.Timeout;
+    
+    const resizeCanvas = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    const charArr = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝ'.split('');
+    const fontSize = 14;
+    const columns = Math.floor(canvas.width / fontSize) + 1;
+    const drops: number[] = Array(columns).fill(1);
+
+    const draw = () => {
+      ctx.fillStyle = 'rgba(10, 10, 10, 0.1)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.fillStyle = 'rgba(255, 158, 66, 0.15)'; // Mild orange matrix code rain
+      ctx.font = `${fontSize}px monospace`;
+
+      for (let i = 0; i < drops.length; i++) {
+        const text = charArr[Math.floor(Math.random() * charArr.length)];
+        const x = i * fontSize;
+        const y = drops[i] * fontSize;
+
+        ctx.fillText(text, x, y);
+
+        if (y > canvas.height && Math.random() > 0.975) {
+          drops[i] = 0;
+        }
+        drops[i]++;
+      }
+    };
+
+    intervalId = setInterval(draw, 33);
+
+    return () => {
+      clearInterval(intervalId);
+      window.removeEventListener('resize', resizeCanvas);
+    };
+  }, []);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        zIndex: 0,
+        pointerEvents: 'none',
+        opacity: 0.8,
+      }}
+    />
+  );
+}
+
 export default function SignupPage() {
   const router = useRouter();
   const [showPw, setShowPw] = useState(false);
@@ -48,6 +117,7 @@ export default function SignupPage() {
   };
 
   const strength = getStrength(password);
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,7 +132,6 @@ export default function SignupPage() {
 
     try {
       await signup(name, email, password);
-      // Redirect to login with query param to show a success message
       router.push('/login?signupSuccess=true');
     } catch (err: any) {
       setError(err.message || 'Registration failed. Please try again.');
@@ -72,46 +141,48 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="auth-bg" style={{ position: 'relative', overflow: 'hidden' }}>
-      {/* Background ambient glowing spheres */}
-      <div style={{
-        position: 'absolute',
-        width: '350px',
-        height: '350px',
-        background: 'radial-gradient(circle, rgba(255, 158, 66, 0.08) 0%, rgba(255, 158, 66, 0) 70%)',
-        top: '15%',
-        left: '15%',
-        borderRadius: '50%',
-        filter: 'blur(50px)',
-        zIndex: 0,
-        pointerEvents: 'none'
-      }} />
-      <div style={{
-        position: 'absolute',
-        width: '400px',
-        height: '400px',
-        background: 'radial-gradient(circle, rgba(255, 158, 66, 0.06) 0%, rgba(255, 158, 66, 0) 70%)',
-        bottom: '15%',
-        right: '10%',
-        borderRadius: '50%',
-        filter: 'blur(60px)',
-        zIndex: 0,
-        pointerEvents: 'none'
-      }} />
+    <div className="auth-bg auth-container-seoul" style={{ position: 'relative', overflow: 'hidden' }}>
+      <style dangerouslySetInnerHTML={{__html: `
+        .auth-container-seoul, 
+        .auth-container-seoul h1, 
+        .auth-container-seoul h2, 
+        .auth-container-seoul p, 
+        .auth-container-seoul label, 
+        .auth-container-seoul input, 
+        .auth-container-seoul button, 
+        .auth-container-seoul a, 
+        .auth-container-seoul span {
+          font-family: 'Seoul Namsan', 'Seoul Hangang', 'Seoul', sans-serif !important;
+        }
+      `}} />
+      <MatrixBackground />
 
       <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
-        <h1 style={{ color: '#ffffff', fontSize: '32px', fontWeight: 800, marginBottom: '18px', textAlign: 'center', textShadow: '0 0 8px rgba(255, 158, 66, 0.25)' }}>
+        <h1 style={{ color: '#ffffff', fontSize: '24px', fontWeight: 800, marginBottom: '18px', textAlign: 'center', textShadow: '0 0 8px rgba(255, 158, 66, 0.25)' }}>
           Create your account
         </h1>
 
-        <form onSubmit={handleSubmit} className="auth-card animate-fade-in">
-          <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-            <Link href="/" className="btn-ghost" style={{ fontSize: '12px', padding: '5px 14px' }}>
-              ← Back to Website
+        <form onSubmit={handleSubmit} className="auth-card animate-fade-in" style={{ borderRadius: '0px', border: '1px solid rgba(255, 158, 66, 0.15)', background: 'var(--surface)' }}>
+          <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+            <Link href="/" style={{
+              border: '1px solid rgba(255, 158, 66, 0.3)',
+              background: 'rgba(255, 158, 66, 0.05)',
+              padding: '8px 18px',
+              color: 'var(--accent)',
+              fontSize: '11px',
+              fontWeight: 700,
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              display: 'inline-block',
+              textDecoration: 'none',
+              cursor: 'pointer',
+              borderRadius: '0px'
+            }}>
+              Back to Website
             </Link>
           </div>
 
-          <h2 style={{ textAlign: 'center', fontSize: '20px', fontWeight: 700, color: '#cccccc', marginBottom: '24px' }}>
+          <h2 style={{ textAlign: 'center', fontSize: '16px', fontWeight: 700, color: '#cccccc', marginBottom: '24px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
             Sign up
           </h2>
 
@@ -119,7 +190,7 @@ export default function SignupPage() {
             <div style={{
               background: 'rgba(239, 68, 68, 0.08)',
               border: '1px solid rgba(239, 68, 68, 0.3)',
-              borderRadius: '6px',
+              borderRadius: '0px',
               color: '#ef4444',
               padding: '12px',
               fontSize: '13px',
@@ -149,7 +220,12 @@ export default function SignupPage() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
-                style={{ paddingLeft: '40px' }}
+                style={{
+                  paddingLeft: '40px',
+                  borderRadius: '0px',
+                  border: '1px solid rgba(255, 158, 66, 0.3)',
+                  background: 'rgba(10, 10, 10, 0.7)'
+                }}
               />
             </div>
           </div>
@@ -173,7 +249,12 @@ export default function SignupPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                style={{ paddingLeft: '40px' }}
+                style={{
+                  paddingLeft: '40px',
+                  borderRadius: '0px',
+                  border: '1px solid rgba(255, 158, 66, 0.3)',
+                  background: 'rgba(10, 10, 10, 0.7)'
+                }}
               />
             </div>
           </div>
@@ -197,7 +278,13 @@ export default function SignupPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                style={{ paddingLeft: '40px', paddingRight: '40px' }}
+                style={{
+                  paddingLeft: '40px',
+                  paddingRight: '40px',
+                  borderRadius: '0px',
+                  border: '1px solid rgba(255, 158, 66, 0.3)',
+                  background: 'rgba(10, 10, 10, 0.7)'
+                }}
               />
               <span className="input-icon-right" onClick={() => setShowPw(!showPw)}>
                 <EyeIcon open={showPw} />
@@ -227,7 +314,13 @@ export default function SignupPage() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
-                style={{ paddingLeft: '40px', paddingRight: '40px' }}
+                style={{
+                  paddingLeft: '40px',
+                  paddingRight: '40px',
+                  borderRadius: '0px',
+                  border: '1px solid rgba(255, 158, 66, 0.3)',
+                  background: 'rgba(10, 10, 10, 0.7)'
+                }}
               />
               <span className="input-icon-right" onClick={() => setShowCpw(!showCpw)}>
                 <EyeIcon open={showCpw} />
@@ -242,8 +335,12 @@ export default function SignupPage() {
             style={{
               width: '100%',
               justifyContent: 'center',
-              fontSize: '14px',
+              fontSize: '13px',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
               padding: '12px',
+              borderRadius: '0px',
               border: 'none',
               cursor: loading ? 'not-allowed' : 'pointer'
             }}
@@ -260,7 +357,21 @@ export default function SignupPage() {
               type="button"
               className="btn-ghost"
               onClick={handleGoogleLogin}
-              style={{ padding: '10px 18px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', width: '50%', justifyContent: 'center' }}
+              style={{
+                padding: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontSize: '13px',
+                width: '50%',
+                justifyContent: 'center',
+                border: '1px solid rgba(255, 158, 66, 0.3)',
+                background: 'rgba(10, 10, 10, 0.6)',
+                color: '#ffffff',
+                fontWeight: 600,
+                borderRadius: '0px',
+                cursor: 'pointer'
+              }}
             >
               <svg width="16" height="16" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -274,7 +385,21 @@ export default function SignupPage() {
               type="button"
               className="btn-ghost"
               onClick={handleGithubLogin}
-              style={{ padding: '10px 18px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', width: '50%', justifyContent: 'center' }}
+              style={{
+                padding: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontSize: '13px',
+                width: '50%',
+                justifyContent: 'center',
+                border: '1px solid rgba(255, 158, 66, 0.3)',
+                background: 'rgba(10, 10, 10, 0.6)',
+                color: '#ffffff',
+                fontWeight: 600,
+                borderRadius: '0px',
+                cursor: 'pointer'
+              }}
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
@@ -285,7 +410,7 @@ export default function SignupPage() {
 
           <p style={{ textAlign: 'center', marginTop: '24px', fontSize: '13px', color: 'var(--text-secondary)' }}>
             Already have an account?{' '}
-            <Link href="/login" style={{ color: 'var(--accent)', fontWeight: 600 }}>Sign in</Link>
+            <Link href="/login" style={{ color: 'var(--accent)', fontWeight: 600, textDecoration: 'none' }}>Sign in</Link>
           </p>
         </form>
       </div>

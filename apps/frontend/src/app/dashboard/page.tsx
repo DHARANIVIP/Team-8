@@ -212,9 +212,9 @@ export default function DashboardPage() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
                       <span style={{ color: '#ffffff', fontWeight: 600, fontSize: '14px', fontFamily: 'Outfit, sans-serif' }}>{c.name}</span>
                       <span className="badge" style={{
-                        background: c.badge === 'Target Career' ? 'rgba(80,200,120,0.1)' : 'rgba(255,158,66,0.12)',
-                        color: c.badge === 'Target Career' ? '#50c878' : 'var(--accent)',
-                        border: c.badge === 'Target Career' ? '1px solid rgba(80,200,120,0.2)' : '1px solid rgba(255,158,66,0.3)'
+                        background: 'rgba(255, 158, 66, 0.12)',
+                        color: 'var(--accent)',
+                        border: '1px solid rgba(255, 158, 66, 0.3)'
                       }}>
                         {c.badge}
                       </span>
