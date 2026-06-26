@@ -1,29 +1,33 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800&family=Seoul+Namsan:wght@400;700&family=Seoul+Hangang:wght@400;700&display=swap');
+
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
 
 /* ─────────────────────────────────────────
    BASE RESET & ROOT TOKENS
-───────────────────────────────────────── */
+   ───────────────────────────────────────── */
 *, *::before, *::after {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  border-radius: 0px !important; /* Force rectangular styling globally */
-  box-shadow: none !important; /* Remove all glowing neon shadows globally */
+  border-radius: 0px !important;
 }
 
 :root {
   --accent:          #ff9e42;
-  --accent-soft:     #ff9757;
-  --text-primary:    #cccccc;
-  --text-secondary:  #bbbbbb;
-  --text-muted:      #aaaaaa;
-  --bg:              #0d0d0d;
-  --surface:         #111111;
-  --surface-alt:     #1a1a1a;
-  --border:          #1f1f1f;
-  --border-focus:    #2a2a2a;
+  --accent-soft:     #ffb066;
+  --accent-glow:     rgba(255, 158, 66, 0.15);
+  --accent-glow-strong: rgba(255, 158, 66, 0.35);
+  --text-primary:    #e5e5e5;
+  --text-secondary:  #a3a3a3;
+  --text-muted:      #737373;
+  --bg:              #0a0a0a;      /* Deeper cyber black background */
+  --surface:         #121212;     /* Dark charcoal surface */
+  --surface-alt:     #1a1a1a;     /* Slightly lighter for hover states */
+  --border:          rgba(255, 158, 66, 0.15); /* Accent-tinted borders */
+  --border-dark:     #1e1e1e;     /* Subtler boundary border */
+  --border-focus:    #ff9e42;
 }
 
 html, body {
@@ -31,7 +35,7 @@ html, body {
   min-height: 100vh;
   background-color: var(--bg);
   color: var(--text-primary);
-  font-family: 'Segoe UI', sans-serif;
+  font-family: 'Outfit', 'Inter', sans-serif;
   font-size: 15px;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
@@ -39,11 +43,13 @@ html, body {
 
 /* ─────────────────────────────────────────
    TYPOGRAPHY
-───────────────────────────────────────── */
+   ───────────────────────────────────────── */
 h1, h2, h3, h4, h5, h6 {
-  color: var(--text-primary);
+  color: #ffffff;
+  font-family: 'Outfit', sans-serif;
   font-weight: 700;
   line-height: 1.25;
+  letter-spacing: -0.01em;
 }
 
 p {
@@ -53,60 +59,63 @@ p {
 a {
   color: var(--accent);
   text-decoration: none;
-  transition: color 0.2s ease;
+  transition: all 0.2s ease;
 }
 
 a:hover {
   color: var(--accent-soft);
+  text-shadow: 0 0 8px var(--accent-glow);
 }
 
 /* ─────────────────────────────────────────
    CARD UTILITY
-───────────────────────────────────────── */
+   ───────────────────────────────────────── */
 .card {
   background: var(--surface);
-  border: 1px solid var(--accent) !important;
-  border-radius: 0px !important;
-  padding: 20px 24px;
-  box-shadow: 0 0 6px rgba(255, 158, 66, 0.1) !important;
-  transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  transition: border-color 0.25s cubic-bezier(0.4, 0, 0.2, 1), 
+              background-color 0.25s cubic-bezier(0.4, 0, 0.2, 1), 
+              box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .card-hover {
-  transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
 }
 
 .card-hover:hover {
-  border-color: var(--accent-soft) !important;
+  border-color: var(--accent) !important;
   background: var(--surface-alt) !important;
-  box-shadow: 0 0 14px rgba(255, 158, 66, 0.2) !important;
+  box-shadow: 0 0 16px var(--accent-glow), 0 4px 24px rgba(0, 0, 0, 0.3) !important;
+  transform: translateY(-2px);
 }
 
 /* ─────────────────────────────────────────
    BUTTONS
-───────────────────────────────────────── */
+   ───────────────────────────────────────── */
 .btn-primary {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: transparent !important;
-  color: var(--accent) !important;
-  font-family: 'Segoe UI', sans-serif;
+  background: var(--accent) !important;
+  color: #0a0a0a !important; /* Solid high-contrast dark text */
+  font-family: 'Outfit', sans-serif;
   font-weight: 700;
   font-size: 14px;
   padding: 10px 22px;
-  border-radius: 0px !important;
+  border-radius: 6px;
   border: 1px solid var(--accent) !important;
-  box-shadow: 0 0 6px rgba(255, 158, 66, 0.15) !important;
   cursor: pointer;
-  transition: background 0.2s ease, transform 0.15s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   white-space: nowrap;
 }
 
 .btn-primary:hover {
-  background: rgba(255, 158, 66, 0.08) !important;
-  border-color: var(--accent-soft) !important;
-  box-shadow: 0 0 12px rgba(255, 158, 66, 0.35) !important;
+  background: var(--accent-soft) !important;
+  box-shadow: 0 0 14px var(--accent-glow-strong) !important;
   transform: translateY(-1px);
 }
 
@@ -120,23 +129,26 @@ a:hover {
   gap: 8px;
   background: transparent !important;
   color: var(--accent) !important;
-  font-family: 'Segoe UI', sans-serif;
+  font-family: 'Outfit', sans-serif;
   font-weight: 600;
   font-size: 14px;
   padding: 10px 22px;
-  border-radius: 0px !important;
+  border-radius: 6px;
   border: 1px solid var(--accent) !important;
-  box-shadow: 0 0 6px rgba(255, 158, 66, 0.15) !important;
   cursor: pointer;
-  transition: background 0.2s ease, transform 0.15s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   white-space: nowrap;
 }
 
 .btn-outline:hover {
   background: rgba(255, 158, 66, 0.08) !important;
   border-color: var(--accent-soft) !important;
-  box-shadow: 0 0 12px rgba(255, 158, 66, 0.35) !important;
+  box-shadow: 0 0 12px var(--accent-glow) !important;
   transform: translateY(-1px);
+}
+
+.btn-outline:active {
+  transform: translateY(0);
 }
 
 .btn-ghost {
@@ -145,39 +157,37 @@ a:hover {
   gap: 8px;
   background: transparent !important;
   color: var(--text-secondary) !important;
-  font-family: 'Segoe UI', sans-serif;
+  font-family: 'Outfit', sans-serif;
   font-weight: 500;
   font-size: 14px;
   padding: 8px 16px;
-  border-radius: 0px !important;
-  border: 1px solid var(--accent) !important;
-  box-shadow: 0 0 6px rgba(255, 158, 66, 0.12) !important;
+  border-radius: 6px;
+  border: 1px solid var(--border-dark) !important;
   cursor: pointer;
-  transition: border-color 0.2s, color 0.2s, background-color 0.2s, box-shadow 0.2s;
+  transition: all 0.2s ease;
 }
 
 .btn-ghost:hover {
-  border-color: var(--accent-soft) !important;
+  border-color: var(--accent) !important;
   color: var(--accent) !important;
   background: rgba(255, 158, 66, 0.05) !important;
-  box-shadow: 0 0 10px rgba(255, 158, 66, 0.3) !important;
+  box-shadow: 0 0 8px var(--accent-glow) !important;
 }
 
 /* ─────────────────────────────────────────
    FORM INPUTS
-───────────────────────────────────────── */
+   ───────────────────────────────────────── */
 .input-field, select, textarea {
   width: 100%;
   background: var(--surface-alt);
-  border: 1px solid var(--accent) !important; /* Solid accent border */
-  border-radius: 0px !important;
-  padding: 11px 14px 11px 40px;
+  border: 1px solid var(--border-dark) !important;
+  border-radius: 6px;
+  padding: 11px 14px;
   color: var(--text-primary);
-  font-family: 'Segoe UI', sans-serif;
+  font-family: 'Outfit', sans-serif;
   font-size: 14px;
   outline: none;
-  box-shadow: 0 0 5px rgba(255, 158, 66, 0.1) !important;
-  transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+  transition: all 0.2s ease;
 }
 
 .input-field::placeholder {
@@ -185,13 +195,13 @@ a:hover {
 }
 
 .input-field:focus, select:focus, textarea:focus {
-  border-color: var(--accent-soft) !important;
-  box-shadow: 0 0 10px rgba(255, 158, 66, 0.25) !important;
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 10px var(--accent-glow) !important;
+  background: var(--surface);
 }
 
 .input-field:hover, select:hover, textarea:hover {
   border-color: var(--accent-soft) !important;
-  box-shadow: 0 0 8px rgba(255, 158, 66, 0.18) !important;
 }
 
 .input-wrapper {
@@ -225,30 +235,28 @@ a:hover {
 
 /* ─────────────────────────────────────────
    BADGES & PILLS
-───────────────────────────────────────── */
+   ───────────────────────────────────────── */
 .badge {
   display: inline-flex;
   align-items: center;
-  padding: 3px 10px;
-  border-radius: 0px !important; /* Rectangular badges */
+  padding: 4px 12px;
+  border-radius: 4px;
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.02em;
-  box-shadow: none !important;
 }
 
 .badge-accent {
   background: rgba(255, 158, 66, 0.12);
   color: var(--accent);
-  border: 1px solid var(--accent) !important;
-  box-shadow: 0 0 5px rgba(255, 158, 66, 0.15) !important;
+  border: 1px solid rgba(255, 158, 66, 0.3) !important;
+  box-shadow: 0 0 5px var(--accent-glow) !important;
 }
 
 .badge-muted {
-  background: var(--surface-alt);
-  color: var(--text-muted);
-  border: 1px solid var(--border-focus) !important;
-  box-shadow: none !important;
+  background: rgba(255, 255, 255, 0.04);
+  color: #c0c0c0;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 
 .badge-success {
@@ -260,7 +268,7 @@ a:hover {
 
 /* ─────────────────────────────────────────
    SECTION LABEL
-───────────────────────────────────────── */
+   ───────────────────────────────────────── */
 .section-label {
   display: inline-block;
   font-size: 11px;
@@ -273,32 +281,34 @@ a:hover {
 
 /* ─────────────────────────────────────────
    AUTH PAGE BACKGROUND
-───────────────────────────────────────── */
+   ───────────────────────────────────────── */
 .auth-bg {
   min-height: 100vh;
   width: 100%;
-  background: radial-gradient(ellipse at center, #141414 0%, #080808 100%);
+  background: radial-gradient(ellipse at center, #111111 0%, #060606 100%);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  padding: 24px;
 }
 
 /* ─────────────────────────────────────────
    AUTH CARD
-───────────────────────────────────────── */
+   ───────────────────────────────────────── */
 .auth-card {
   background: var(--surface);
-  border: 1px solid var(--accent) !important; /* Solid accent border */
-  border-radius: 0px !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 8px;
   padding: 36px 40px;
   width: 420px;
-  box-shadow: none !important;
+  max-width: 100%;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 0 0 25px var(--accent-glow) !important;
 }
 
 /* ─────────────────────────────────────────
    DIVIDER
-───────────────────────────────────────── */
+   ───────────────────────────────────────── */
 .divider {
   display: flex;
   align-items: center;
@@ -314,14 +324,15 @@ a:hover {
   content: '';
   flex: 1;
   height: 1px;
-  background: var(--border-focus);
+  background: var(--border-dark);
 }
 
 /* ─────────────────────────────────────────
    SCROLLBAR
-───────────────────────────────────────── */
+   ───────────────────────────────────────── */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
@@ -329,8 +340,8 @@ a:hover {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #2a2a2a;
-  border-radius: 999px;
+  background: #262626;
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -339,14 +350,14 @@ a:hover {
 
 /* ─────────────────────────────────────────
    ANIMATIONS
-───────────────────────────────────────── */
+   ───────────────────────────────────────── */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
+  from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(20px); }
+  from { opacity: 0; transform: translateY(16px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
@@ -356,16 +367,16 @@ a:hover {
 }
 
 .animate-fade-in {
-  animation: fadeIn 0.4s ease forwards;
+  animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .animate-slide-up {
-  animation: slideUp 0.5s ease forwards;
+  animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 /* ─────────────────────────────────────────
    LAYOUT CONTAINER (desktop fixed-width)
-───────────────────────────────────────── */
+   ───────────────────────────────────────── */
 .page-container {
   max-width: 1100px;
   margin: 0 auto;
@@ -374,11 +385,11 @@ a:hover {
 
 /* ─────────────────────────────────────────
    TICKER STRIP
-───────────────────────────────────────── */
+   ───────────────────────────────────────── */
 .ticker-track {
   display: flex;
   gap: 48px;
-  animation: ticker 30s linear infinite;
+  animation: ticker 35s linear infinite;
   white-space: nowrap;
 }
 
@@ -397,86 +408,67 @@ a:hover {
 
 /* ─────────────────────────────────────────
    SKILL PILL TAG
-───────────────────────────────────────── */
+   ───────────────────────────────────────── */
 .skill-pill {
   display: inline-flex;
   align-items: center;
-  padding: 5px 14px;
+  padding: 6px 14px;
   background: var(--surface-alt);
-  border: 1px solid var(--border-focus);
-  border-radius: 0px !important; /* Rectangular skill pills */
+  border: 1px solid var(--border-dark);
+  border-radius: 6px;
   font-size: 13px;
   color: var(--text-secondary);
-  transition: border-color 0.2s, color 0.2s, box-shadow 0.2s;
+  transition: all 0.2s ease;
   cursor: default;
-  box-shadow: none !important;
 }
 
 .skill-pill:hover {
   border-color: var(--accent) !important;
   color: var(--accent);
-  box-shadow: 0 0 8px rgba(255, 158, 66, 0.2) !important;
+  background: var(--surface);
+  box-shadow: 0 0 10px var(--accent-glow) !important;
 }
 
 .strength-bar {
-  height: 3px;
-  border-radius: 999px;
+  height: 4px;
+  border-radius: 2px;
   margin-top: 6px;
-  background: var(--border-focus);
+  background: var(--border-dark);
   overflow: hidden;
 }
 
 .strength-bar-fill {
   height: 100%;
-  border-radius: 999px;
-  transition: width 0.3s ease, background 0.3s ease;
+  border-radius: 2px;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1), background 0.4s ease;
 }
 
 /* ─────────────────────────────────────────
-   DASHBOARD SPECIAL CUSTOM THEME (Rectangular, Border-only, Cyberpunk Glow)
-───────────────────────────────────────── */
-/* Standard button tags global override for HUD Cyberpunk style */
+   DASHBOARD CUSTOM FALLBACK & GLOBAL FIXES
+   ───────────────────────────────────────── */
+/* Basic button element fallback styling */
 button, input[type="button"], input[type="submit"] {
-  border: 1px solid var(--accent) !important;
-  border-radius: 0px !important;
-  background: transparent !important;
-  color: var(--accent) !important;
-  box-shadow: 0 0 6px rgba(255, 158, 66, 0.15) !important;
-  cursor: pointer;
-  transition: border-color 0.2s, color 0.2s, background-color 0.2s, box-shadow 0.2s;
-}
-button:hover, input[type="button"]:hover, input[type="submit"]:hover {
-  background: rgba(255, 158, 66, 0.08) !important;
-  border-color: var(--accent-soft) !important;
-  box-shadow: 0 0 12px rgba(255, 158, 66, 0.35) !important;
+  border-radius: 6px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Dashboard Header links (Profile, Settings) */
+/* Profile and Settings buttons in header */
 nav a[href*="profile"], nav a[href*="settings"] {
-  border: 1px solid var(--accent) !important;
-  border-radius: 0px !important;
-  background: transparent !important;
-  color: var(--accent) !important;
-  box-shadow: 0 0 6px rgba(255, 158, 66, 0.12) !important;
-  transition: border-color 0.2s, color 0.2s, background-color 0.2s, box-shadow 0.2s;
-}
-nav a[href*="profile"]:hover, nav a[href*="settings"]:hover {
-  background: rgba(255, 158, 66, 0.08) !important;
-  border-color: var(--accent-soft) !important;
-  box-shadow: 0 0 12px rgba(255, 158, 66, 0.3) !important;
+  border-radius: 6px;
+  transition: all 0.2s ease;
 }
 
-/* Specifically make sure red Sign Out buttons keep their red outline/text style globally with HUD glow */
+/* Red / Sign Out button styles */
 a[href*="login"][style*="ef4444"],
 a[href*="login"][style*="239,68"],
 button[style*="ef4444"],
 button[style*="239,68"] {
   background: transparent !important;
   border: 1px solid #ef4444 !important;
-  border-radius: 0px !important;
+  border-radius: 6px;
   color: #ef4444 !important;
   box-shadow: 0 0 6px rgba(239, 68, 68, 0.15) !important;
-  transition: border-color 0.2s, color 0.2s, background-color 0.2s, box-shadow 0.2s;
+  transition: all 0.2s ease;
 }
 a[href*="login"][style*="ef4444"]:hover,
 a[href*="login"][style*="239,68"]:hover,
@@ -485,4 +477,20 @@ button[style*="239,68"]:hover {
   background: rgba(239, 68, 68, 0.08) !important;
   border-color: #f87171 !important;
   box-shadow: 0 0 12px rgba(239, 68, 68, 0.35) !important;
+}
+
+/* Spinner style */
+.spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid rgba(255, 158, 66, 0.1);
+  border-top: 3px solid var(--accent);
+  border-radius: 50% !important;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
