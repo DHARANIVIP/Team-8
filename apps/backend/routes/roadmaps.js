@@ -10,13 +10,15 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 const STANDARD_PATHS = [
-  { id: 'frontend', name: 'Frontend Developer', category: 'Frontend', description: 'Master HTML, CSS, JavaScript, React, and modern frontend tools.', difficulty_level: 'Beginner', estimated_duration: '6 Months' },
-  { id: 'backend', name: 'Backend Developer', category: 'Backend', description: 'Design databases, microservices, REST APIs, and server architectures.', difficulty_level: 'Intermediate', estimated_duration: '8 Months' },
-  { id: 'devops', name: 'DevOps Engineer', category: 'DevOps', description: 'Automate CI/CD pipelines, containerization, and cloud infrastructure.', difficulty_level: 'Advanced', estimated_duration: '9 Months' },
-  { id: 'ai-ml', name: 'AI/ML Specialist', category: 'AI/ML', description: 'Study machine learning, neural networks, PyTorch, and generative AI models.', difficulty_level: 'Advanced', estimated_duration: '12 Months' },
-  { id: 'data-science', name: 'Data Scientist', category: 'Data Science', description: 'Analyze big data, statistics, SQL, data pipelines, and python scripting.', difficulty_level: 'Intermediate', estimated_duration: '7 Months' },
-  { id: 'cybersecurity', name: 'Cybersecurity Analyst', category: 'Cybersecurity', description: 'Secure networks, ethical hacking, defense frameworks, and pentesting.', difficulty_level: 'Intermediate', estimated_duration: '8 Months' },
-  { id: 'cloud', name: 'Cloud Architect', category: 'Cloud Computing', description: 'Design secure, fault-tolerant distributed systems in AWS, GCP, or Azure.', difficulty_level: 'Advanced', estimated_duration: '9 Months' }
+  { id: 'frontend', name: 'Frontend Developer', category: 'Frontend', description: 'Master HTML, CSS, JavaScript, React, and modern frontend tools.', difficulty_level: 'Beginner', estimated_duration: '6 Months', source: 'roadmap.sh', source_slug: 'frontend' },
+  { id: 'backend', name: 'Backend Developer', category: 'Backend', description: 'Design databases, microservices, REST APIs, and server architectures.', difficulty_level: 'Intermediate', estimated_duration: '8 Months', source: 'roadmap.sh', source_slug: 'backend' },
+  { id: 'devops', name: 'DevOps Engineer', category: 'DevOps', description: 'Automate CI/CD pipelines, containerization, and cloud infrastructure.', difficulty_level: 'Advanced', estimated_duration: '9 Months', source: 'gemini' },
+  { id: 'ai-ml', name: 'AI/ML Specialist', category: 'AI/ML', description: 'Study machine learning, neural networks, PyTorch, and generative AI models.', difficulty_level: 'Advanced', estimated_duration: '12 Months', source: 'gemini' },
+  { id: 'data-science', name: 'Data Scientist', category: 'Data Science', description: 'Analyze big data, statistics, SQL, data pipelines, and python scripting.', difficulty_level: 'Intermediate', estimated_duration: '7 Months', source: 'gemini' },
+  { id: 'cybersecurity', name: 'Cybersecurity Analyst', category: 'Cybersecurity', description: 'Secure networks, ethical hacking, defense frameworks, and pentesting.', difficulty_level: 'Intermediate', estimated_duration: '8 Months', source: 'gemini' },
+  { id: 'cloud', name: 'Cloud Architect', category: 'Cloud Computing', description: 'Design secure, fault-tolerant distributed systems in AWS, GCP, or Azure.', difficulty_level: 'Advanced', estimated_duration: '9 Months', source: 'gemini' },
+  { id: 'claude-code', name: 'Claude Code Developer', category: 'AI Tools', description: 'Master AI-assisted terminal-based coding, agentic workflows, and Claude Code tools.', difficulty_level: 'Intermediate', estimated_duration: '3 Months', source: 'gemini' },
+  { id: 'vibe-coding', name: 'Vibe Coding Specialist', category: 'AI Tools', description: 'Leverage LLMs, prompt engineering, agent orchestration, and vibe-coding paradigms.', difficulty_level: 'Beginner', estimated_duration: '2 Months', source: 'gemini' }
 ];
 
 const nameMapping = {
@@ -26,7 +28,9 @@ const nameMapping = {
   'ai-ml': { name: 'AI/ML Specialist', category: 'AI/ML' },
   'data-science': { name: 'Data Scientist', category: 'Data Science' },
   'cybersecurity': { name: 'Cybersecurity Analyst', category: 'Cybersecurity' },
-  'cloud': { name: 'Cloud Architect', category: 'Cloud Computing' }
+  'cloud': { name: 'Cloud Architect', category: 'Cloud Computing' },
+  'claude-code': { name: 'Claude Code Developer', category: 'AI Tools' },
+  'vibe-coding': { name: 'Vibe Coding Specialist', category: 'AI Tools' }
 };
 
 /**
@@ -133,6 +137,37 @@ router.post('/sync', async (req, res) => {
     res.json({ message: 'Sync process completed', results });
   } catch (error) {
     res.status(500).json({ error: 'Sync trigger failed', details: error.message });
+  }
+});
+
+/**
+ * GET /api/roadmaps/source/roadmap.sh
+ * Returns only the roadmaps sourced from roadmap.sh
+ */
+router.get('/source/roadmap.sh', async (req, res) => {
+  try {
+    const { data: dbRoadmaps, error } = await supabase
+      .from('roadmaps')
+      .select('*')
+      .eq('source', 'roadmap.sh');
+
+    if (error || !dbRoadmaps || dbRoadmaps.length === 0) {
+      // Fallback: return standard frontend/backend paths
+      const fallback = STANDARD_PATHS.filter(p => p.source === 'roadmap.sh');
+      return res.json(fallback);
+    }
+    
+    // Merge standard path descriptions
+    const blended = dbRoadmaps.map(db => {
+      const match = STANDARD_PATHS.find(p => p.name.toLowerCase() === db.name.toLowerCase());
+      return match ? { ...match, ...db } : db;
+    });
+    
+    res.json(blended);
+  } catch (err) {
+    console.error('Error fetching roadmap.sh sources:', err.message);
+    const fallback = STANDARD_PATHS.filter(p => p.source === 'roadmap.sh');
+    res.json(fallback);
   }
 });
 

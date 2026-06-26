@@ -162,3 +162,26 @@ CREATE TABLE IF NOT EXISTS roadmap_resources (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+
+-- =========================================================================
+-- MIGRATION: ADD COLUMNS FOR ROADMAP.SH INTEGRATION
+-- =========================================================================
+
+-- Track the external source for each roadmap
+ALTER TABLE roadmaps ADD COLUMN IF NOT EXISTS source VARCHAR(50) DEFAULT 'gemini';
+-- Values: 'roadmap.sh' | 'gemini' | 'manual'
+
+ALTER TABLE roadmaps ADD COLUMN IF NOT EXISTS source_slug VARCHAR(50);
+-- Values: 'frontend' | 'backend' (matches roadmap.sh slug)
+
+ALTER TABLE roadmaps ADD COLUMN IF NOT EXISTS etag VARCHAR(255);
+-- GitHub ETag for efficient change detection
+
+-- Track node type for proper hierarchy display
+ALTER TABLE roadmap_nodes ADD COLUMN IF NOT EXISTS node_type VARCHAR(20) DEFAULT 'topic';
+-- Values: 'topic' | 'subtopic' | 'milestone'
+
+ALTER TABLE roadmap_nodes ADD COLUMN IF NOT EXISTS source_node_id VARCHAR(255);
+-- Original node ID from roadmap.sh JSON
+
+

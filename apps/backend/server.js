@@ -1,6 +1,7 @@
 import 'dotenv/config'; // trigger reload
 import express from 'express';
 import cors from 'cors';
+import passport from 'passport';
 import connectDB from './config/db.js';
 
 // Import routes
@@ -12,6 +13,7 @@ import aiRouter from './routes/ai.js';
 import authRouter from './routes/auth.js';
 import profileRouter from './routes/profile.js';
 import roadmapsRouter from './routes/roadmaps.js';
+import { seedRoadmaps } from './seedRoadmaps.js';
 
 // Connect to MongoDB
 connectDB();
@@ -22,6 +24,7 @@ const PORT = process.env.PORT || 3001;
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use(passport.initialize());
 
 // Routes
 /**
@@ -71,7 +74,34 @@ app.get('/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
   console.log(`📊 Health check: http://localhost:${PORT}/health`);
+  
+  // Seed PostgreSQL roadmaps data
+  try {
+    await seedRoadmaps();
+  } catch (seedErr) {
+    console.error('❌ Error seeding roadmaps on startup:', seedErr.message);
+  }
+  
+  // Verify Supabase columns presence on start
+  try {
+    const { createClient } = await import('@supabase/supabase-js');
+    const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+    const { error: rErr } = await supabase.from('roadmaps').select('source, source_slug, etag').limit(1);
+    if (rErr) {
+      console.warn('⚠️ Supabase roadmaps columns (source, source_slug, etag) might be missing:', rErr.message);
+    } else {
+      console.log('✅ Supabase roadmaps table columns verified successfully!');
+    }
+    const { error: nErr } = await supabase.from('roadmap_nodes').select('node_type, source_node_id').limit(1);
+    if (nErr) {
+      console.warn('⚠️ Supabase roadmap_nodes columns (node_type, source_node_id) might be missing:', nErr.message);
+    } else {
+      console.log('✅ Supabase roadmap_nodes table columns verified successfully!');
+    }
+  } catch (err) {
+    console.error('❌ Error checking Supabase columns on startup:', err.message);
+  }
 });
