@@ -52,131 +52,143 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <div className="auth-bg" style={{ position: 'relative', minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+    <div className="auth-bg" style={{ position: 'relative', overflow: 'hidden' }}>
+      {/* Background ambient glowing spheres */}
+      <div style={{
+        position: 'absolute',
+        width: '350px',
+        height: '350px',
+        background: 'radial-gradient(circle, rgba(255, 158, 66, 0.08) 0%, rgba(255, 158, 66, 0) 70%)',
+        top: '15%',
+        left: '15%',
+        borderRadius: '50%',
+        filter: 'blur(50px)',
+        zIndex: 0,
+        pointerEvents: 'none'
+      }} />
+      <div style={{
+        position: 'absolute',
+        width: '400px',
+        height: '400px',
+        background: 'radial-gradient(circle, rgba(255, 158, 66, 0.06) 0%, rgba(255, 158, 66, 0) 70%)',
+        bottom: '15%',
+        right: '10%',
+        borderRadius: '50%',
+        filter: 'blur(60px)',
+        zIndex: 0,
+        pointerEvents: 'none'
+      }} />
 
-      <div className="auth-card animate-fade-in" style={{
-        zIndex: 1,
-        border: '1px solid #ff9e42',
-        boxShadow: '0 0 25px rgba(255,158,66,0.15)',
-        width: '440px',
-        padding: '40px',
-        background: 'rgba(13,13,13,0.92)'
-      }}>
-        <h1 style={{
-          color: '#ffffff',
-          fontSize: '28px',
-          fontWeight: 'bold',
-          marginBottom: '10px',
-          textAlign: 'center',
-          letterSpacing: '0.5px'
-        }}>
-          New password
-        </h1>
-
-        <p style={{
-          color: '#888888',
-          fontSize: '13px',
-          textAlign: 'center',
-          lineHeight: '1.5',
-          marginBottom: '26px'
-        }}>
-          Enter your new password to reset access to your account.
-        </p>
-
-        {error && (
-          <div style={{
-            background: 'rgba(239,68,68,0.1)',
-            border: '1px solid #ef4444',
-            color: '#ef4444',
-            padding: '10px',
-            fontSize: '12px',
-            marginBottom: '16px',
+      <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+        <div className="auth-card animate-fade-in">
+          <h1 style={{
+            color: '#ffffff',
+            fontSize: '28px',
+            fontWeight: 800,
+            marginBottom: '10px',
             textAlign: 'center',
+            letterSpacing: '0.5px',
+            textShadow: '0 0 8px rgba(255, 158, 66, 0.25)'
           }}>
-            {error}
-          </div>
-        )}
+            New password
+          </h1>
 
-        <form onSubmit={handleSubmit}>
-          {/* New Password */}
-          <div style={{ marginBottom: '16px' }}>
-            <div className="input-wrapper">
-              <span className="input-icon">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ff9e42" strokeWidth="2">
-                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                </svg>
-              </span>
-              <input
-                className="input-field"
-                type="password"
-                placeholder="New password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                required
-                style={{
-                  borderColor: '#ff9e42',
-                  background: '#090909',
-                  paddingLeft: '40px',
-                  color: '#ffffff'
-                }}
-              />
-            </div>
-          </div>
+          <p style={{
+            color: 'var(--text-secondary)',
+            fontSize: '13px',
+            textAlign: 'center',
+            lineHeight: '1.5',
+            marginBottom: '26px'
+          }}>
+            Enter your new password to reset access to your account.
+          </p>
 
-          {/* Confirm Password */}
-          <div style={{ marginBottom: '22px' }}>
-            <div className="input-wrapper">
-              <span className="input-icon">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ff9e42" strokeWidth="2">
-                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                </svg>
-              </span>
-              <input
-                className="input-field"
-                type="password"
-                placeholder="Confirm password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-                style={{
-                  borderColor: '#ff9e42',
-                  background: '#090909',
-                  paddingLeft: '40px',
-                  color: '#ffffff'
-                }}
-              />
-            </div>
-          </div>
-
-          {/* Submit */}
-          <button
-            className="btn-primary"
-            type="submit"
-            disabled={loading}
-            style={{
-              width: '100%',
-              justifyContent: 'center',
-              fontSize: '14px',
+          {error && (
+            <div style={{
+              background: 'rgba(239, 68, 68, 0.08)',
+              border: '1px solid rgba(239, 68, 68, 0.3)',
+              borderRadius: '6px',
+              color: '#ef4444',
               padding: '12px',
-              background: '#ff9e42',
-              color: '#0d0d0d',
-              border: 'none',
-              fontWeight: 700,
-              cursor: loading ? 'not-allowed' : 'pointer',
-              boxShadow: '0 0 10px rgba(255,158,66,0.3)',
-              marginBottom: '20px'
-            }}
-          >
-            {loading ? 'Resetting password...' : 'Reset password'}
-          </button>
-        </form>
+              fontSize: '13px',
+              marginBottom: '16px',
+              textAlign: 'center',
+            }}>
+              {error}
+            </div>
+          )}
 
-        <div style={{ textAlign: 'center' }}>
-          <Link href="/login" style={{ color: '#ff9e42', fontSize: '13px', textDecoration: 'none', fontWeight: 600 }}>
-            Back to sign in
-          </Link>
+          <form onSubmit={handleSubmit}>
+            {/* New Password */}
+            <div style={{ marginBottom: '18px' }}>
+              <div className="input-wrapper">
+                <span className="input-icon">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                  </svg>
+                </span>
+                <input
+                  className="input-field"
+                  type="password"
+                  placeholder="New password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  required
+                  style={{
+                    paddingLeft: '40px'
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Confirm Password */}
+            <div style={{ marginBottom: '22px' }}>
+              <div className="input-wrapper">
+                <span className="input-icon">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                  </svg>
+                </span>
+                <input
+                  className="input-field"
+                  type="password"
+                  placeholder="Confirm password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  style={{
+                    paddingLeft: '40px'
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Submit */}
+            <button
+              className="btn-primary"
+              type="submit"
+              disabled={loading}
+              style={{
+                width: '100%',
+                justifyContent: 'center',
+                fontSize: '14px',
+                padding: '12px',
+                border: 'none',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                marginBottom: '20px'
+              }}
+            >
+              {loading ? 'Resetting password...' : 'Reset password'}
+            </button>
+          </form>
+
+          <div style={{ textAlign: 'center' }}>
+            <Link href="/login" style={{ color: 'var(--accent)', fontSize: '13px', textDecoration: 'none', fontWeight: 600 }}>
+              Back to sign in
+            </Link>
+          </div>
         </div>
       </div>
     </div>

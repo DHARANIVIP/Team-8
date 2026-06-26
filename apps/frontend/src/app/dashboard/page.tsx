@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import DashboardNavbar from '@/components/DashboardNavbar';
-import { isAuthenticated, getCurrentUser } from '@/lib/services/auth-service';
+import { isAuthenticated } from '@/lib/services/auth-service';
 import { getProfile } from '@/lib/services/profile-service';
 import { getCategories } from '@/lib/services/career-service';
 import { getSkills } from '@/lib/services/skill-service';
@@ -154,48 +154,68 @@ export default function DashboardPage() {
   });
 
   return (
-    <div style={{ background: '#0d0d0d', minHeight: '100vh' }}>
+    <div style={{ background: '#0a0a0a', minHeight: '100vh' }}>
       <DashboardNavbar />
-      <main style={{ maxWidth: '1100px', margin: '0 auto', padding: '24px 40px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      <main className="page-container animate-slide-up" style={{ padding: '24px 0', display: 'flex', flexDirection: 'column', gap: '20px' }}>
         
         {error && (
-          <div style={{ padding: '16px', background: 'rgba(239,68,68,0.06)', border: '1px solid #ef4444', color: '#ef4444', borderRadius: '6px', textAlign: 'center' }}>
+          <div style={{ padding: '16px', background: 'rgba(239,68,68,0.06)', border: '1px solid #ef4444', color: '#ef4444', borderRadius: '6px', textAlign: 'center', fontFamily: 'Outfit, sans-serif' }}>
             {error}
           </div>
         )}
 
         {loading ? (
-          <div className="card" style={{ padding: '64px', textAlign: 'center', opacity: 0.7 }}>
-            <p style={{ color: '#ff9e42', fontSize: '16px', fontWeight: 600 }}>Syncing and fetching real-time dashboard data...</p>
+          <div className="card" style={{ padding: '64px', textAlign: 'center', opacity: 0.8, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            <div className="spinner" />
           </div>
         ) : (
           <>
             {/* ── Stats Cards ── */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '14px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
               {stats.map((s) => (
-                <div key={s.label} className="card card-hover" style={{ padding: '20px 20px', display: 'flex', alignItems: 'flex-start', gap: '14px' }}>
-                  <span style={{ fontSize: '22px', color: '#ff9e42' }}>{s.icon}</span>
+                <div key={s.label} className="card card-hover" style={{ padding: '20px', display: 'flex', alignItems: 'center', gap: '16px' }}>
+                  <div style={{
+                    width: '42px',
+                    height: '42px',
+                    borderRadius: '6px',
+                    border: '1px solid rgba(255, 158, 66, 0.25)',
+                    background: 'rgba(255, 158, 66, 0.05)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: 'var(--accent)',
+                    fontSize: '22px',
+                    textShadow: '0 0 8px var(--accent-glow)'
+                  }}>
+                    {s.icon}
+                  </div>
                   <div>
-                    <p style={{ color: '#aaaaaa', fontSize: '12px', marginBottom: '4px' }}>{s.label}</p>
-                    <p style={{ color: '#cccccc', fontSize: '22px', fontWeight: 800, lineHeight: 1 }}>{s.value}</p>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '2px', fontWeight: 500 }}>{s.label}</p>
+                    <p style={{ color: '#ffffff', fontSize: '24px', fontWeight: 800, lineHeight: 1, fontFamily: 'Outfit, sans-serif' }}>{s.value}</p>
                   </div>
                 </div>
               ))}
             </div>
 
             {/* ── Recommended Careers ── */}
-            <section className="card" style={{ padding: '24px 28px' }}>
+            <section className="card" style={{ padding: '28px' }}>
               <span className="section-label">RECOMMENDED FOR YOU</span>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {recommendedCareers.map((c) => (
                   <div key={c.name} style={{
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    padding: '12px 14px', background: '#1a1a1a', borderRadius: '6px',
-                    border: '1px solid #1f1f1f',
+                    padding: '12px 18px', background: 'var(--surface-alt)', borderRadius: '6px',
+                    border: '1px solid rgba(255, 158, 66, 0.08)',
+                    flexWrap: 'wrap',
+                    gap: '12px'
                   }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                      <span style={{ color: '#cccccc', fontWeight: 600, fontSize: '14px' }}>{c.name}</span>
-                      <span className="badge badge-accent" style={{ background: c.badge === 'Target Career' ? 'rgba(80,200,120,0.1)' : undefined, color: c.badge === 'Target Career' ? '#50c878' : undefined, border: c.badge === 'Target Career' ? '1px solid rgba(80,200,120,0.2)' : undefined }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
+                      <span style={{ color: '#ffffff', fontWeight: 600, fontSize: '14px', fontFamily: 'Outfit, sans-serif' }}>{c.name}</span>
+                      <span className="badge" style={{
+                        background: c.badge === 'Target Career' ? 'rgba(80,200,120,0.1)' : 'rgba(255,158,66,0.12)',
+                        color: c.badge === 'Target Career' ? '#50c878' : 'var(--accent)',
+                        border: c.badge === 'Target Career' ? '1px solid rgba(80,200,120,0.2)' : '1px solid rgba(255,158,66,0.3)'
+                      }}>
                         {c.badge}
                       </span>
                       <div style={{ display: 'flex', gap: '6px' }}>
@@ -204,24 +224,24 @@ export default function DashboardPage() {
                         ))}
                       </div>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                      <span style={{ color: '#ff9e42', fontSize: '13px', fontWeight: 600 }}>{c.salary}</span>
-                      <Link href="/dashboard/categories" style={{ color: '#aaaaaa', fontSize: '18px', lineHeight: 1 }}>↗</Link>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                      <span style={{ color: 'var(--accent)', fontSize: '13px', fontWeight: 700, fontFamily: 'Inter, sans-serif' }}>{c.salary}</span>
+                      <Link href="/dashboard/categories" style={{ color: 'var(--text-secondary)', fontSize: '16px', lineHeight: 1 }}>↗</Link>
                     </div>
                   </div>
                 ))}
               </div>
-              <div style={{ marginTop: '16px' }}>
-                <Link href="/dashboard/categories" className="btn-outline" style={{ fontSize: '12px', padding: '7px 16px' }}>
+              <div style={{ marginTop: '20px' }}>
+                <Link href="/dashboard/categories" className="btn-outline" style={{ fontSize: '12px', padding: '8px 18px' }}>
                   Explore All →
                 </Link>
               </div>
             </section>
 
             {/* ── Trending Skills ── */}
-            <section className="card" style={{ padding: '24px 28px' }}>
+            <section className="card" style={{ padding: '28px' }}>
               <span className="section-label">TRENDING SKILLS</span>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '20px' }}>
                 {trendingSkills.length > 0 ? (
                   trendingSkills.map((s) => (
                     <span key={s} className="skill-pill">{s}</span>
@@ -232,15 +252,15 @@ export default function DashboardPage() {
                   ))
                 )}
               </div>
-              <Link href="/dashboard/skills" className="btn-outline" style={{ fontSize: '12px', padding: '7px 16px' }}>
+              <Link href="/dashboard/skills" className="btn-outline" style={{ fontSize: '12px', padding: '8px 18px' }}>
                 View Skill Map →
               </Link>
             </section>
 
             {/* ── Quick Actions ── */}
-            <section className="card" style={{ padding: '24px 28px' }}>
+            <section className="card" style={{ padding: '28px' }}>
               <span className="section-label">QUICK ACTIONS</span>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '12px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px' }}>
                 {[
                   { icon: '◈', title: 'Career Categories', sub: 'Browse all career paths',   link: '/dashboard/categories' },
                   { icon: '◉', title: 'Skill Map',          sub: 'Find your skill gaps',      link: '/dashboard/skills' },
@@ -249,11 +269,26 @@ export default function DashboardPage() {
                   { icon: '🗺', title: 'Learning Roadmaps',  sub: 'Step-by-step developer guides', link: '/dashboard/roadmaps' },
                 ].map((a) => (
                   <Link key={a.title} href={a.link} style={{ textDecoration: 'none' }}>
-                    <div className="card card-hover" style={{ padding: '18px 16px', display: 'flex', flexDirection: 'column', gap: '8px', cursor: 'pointer', height: '100%' }}>
-                      <span style={{ fontSize: '20px', color: '#ff9e42' }}>{a.icon}</span>
-                      <p style={{ color: '#cccccc', fontWeight: 600, fontSize: '13px', margin: 0 }}>{a.title}</p>
-                      <p style={{ color: '#aaaaaa', fontSize: '12px', margin: 0 }}>{a.sub}</p>
-                      <span style={{ color: '#ff9e42', fontSize: '12px', fontWeight: 600, marginTop: 'auto', paddingTop: '4px' }}>Go Now →</span>
+                    <div className="card card-hover" style={{ padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: '12px', cursor: 'pointer', height: '100%', border: '1px solid rgba(255, 158, 66, 0.1)' }}>
+                      <div style={{
+                        width: '36px',
+                        height: '36px',
+                        borderRadius: '6px',
+                        border: '1px solid rgba(255, 158, 66, 0.2)',
+                        background: 'rgba(255, 158, 66, 0.04)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'var(--accent)',
+                        fontSize: '18px'
+                      }}>
+                        {a.icon}
+                      </div>
+                      <div>
+                        <p style={{ color: '#ffffff', fontWeight: 600, fontSize: '14px', margin: 0, fontFamily: 'Outfit, sans-serif' }}>{a.title}</p>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: '12px', margin: '4px 0 0', lineHeight: 1.4 }}>{a.sub}</p>
+                      </div>
+                      <span style={{ color: 'var(--accent)', fontSize: '12px', fontWeight: 600, marginTop: 'auto', paddingTop: '8px', display: 'inline-flex', alignItems: 'center' }}>Go Now →</span>
                     </div>
                   </Link>
                 ))}
@@ -261,10 +296,10 @@ export default function DashboardPage() {
             </section>
 
             {/* ── Daily Focus ── */}
-            <section className="card" style={{ padding: '24px 28px' }}>
+            <section className="card" style={{ padding: '28px' }}>
               <span className="section-label">DAILY FOCUS</span>
-              <p style={{ color: '#aaaaaa', fontSize: '13px', marginBottom: '14px' }}>Set your goal for today</p>
-              <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '14px' }}>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '13px', marginBottom: '14px' }}>Set your goal for today</p>
+              <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '16px' }}>
                 <input
                   className="input-field"
                   type="text"
@@ -272,21 +307,21 @@ export default function DashboardPage() {
                   value={newGoal}
                   onChange={(e) => setNewGoal(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && addGoal()}
-                  style={{ paddingLeft: '14px', flex: 1, background: '#0d0d0d', border: '1px solid #2a2a2a', color: '#ccc', borderRadius: '6px', height: '40px', outline: 'none' }}
+                  style={{ flex: 1, background: 'var(--surface-alt)', border: '1px solid var(--border-dark)', color: '#ccc', borderRadius: '6px', height: '42px', outline: 'none' }}
                 />
-                <button onClick={addGoal} className="btn-primary" style={{ height: '40px', padding: '0 18px', fontSize: '18px', lineHeight: 1 }}>+</button>
+                <button onClick={addGoal} className="btn-primary" style={{ height: '42px', padding: '0 20px', fontSize: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>+</button>
               </div>
 
               {goals.length === 0 ? (
-                <p style={{ color: '#555555', fontSize: '13px', marginTop: '14px', textAlign: 'center' }}>
+                <p style={{ color: 'var(--text-muted)', fontSize: '13px', padding: '16px', textAlign: 'center' }}>
                   No goals added today.
                 </p>
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   {goals.map((g, i) => (
-                    <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#131313', padding: '8px 14px', borderRadius: '6px', border: '1px solid #1c1c1c' }}>
-                      <span style={{ color: '#cccccc', fontSize: '13px' }}>{g}</span>
-                      <button onClick={() => removeGoal(i)} style={{ background: 'transparent', color: '#ef4444', border: 'none', cursor: 'pointer', fontSize: '14px' }}>✕</button>
+                    <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--surface-alt)', padding: '10px 16px', borderRadius: '6px', border: '1px solid rgba(255, 158, 66, 0.08)' }}>
+                      <span style={{ color: 'var(--text-primary)', fontSize: '13px' }}>{g}</span>
+                      <button onClick={() => removeGoal(i)} style={{ background: 'transparent', color: '#ef4444', border: 'none', cursor: 'pointer', fontSize: '14px', padding: '4px' }}>✕</button>
                     </div>
                   ))}
                 </div>
@@ -294,21 +329,21 @@ export default function DashboardPage() {
             </section>
 
             {/* ── Career Snapshot ── */}
-            <section className="card" style={{ padding: '24px 28px' }}>
+            <section className="card" style={{ padding: '28px' }}>
               <span className="section-label">CAREER SNAPSHOT</span>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
-                <div style={{ background: '#1a1a1a', borderRadius: '6px', padding: '16px 18px', border: '1px solid #1f1f1f' }}>
-                  <p style={{ color: '#aaaaaa', fontSize: '12px', marginBottom: '6px' }}>Most Promising Career</p>
-                  <p style={{ color: '#cccccc', fontWeight: 700, fontSize: '15px' }}>{mostPopularCareer.name}</p>
-                  <p style={{ color: '#ff9e42', fontSize: '12px', marginTop: '4px' }}>{mostPopularCareer.salary}</p>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px', marginBottom: '20px' }}>
+                <div style={{ background: 'var(--surface-alt)', borderRadius: '6px', padding: '18px 20px', border: '1px solid rgba(255, 158, 66, 0.08)' }}>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '6px', fontWeight: 500 }}>Most Promising Career</p>
+                  <p style={{ color: '#ffffff', fontWeight: 700, fontSize: '16px', fontFamily: 'Outfit, sans-serif' }}>{mostPopularCareer.name}</p>
+                  <p style={{ color: 'var(--accent)', fontSize: '12px', marginTop: '6px', fontWeight: 600 }}>{mostPopularCareer.salary}</p>
                 </div>
-                <div style={{ background: '#1a1a1a', borderRadius: '6px', padding: '16px 18px', border: '1px solid #1f1f1f' }}>
-                  <p style={{ color: '#aaaaaa', fontSize: '12px', marginBottom: '6px' }}>Highest Paying Career</p>
-                  <p style={{ color: '#cccccc', fontWeight: 700, fontSize: '15px' }}>{highestPayingCareer.name}</p>
-                  <p style={{ color: '#ff9e42', fontSize: '12px', marginTop: '4px' }}>{highestPayingCareer.salary}</p>
+                <div style={{ background: 'var(--surface-alt)', borderRadius: '6px', padding: '18px 20px', border: '1px solid rgba(255, 158, 66, 0.08)' }}>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '6px', fontWeight: 500 }}>Highest Paying Career</p>
+                  <p style={{ color: '#ffffff', fontWeight: 700, fontSize: '16px', fontFamily: 'Outfit, sans-serif' }}>{highestPayingCareer.name}</p>
+                  <p style={{ color: 'var(--accent)', fontSize: '12px', marginTop: '6px', fontWeight: 600 }}>{highestPayingCareer.salary}</p>
                 </div>
               </div>
-              <Link href="/dashboard/categories" className="btn-outline" style={{ fontSize: '12px', padding: '7px 16px' }}>
+              <Link href="/dashboard/categories" className="btn-outline" style={{ fontSize: '12px', padding: '8px 18px' }}>
                 View All Careers →
               </Link>
             </section>
