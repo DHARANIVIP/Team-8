@@ -15,14 +15,21 @@ async function queryHF(url, payload) {
     throw new Error('HF_API_KEY (or HF_TOKEN) is not configured in backend .env');
   }
 
-  const response = await axios.post(url, payload, {
-    headers: {
-      Authorization: `Bearer ${HF_API_KEY}`,
-      'Content-Type': 'application/json'
-    },
-    timeout: 20000 // 20s timeout
-  });
-  return response.data;
+  try {
+    const response = await axios.post(url, payload, {
+      headers: {
+        Authorization: `Bearer ${HF_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      timeout: 20000 // 20s timeout
+    });
+    return response.data;
+  } catch (err) {
+    if (err.response?.data) {
+      console.error('❌ Hugging Face API Error response body:', JSON.stringify(err.response.data));
+    }
+    throw err;
+  }
 }
 
 /**
