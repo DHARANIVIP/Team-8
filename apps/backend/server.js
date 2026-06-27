@@ -13,6 +13,7 @@ import aiRouter from './routes/ai.js';
 import authRouter from './routes/auth.js';
 import profileRouter from './routes/profile.js';
 import roadmapsRouter from './routes/roadmaps.js';
+import onboardingRouter from './routes/onboarding.js';
 import { seedRoadmaps } from './seedRoadmaps.js';
 
 // Connect to MongoDB
@@ -68,6 +69,11 @@ app.use('/api/profile', profileRouter);
  * Learning Roadmaps endpoints (roadmap.sh)
  */
 app.use('/api/roadmaps', roadmapsRouter);
+
+/**
+ * Onboarding endpoints
+ */
+app.use('/api/onboarding', onboardingRouter);
 
 // Health check
 app.get('/health', (req, res) => {

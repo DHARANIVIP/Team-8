@@ -1,2 +1,11 @@
-# Placeholder for Skills feature
-# [Teammate 3] Checkbox item list tracking controllers and proficiency matrices
+export { default as ReadinessRing } from './components/ReadinessRing';
+export { default as SkillsKpiStrip } from './components/SkillsKpiStrip';
+export { default as SkillsTabNav } from './components/SkillsTabNav';
+export { default as AddSkillModal } from './components/AddSkillModal';
+export { default as SkillsSidebar } from './components/SkillsSidebar';
+export { default as OverviewTab } from './components/OverviewTab';
+export { default as ProfileTab } from './components/ProfileTab';
+export { default as GapAnalysisTab } from './components/GapAnalysisTab';
+export { default as SkillMatrixTab } from './components/SkillMatrixTab';
+export { default as CareerFitTab } from './components/CareerFitTab';
+export { default as SkillsCategoryChart } from './components/SkillsCategoryChart';

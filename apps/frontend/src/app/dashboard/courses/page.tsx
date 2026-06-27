@@ -21,12 +21,20 @@ const diffColor: Record<string, string> = {
 
 export default function CoursesPage() {
   const router = useRouter();
+  const [skillFilter, setSkillFilter] = useState('');
   const [coursesList, setCoursesList] = useState<any[]>([]);
   const [recommendedList, setRecommendedList] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [diffFilter, setDiffFilter] = useState('All');
   const [provFilter, setProvFilter] = useState('All');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      setSkillFilter(params.get('skill') || '');
+    }
+  }, []);
 
   useEffect(() => {
     if (!isAuthenticated()) {
@@ -106,12 +114,20 @@ export default function CoursesPage() {
     loadCoursesData();
   }, [router]);
 
+  const matchesSkillFilter = (c: { skillName?: string; title?: string }) => {
+    if (!skillFilter) return true;
+    const q = skillFilter.toLowerCase();
+    return (c.skillName || '').toLowerCase().includes(q) || (c.title || '').toLowerCase().includes(q);
+  };
+
   const filteredRecommended = recommendedList.filter((c) =>
+    matchesSkillFilter(c) &&
     (diffFilter === 'All' || c.difficulty === diffFilter) &&
     (provFilter === 'All' || c.provider === provFilter)
   );
 
   const filteredAll = coursesList.filter((c) =>
+    matchesSkillFilter(c) &&
     (diffFilter === 'All' || c.difficulty === diffFilter) &&
     (provFilter === 'All' || c.provider === provFilter)
   );
@@ -129,7 +145,11 @@ export default function CoursesPage() {
             <div>
               <span className="section-label" style={{ display: 'block', marginBottom: '2px' }}>COURSE SUGGESTIONS</span>
               <h1 style={{ color: '#ffffff', fontWeight: 700, fontSize: '24px', margin: 0, letterSpacing: '0.5px', fontFamily: 'Outfit, sans-serif' }}>Find Your Next Course</h1>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '13px', margin: '4px 0 0' }}>Curated courses filtered by skill, difficulty, and provider</p>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '13px', margin: '4px 0 0' }}>
+                {skillFilter
+                  ? <>Showing courses related to <strong style={{ color: 'var(--accent)' }}>{skillFilter}</strong></>
+                  : 'Curated courses filtered by skill, difficulty, and provider'}
+              </p>
             </div>
           </div>
         </div>
