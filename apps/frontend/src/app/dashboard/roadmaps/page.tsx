@@ -79,9 +79,6 @@ export default function RoadmapsPage() {
             <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#ffffff', margin: 0, fontFamily: 'Outfit, sans-serif' }}>
               {item.name}
             </h3>
-            {isRoadmapSh && (
-              <span className="badge badge-accent" style={{ fontSize: '9px', padding: '2px 8px' }}>roadmap.sh</span>
-            )}
           </div>
           
           <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5, flexGrow: 1 }}>
