@@ -1,7 +1,280 @@
 import express from 'express';
-import { getAllSkills, getSkillsByCareer, createSkill, calculateSkillMatrix, getCategoryById, syncCareerCache } from '../services/supabaseService.js';
+import { 
+  getAllSkills, 
+  getSkillsByCareer, 
+  createSkill, 
+  calculateSkillMatrix, 
+  getCategoryById, 
+  syncCareerCache,
+  getUserSkills,
+  updateUserSkillProgress,
+  deleteUserSkill,
+  getSkillGapAnalysis,
+  getSkillsOverview,
+  getCareerReadinessScores,
+  getSkillsAdvisor,
+  suggestSkills,
+  updateUserProfile,
+  mongoIdToUuid
+} from '../services/supabaseService.js';
+import { protect } from '../middleware/auth.js';
 
 const router = express.Router();
+
+/**
+ * GET /api/skills/overview
+ * Aggregated KPIs and domain scores for the Skills page
+ */
+router.get('/overview', protect, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { careerId } = req.query;
+    const overview = await getSkillsOverview(userId, careerId || null);
+    res.json(overview);
+  } catch (error) {
+    console.error('❌ Get skills overview failed:', error.message);
+    res.status(500).json({ error: 'Failed to retrieve skills overview', details: error.message });
+  }
+});
+
+/**
+ * GET /api/skills/advisor
+ * Data-driven learning guidance from profile, gaps, and recommendations
+ */
+router.get('/advisor', protect, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { careerId } = req.query;
+    const advisor = await getSkillsAdvisor(userId, careerId || null);
+    res.json(advisor);
+  } catch (error) {
+    console.error('❌ Get skills advisor failed:', error.message);
+    res.status(500).json({ error: 'Failed to retrieve skills advisor', details: error.message });
+  }
+});
+
+/**
+ * GET /api/skills/readiness
+ * Readiness percentage for every career in the catalog
+ */
+router.get('/readiness', protect, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const scores = await getCareerReadinessScores(userId);
+    res.json({ careers: scores });
+  } catch (error) {
+    console.error('❌ Get career readiness failed:', error.message);
+    res.status(500).json({ error: 'Failed to calculate career readiness', details: error.message });
+  }
+});
+
+/**
+ * GET /api/skills/suggest
+ * Autocomplete search against the skills catalog
+ */
+router.get('/suggest', protect, async (req, res) => {
+  try {
+    const { q } = req.query;
+    const suggestions = await suggestSkills(q || '');
+    res.json({ suggestions });
+  } catch (error) {
+    console.error('❌ Skill suggest failed:', error.message);
+    res.status(500).json({ error: 'Failed to search skills catalog', details: error.message });
+  }
+});
+
+/**
+ * GET /api/skills/profile
+ * Retrieve granular user skills profile
+ */
+router.get('/profile', protect, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const skills = await getUserSkills(userId);
+    res.json(skills);
+  } catch (error) {
+    console.error('❌ Get user skills profile failed:', error.message);
+    res.status(500).json({ error: 'Failed to retrieve skills profile', details: error.message });
+  }
+});
+
+/**
+ * POST /api/skills/profile
+ * Add or update a granular user skill progress
+ */
+router.post('/profile', protect, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { skillName, proficiency, progressPercentage } = req.body;
+
+    if (!skillName) {
+      return res.status(400).json({ error: 'skillName is required' });
+    }
+
+    const updated = await updateUserSkillProgress(userId, skillName, proficiency, progressPercentage, 'user');
+    res.json(updated);
+  } catch (error) {
+    console.error('❌ Update user skill progress failed:', error.message);
+    res.status(500).json({ error: 'Failed to save skill progress', details: error.message });
+  }
+});
+
+/**
+ * DELETE /api/skills/profile/:skillName
+ * Remove a skill from the user's profile
+ */
+router.delete('/profile/:skillName', protect, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const skillName = decodeURIComponent(req.params.skillName);
+    const result = await deleteUserSkill(userId, skillName);
+    res.json(result);
+  } catch (error) {
+    console.error('❌ Delete user skill failed:', error.message);
+    res.status(500).json({ error: 'Failed to delete skill', details: error.message });
+  }
+});
+
+/**
+ * GET /api/skills/gap/:careerId
+ * Compare user profile skills against career-required skills
+ */
+router.get('/gap/:careerId', protect, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { careerId } = req.params;
+
+    const gapDetails = await getSkillGapAnalysis(userId, careerId);
+    res.json(gapDetails);
+  } catch (error) {
+    console.error('❌ Get skill gap analysis failed:', error.message);
+    res.status(500).json({ error: 'Failed to calculate skill gaps', details: error.message });
+  }
+});
+
+/**
+ * POST /api/skills/analyze
+ * Run dynamic AI skills parsing using stored resume text from database.
+ * Falls back to current_skills array if resume_raw_text is not available.
+ */
+router.post('/analyze', protect, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    const { createClient } = await import('@supabase/supabase-js');
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    let profile = null;
+    try {
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('resume_raw_text, current_skills, target_career')
+        .eq('user_id', mongoIdToUuid(userId))
+        .maybeSingle();
+      if (error) throw error;
+      profile = data;
+    } catch (dbErr) {
+      console.warn('⚠️ Supabase user_profiles query failed during skills analyze:', dbErr.message);
+      return res.status(400).json({ 
+        error: 'Database query failed. Please ensure the database schema migrations have been run.' 
+      });
+    }
+
+    const resumeText = profile?.resume_raw_text || '';
+    const existingSkills = profile?.current_skills || [];
+
+    if (resumeText.trim()) {
+      const { getHFOpenAIClient } = await import('../services/huggingfaceService.js');
+      const client = getHFOpenAIClient();
+
+      const systemPrompt = `Analyze the resume text and extract all professional, engineering, or design skills.
+      For each extracted skill, estimate:
+      - proficiency: 'Beginner', 'Intermediate', or 'Expert' based on context (Expert = multiple projects/years, Beginner = basic mention).
+      - progressPercentage: integer between 10 and 95.
+      
+      You MUST output valid JSON only conforming to the schema below. Do not output markdown or explanations:
+      {
+        "skills": [
+          { "name": "Python", "proficiency": "Expert", "progressPercentage": 90 },
+          { "name": "React", "proficiency": "Intermediate", "progressPercentage": 60 }
+        ]
+      }`;
+
+      const completion = await client.chat.completions.create({
+        model: 'meta-llama/Meta-Llama-3-8B-Instruct:together',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: `Resume text:\n"""\n${resumeText.substring(0, 3000)}\n"""` }
+        ],
+        temperature: 0.2
+      });
+
+      const responseText = completion.choices[0]?.message?.content || '{}';
+      const firstBrace = responseText.indexOf('{');
+      const lastBrace = responseText.lastIndexOf('}');
+      let jsonString = '{}';
+      if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+        jsonString = responseText.substring(firstBrace, lastBrace + 1);
+      } else {
+        jsonString = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
+      }
+
+      let parsed = { skills: [] };
+      try {
+        parsed = JSON.parse(jsonString);
+      } catch (pErr) {
+        console.warn('⚠️ Standard JSON parse failed:', pErr.message);
+        return res.status(422).json({ error: 'AI could not parse skills from your resume. Try again or add skills manually.' });
+      }
+
+      const extracted = parsed.skills || [];
+      if (extracted.length === 0) {
+        return res.status(422).json({ error: 'No skills could be extracted from your resume text.' });
+      }
+
+      const inserted = [];
+      for (const skill of extracted) {
+        const result = await updateUserSkillProgress(userId, skill.name, skill.proficiency, skill.progressPercentage, 'resume');
+        inserted.push(result);
+      }
+
+      await updateUserProfile(userId, { skills_last_analyzed_at: new Date().toISOString() }).catch(() => {});
+
+      return res.json({ message: 'Skills profile analyzed and updated from resume!', skills: inserted, source: 'resume' });
+    }
+
+    if (existingSkills && existingSkills.length > 0) {
+      const inserted = [];
+      for (const skillName of existingSkills) {
+        if (!skillName || typeof skillName !== 'string') continue;
+        try {
+          const result = await updateUserSkillProgress(userId, skillName, 'Intermediate', 60, 'profile');
+          inserted.push(result);
+        } catch (skillErr) {
+          console.warn(`⚠️ Could not upsert skill "${skillName}":`, skillErr.message);
+        }
+      }
+
+      await updateUserProfile(userId, { skills_last_analyzed_at: new Date().toISOString() }).catch(() => {});
+
+      return res.json({ 
+        message: `Skills populated from your profile (${inserted.length} skills). Upload a resume during onboarding for deeper AI analysis.`,
+        skills: inserted,
+        source: 'profile'
+      });
+    }
+
+    return res.status(400).json({ 
+      error: 'No resume text or existing skills found in your profile. Please complete the onboarding process to upload your resume.' 
+    });
+
+  } catch (error) {
+    console.error('❌ Dynamic skills AI analysis failed:', error.message);
+    res.status(500).json({ error: 'Failed to run AI skills parsing', details: error.message });
+  }
+});
 
 /**
  * GET /api/skills
@@ -14,7 +287,6 @@ router.get('/', async (req, res) => {
     if (careerId) {
       let skills = await getSkillsByCareer(careerId);
       
-      // If no skills exist, dynamically sync them
       if (!skills || skills.length === 0) {
         const career = await getCategoryById(careerId);
         if (career) {
@@ -24,22 +296,14 @@ router.get('/', async (req, res) => {
         }
       }
       
-      return res.json(skills);
+      return res.json(skills || []);
     }
     
     const skills = await getAllSkills();
-    res.json(skills);
+    res.json(skills || []);
   } catch (error) {
-    console.error('⚠️ Skills retrieval failed. Returning mock data.', error.message);
-    
-    const mockSkills = [
-      { id: '1', name: 'Python', category: 'Languages', description: 'General scientific language', difficulty_level: 'Easy' },
-      { id: '2', name: 'JavaScript', category: 'Languages', description: 'Web scripting language', difficulty_level: 'Medium' },
-      { id: '3', name: 'React', category: 'Frontend Frameworks', description: 'Declarative UI library', difficulty_level: 'Medium' },
-      { id: '4', name: 'SQL', category: 'Databases', description: 'Relational query language', difficulty_level: 'Easy' }
-    ];
-    
-    res.json(mockSkills);
+    console.error('❌ Skills retrieval failed:', error.message);
+    res.status(500).json({ error: 'Failed to fetch skills from database', details: error.message });
   }
 });
 
@@ -85,7 +349,6 @@ router.post('/matrix', async (req, res) => {
 
     const matrix = await calculateSkillMatrix(career_id_1, career_id_2);
     
-    // Format response to match API contract
     res.json({
       overlap: matrix.commonSkills,
       uniqueTo1: matrix.uniqueToCareer1,
@@ -93,15 +356,8 @@ router.post('/matrix', async (req, res) => {
       overlapPercentage: matrix.overlapPercentage
     });
   } catch (error) {
-    console.error('Error calculating skill matrix. Returning mock matrix.');
-    
-    // Mock Matrix Fallback
-    res.json({
-      overlap: ['Python', 'SQL'],
-      uniqueTo1: ['JavaScript', 'React', 'AWS'],
-      uniqueTo2: ['Machine Learning', 'TensorFlow', 'Statistics'],
-      overlapPercentage: 25
-    });
+    console.error('Error calculating skill matrix:', error.message);
+    res.status(500).json({ error: 'Failed to calculate skill matrix', details: error.message });
   }
 });
 
