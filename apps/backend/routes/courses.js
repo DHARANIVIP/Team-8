@@ -12,14 +12,8 @@ router.get('/', async (req, res) => {
     const courses = await getAllCourses();
     res.json(courses);
   } catch (error) {
-    console.error('⚠️ Courses retrieval failed. Returning mock data.', error.message);
-    
-    const mockCourses = [
-      { id: '1', title: 'JavaScript: The Advanced Concepts', provider: 'Udemy', url: '#', difficulty: 'Advanced', price: '₹455', skill_id: 'c7078e8e-d9c1-4b13-911e-0899f8d1634b' },
-      { id: '2', title: 'Introduction to Python', provider: 'Coursera', url: '#', difficulty: 'Beginner', price: 'Free', skill_id: 'd1193d20-80c1-4f80-bdc2-7cb8e293dbef' }
-    ];
-    
-    res.json(mockCourses);
+    console.error('⚠️ Courses retrieval failed:', error.message);
+    res.status(500).json({ error: 'Failed to fetch courses from database', details: error.message });
   }
 });
 

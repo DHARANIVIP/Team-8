@@ -1,4 +1,3 @@
-// Categories feature placeholder (fixed TypeScript file)
-
-export {};
+export { default as DomainRadarChart } from './DomainRadarChart';
+export { default as SkillGapPanel } from './SkillGapPanel';
 

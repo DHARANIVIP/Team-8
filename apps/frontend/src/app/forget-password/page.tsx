@@ -79,6 +79,22 @@ export default function ForgetPasswordPage() {
   const [message, setMessage] = useState('');
   const [resetToken, setResetToken] = useState('');
   const [error, setError] = useState('');
+  const [showToast, setShowToast] = useState(false);
+  const [toastVisible, setToastVisible] = useState(false);
+
+  const triggerToast = () => {
+    setShowToast(true);
+    setTimeout(() => setToastVisible(true), 10);
+    setTimeout(() => {
+      setToastVisible(false);
+      setTimeout(() => setShowToast(false), 300);
+    }, 4000);
+  };
+
+  const dismissToast = () => {
+    setToastVisible(false);
+    setTimeout(() => setShowToast(false), 300);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,6 +109,7 @@ export default function ForgetPasswordPage() {
       if (data.resetToken) {
         setResetToken(data.resetToken);
       }
+      triggerToast();
     } catch (err: any) {
       setError(err.message || 'Failed to send reset link. Please check your email.');
     } finally {
@@ -102,6 +119,62 @@ export default function ForgetPasswordPage() {
 
   return (
     <div className="auth-bg auth-container-seoul" style={{ position: 'relative', overflow: 'hidden' }}>
+      {/* Toast Notification */}
+      {showToast && (
+        <div style={{
+          position: 'fixed',
+          bottom: '32px',
+          right: '32px',
+          zIndex: 9999,
+          transition: 'all 0.35s cubic-bezier(0.16, 1, 0.3, 1)',
+          opacity: toastVisible ? 1 : 0,
+          transform: toastVisible ? 'translateY(0) scale(1)' : 'translateY(16px) scale(0.97)',
+          pointerEvents: toastVisible ? 'auto' : 'none',
+        }}>
+          <div style={{
+            background: '#fefce8',
+            border: '2px solid var(--accent)',
+            borderRadius: '8px',
+            padding: '16px 20px',
+            minWidth: '300px',
+            maxWidth: '380px',
+            boxShadow: '0 8px 32px rgba(255, 158, 66, 0.25), 0 4px 12px rgba(0,0,0,0.3)',
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: '12px',
+          }}>
+            <div style={{ flex: 1 }}>
+              <p style={{ color: '#1a1a1a', fontWeight: 700, fontSize: '15px', marginBottom: '4px', fontFamily: 'Seoul Namsan, Seoul Hangang, Seoul, sans-serif' }}>
+                Reset link sent!
+              </p>
+              <p style={{ color: '#4a4a4a', fontSize: '13px', fontFamily: 'Seoul Namsan, Seoul Hangang, Seoul, sans-serif' }}>
+                Check your email for the password reset link.
+              </p>
+            </div>
+            <button
+              onClick={dismissToast}
+              style={{
+                background: 'transparent',
+                border: '1px solid #d4d4d4',
+                color: '#666',
+                width: '24px',
+                height: '24px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                fontSize: '13px',
+                fontWeight: 700,
+                borderRadius: '4px',
+                flexShrink: 0,
+                padding: 0,
+              }}
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
       <style dangerouslySetInnerHTML={{__html: `
         .auth-container-seoul, 
         .auth-container-seoul h1, 
