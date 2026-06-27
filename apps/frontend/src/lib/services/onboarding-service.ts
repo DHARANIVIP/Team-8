@@ -43,7 +43,7 @@ export async function getRecommendations() {
     }
     return data;
   } catch (error) {
-    console.error('getRecommendations error:', error);
+    console.warn('getRecommendations:', error);
     throw error;
   }
 }

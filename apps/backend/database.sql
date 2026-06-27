@@ -233,3 +233,27 @@ ALTER TABLE careers ADD COLUMN IF NOT EXISTS industry_tags TEXT[] DEFAULT '{}';
 -- Per-career match score index in recommendations
 ALTER TABLE user_recommendations ADD COLUMN IF NOT EXISTS career_match_scores JSONB DEFAULT '{}';
 -- Structure: { "<career_id>": 85, "<career_id_2>": 72, ... }
+
+-- =========================================================================
+-- MIGRATION: BOOKMARKS, DETAILED AI INSIGHTS & SKILLS PROGRESSION
+-- =========================================================================
+
+-- 1. Track saved/bookmarked careers on user_profiles
+ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS saved_careers UUID[] DEFAULT '{}';
+
+-- 2. Store detailed career-specific personalized insights
+ALTER TABLE user_recommendations ADD COLUMN IF NOT EXISTS personalized_insights JSONB DEFAULT '{}';
+
+ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS skills_last_analyzed_at TIMESTAMPTZ;
+
+-- 3. Dedicated user_skills table for granular progress tracking
+CREATE TABLE IF NOT EXISTS user_skills (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES user_profiles(user_id) ON DELETE CASCADE,
+    skill_name VARCHAR(100) NOT NULL,
+    proficiency VARCHAR(50) DEFAULT 'Beginner', -- 'Beginner' | 'Intermediate' | 'Expert'
+    progress_percentage INT DEFAULT 20, -- 0 to 100
+    source VARCHAR(50) DEFAULT 'user', -- 'resume' | 'user' | 'course_completion'
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT unique_user_skill UNIQUE (user_id, skill_name)
+);

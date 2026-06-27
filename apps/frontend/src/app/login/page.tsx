@@ -337,6 +337,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                suppressHydrationWarning={true}
                 style={{
                   paddingLeft: '40px',
                   borderRadius: '0px',
@@ -366,6 +367,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                suppressHydrationWarning={true}
                 style={{
                   paddingLeft: '40px',
                   paddingRight: '40px',
@@ -391,6 +393,7 @@ export default function LoginPage() {
             className="btn-primary"
             type="submit"
             disabled={loading}
+            suppressHydrationWarning={true}
             style={{
               width: '100%',
               justifyContent: 'center',
@@ -416,6 +419,7 @@ export default function LoginPage() {
               type="button"
               className="btn-ghost"
               onClick={handleGoogleLogin}
+              suppressHydrationWarning={true}
               style={{
                 padding: '12px',
                 display: 'flex',
@@ -444,6 +448,7 @@ export default function LoginPage() {
               type="button"
               className="btn-ghost"
               onClick={handleGithubLogin}
+              suppressHydrationWarning={true}
               style={{
                 padding: '12px',
                 display: 'flex',

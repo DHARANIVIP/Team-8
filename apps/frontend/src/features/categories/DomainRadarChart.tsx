@@ -12,12 +12,13 @@ interface DomainRadarChartProps {
 }
 
 export default function DomainRadarChart({ domains = [] }: DomainRadarChartProps) {
+  const safeDomains = Array.isArray(domains) ? domains : [];
   // Define the standard 5 domains in order to keep coordinates consistent
   const standardDomains = ['Technology', 'Data & AI', 'Design', 'Security', 'Business'];
   
   // Merge input domains with default order and scores
   const chartData = standardDomains.map(name => {
-    const matched = domains.find(d => d && d.name.toLowerCase() === name.toLowerCase());
+    const matched = safeDomains.find(d => d && d.name.toLowerCase() === name.toLowerCase());
     return {
       name,
       score: matched ? Math.max(10, Math.min(100, matched.score)) : 20 // Default score fallback
@@ -55,12 +56,14 @@ export default function DomainRadarChart({ domains = [] }: DomainRadarChartProps
   }).join(' ');
 
   // Get labels coordinates
-  const getLabelCoordinates = (index: number) => {
+  const getLabelCoordinates = (index: number): { x: number; y: number; textAnchor: 'start' | 'middle' | 'end' } => {
     const angle = (Math.PI * 2 / numPoints) * index - Math.PI / 2;
     // Offset slightly further out than maximum radius
     const x = center + (radius + 24) * Math.cos(angle);
     const y = center + (radius + 12) * Math.sin(angle);
-    return { x, y, textAnchor: Math.abs(x - center) < 10 ? 'middle' : x < center ? 'end' : 'start' };
+    const textAnchor: 'start' | 'middle' | 'end' =
+      Math.abs(x - center) < 10 ? 'middle' : x < center ? 'end' : 'start';
+    return { x, y, textAnchor };
   };
 
   return (

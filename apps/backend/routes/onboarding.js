@@ -5,6 +5,7 @@ import { PDFParse } from 'pdf-parse';
 import { protect } from '../middleware/auth.js';
 import { 
   updateUserProfile, 
+  getUserProfile,
   upsertUserRecommendations, 
   getAllCategories, 
   getAllSkills, 
@@ -238,6 +239,7 @@ router.post('/submit', protect, upload.single('resume'), async (req, res) => {
         current_skills: finalSkillsList,
         target_career: topCareer.name,
         resume_embeddings: embeddings, // Save 768-dim vector embeddings
+        resume_raw_text: resumeText, // Save raw text for on-demand AI deep-dives
         career_goal: req.body.careerGoal || req.body.career_goal || '',
         years_experience: req.body.yearsExperience || req.body.years_experience || 'Beginner',
         availability: req.body.availability || ''
@@ -296,6 +298,42 @@ router.get('/recommendations', protect, async (req, res) => {
       recommendations = recommendationsCache.get(userId);
     }
     
+    // ── Fallback: synthesize from user_profiles when no recommendations row exists ──
+    if (!recommendations) {
+      try {
+        const profile = await getUserProfile(userId);
+        if (profile && profile.onboarding_completed) {
+          console.log('ℹ️ No user_recommendations record found; synthesizing from user_profiles for user:', userId);
+
+          // Fetch all careers to find the target career id
+          let allCareers = [];
+          try { allCareers = (await getAllCategories()) || []; } catch (_) {}
+
+          const targetCareer = allCareers.find(c =>
+            c.name.toLowerCase() === (profile.target_career || '').toLowerCase()
+          );
+
+          // Build matched domains from target career industry
+          const targetIndustry = targetCareer ? getIndustryForCareerName(targetCareer.name) : 'Technology';
+          const matchedDomains = [
+            { name: targetIndustry, score: 75 },
+            { name: 'Technology', score: 60 }
+          ].filter((d, i, arr) => arr.findIndex(x => x.name === d.name) === i);
+
+          recommendations = {
+            matched_domains: matchedDomains,
+            suggested_career_paths: targetCareer ? [targetCareer.id] : [],
+            recommended_skills: [],
+            recommended_courses: [],
+            certifications: [],
+            growth_suggestions: `Your profile is set up for ${profile.target_career || 'your target career'}. Keep building your skills and exploring recommended courses.`
+          };
+        }
+      } catch (profileErr) {
+        console.warn('⚠️ Failed to read user_profiles for fallback recommendations:', profileErr.message);
+      }
+    }
+
     if (!recommendations) {
       return res.status(404).json({ error: 'No onboarding recommendations found. Please complete onboarding first.' });
     }

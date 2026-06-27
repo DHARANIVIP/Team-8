@@ -28,7 +28,7 @@ async function queryHF(url, payload) {
 /**
  * Get OpenAI client pointing to Hugging Face serverless completions endpoint
  */
-function getHFOpenAIClient() {
+export function getHFOpenAIClient() {
   if (!HF_API_KEY) {
     throw new Error('HF_API_KEY (or HF_TOKEN) is not configured in backend .env');
   }
@@ -135,5 +135,74 @@ export async function generateResumeInsights(resumeText, targetCareer) {
   } catch (err) {
     console.error('❌ Hugging Face Llama 3 completion failed:', err.message);
     throw new Error(`Hugging Face LLM Error: ${err.message}`);
+  }
+}
+
+/**
+ * Generate dynamic deep-dive insights for a specific target career path
+ */
+export async function generateCareerDeepDiveInsights(resumeText, careerName) {
+  try {
+    console.log(`🤖 Querying Llama-3-8B for deep-dive insights on career: "${careerName}"...`);
+    const client = getHFOpenAIClient();
+
+    const systemPrompt = `You are an elite career advisor.
+    Provide a dynamic, highly personalized deep-dive match analysis between the user's resume and the target career: "${careerName}".
+    
+    Extract or generate:
+    1. why_recommended: 2-3 sentences explaining exactly why this career is a strong match for their background.
+    2. strengths: 3 bullet points showing their core strengths/assets relevant to this career.
+    3. gaps: 3 bullet points highlighting their key skill gaps for this career.
+    4. learning_priorities: 3 actionable steps they should prioritize first.
+    5. job_roles: 3 concrete target job roles under this career.
+    6. certifications: 2 highly valued industry certifications for this career.
+    7. industry_trends: A brief sentence summarizing a key technology trend for this career.
+    8. roadmap: A structured 3-phase growth timeline (e.g. ["Phase 1 (Month 1-2): ...", "Phase 2 (Month 3-4): ...", "Phase 3 (Month 5-6): ..."]).
+    
+    You MUST output valid JSON only conforming to the schema below. Do not output markdown, notes, or explanations outside the JSON object:
+    {
+      "why_recommended": "Text...",
+      "strengths": ["Strength 1", "Strength 2", "Strength 3"],
+      "gaps": ["Gap 1", "Gap 2", "Gap 3"],
+      "learning_priorities": ["Priority 1", "Priority 2", "Priority 3"],
+      "job_roles": ["Role 1", "Role 2", "Role 3"],
+      "certifications": ["Cert 1", "Cert 2"],
+      "industry_trends": "Trend text...",
+      "roadmap": ["Phase 1: ...", "Phase 2: ...", "Phase 3: ..."]
+    }`;
+
+    const completion = await client.chat.completions.create({
+      model: 'meta-llama/Meta-Llama-3-8B-Instruct:together',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: `Resume text:\n\"\"\"\n${resumeText.substring(0, 3000)}\n\"\"\"` }
+      ],
+      temperature: 0.3
+    });
+
+    const responseText = completion.choices[0]?.message?.content || '{}';
+    const firstBrace = responseText.indexOf('{');
+    const lastBrace = responseText.lastIndexOf('}');
+    let jsonString = '{}';
+    if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+      jsonString = responseText.substring(firstBrace, lastBrace + 1);
+    } else {
+      jsonString = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
+    }
+    
+    return JSON.parse(jsonString);
+  } catch (err) {
+    console.error('❌ Llama 3 Deep-dive insights generation failed:', err.message);
+    // Return a rich, structured fallback matching the schema
+    return {
+      why_recommended: `Your general technical background matches the requirements for ${careerName}.`,
+      strengths: ['Core professional competencies', 'General problem solving skills', 'Adaptability to new frameworks'],
+      gaps: ['Specific domain frameworks', 'Industry certifications', 'Advanced hands-on project experience'],
+      learning_priorities: [`Learn the foundations of ${careerName} paths`, 'Complete industry-focused assignments', 'Build concrete portfolio projects'],
+      job_roles: [`Associate ${careerName}`, `${careerName} Specialist`, `Consultant - ${careerName}`],
+      certifications: ['General Industry Professional Certification'],
+      industry_trends: 'Continuous shift toward automation, cloud integration, and low-latency systems.',
+      roadmap: ['Phase 1 (Months 1-2): Master fundamentals and terminology', 'Phase 2 (Months 3-4): Work on practical assignments', 'Phase 3 (Months 5-6): Complete certifications and build portfolio']
+    };
   }
 }

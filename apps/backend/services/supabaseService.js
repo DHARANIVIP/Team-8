@@ -374,11 +374,12 @@ export async function getPersonalizedCareerData(userId) {
     // 3. Fetch user profile
     const { data: profile } = await supabase
       .from('user_profiles')
-      .select('current_skills')
+      .select('current_skills, saved_careers')
       .eq('user_id', cleanUserId)
       .maybeSingle();
 
     const userSkills = profile?.current_skills || [];
+    const savedCareers = profile?.saved_careers || [];
 
     // 4. Fetch skills and courses
     const { data: allSkills } = await supabase.from('skills').select('*');
@@ -436,13 +437,18 @@ export async function getPersonalizedCareerData(userId) {
         }
       }
 
+      const isSaved = savedCareers.includes(c.id);
+      const cachedInsights = recommendations?.personalized_insights?.[c.id] || null;
+
       return {
         ...c,
         matchScore,
         skills: careerSkills,
         matchedSkills: matched,
         gapSkills: gaps,
-        suggestedCourses
+        suggestedCourses,
+        isSaved,
+        cachedInsights
       };
     });
 
@@ -681,4 +687,610 @@ export async function syncCoursesCache(skillId, skillName) {
     console.error('Error in syncCoursesCache:', error.message);
     return [];
   }
+}
+
+// ===== BOOKMARKS & PERSISTENT PERSONALIZED AI DEEP-DIVES =====
+
+/**
+ * Toggle saving/bookmarking a career path
+ */
+export async function toggleSavedCareer(userId, careerId) {
+  const cleanUserId = mongoIdToUuid(userId);
+  const cleanCareerId = mongoIdToUuid(careerId);
+
+  const { data: profile, error: fetchError } = await supabase
+    .from('user_profiles')
+    .select('saved_careers')
+    .eq('user_id', cleanUserId)
+    .maybeSingle();
+
+  if (fetchError) throw fetchError;
+
+  let savedList = profile?.saved_careers || [];
+  const index = savedList.indexOf(cleanCareerId);
+  let saved = false;
+
+  if (index === -1) {
+    savedList = [...savedList, cleanCareerId];
+    saved = true;
+  } else {
+    savedList = savedList.filter(id => id !== cleanCareerId);
+    saved = false;
+  }
+
+  const { error: updateError } = await supabase
+    .from('user_profiles')
+    .update({ saved_careers: savedList })
+    .eq('user_id', cleanUserId);
+
+  if (updateError) throw updateError;
+  return { saved, saved_careers: savedList };
+}
+
+/**
+ * Fetch all saved career UUIDs for a user
+ */
+export async function getSavedCareers(userId) {
+  const cleanUserId = mongoIdToUuid(userId);
+  const { data, error } = await supabase
+    .from('user_profiles')
+    .select('saved_careers')
+    .eq('user_id', cleanUserId)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data?.saved_careers || [];
+}
+
+/**
+ * Get cached dynamic career deep-dive insights for a user
+ */
+export async function getCachedInsights(userId) {
+  const cleanUserId = mongoIdToUuid(userId);
+  const { data, error } = await supabase
+    .from('user_recommendations')
+    .select('personalized_insights')
+    .eq('user_id', cleanUserId)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data?.personalized_insights || {};
+}
+
+/**
+ * Save deep-dive AI insights for a specific career in the user recommendations table JSONB
+ */
+export async function saveInsightsCache(userId, careerId, insights) {
+  const cleanUserId = mongoIdToUuid(userId);
+  const cleanCareerId = mongoIdToUuid(careerId);
+
+  const { data: rec, error: fetchError } = await supabase
+    .from('user_recommendations')
+    .select('personalized_insights')
+    .eq('user_id', cleanUserId)
+    .maybeSingle();
+
+  if (fetchError) throw fetchError;
+
+  const insightsObj = rec?.personalized_insights || {};
+  insightsObj[cleanCareerId] = insights;
+
+  const { error: updateError } = await supabase
+    .from('user_recommendations')
+    .update({ personalized_insights: insightsObj })
+    .eq('user_id', cleanUserId);
+
+  if (updateError) throw updateError;
+  return insightsObj;
+}
+
+/**
+ * Main Orchestrator for Career Deep-Dive: retrieves cached details or queries Llama 3
+ */
+export async function getCareerDeepDiveInsights(userId, careerId, careerName) {
+  const cleanUserId = mongoIdToUuid(userId);
+  const cleanCareerId = mongoIdToUuid(careerId);
+
+  // 1. Check cache first
+  const cachedMap = await getCachedInsights(userId);
+  if (cachedMap && cachedMap[cleanCareerId]) {
+    return { insights: cachedMap[cleanCareerId], cached: true };
+  }
+
+  // 2. Query raw resume text from profile
+  const { data: profile, error } = await supabase
+    .from('user_profiles')
+    .select('resume_raw_text')
+    .eq('user_id', cleanUserId)
+    .maybeSingle();
+
+  if (error) throw error;
+
+  const resumeText = profile?.resume_raw_text || '';
+  if (!resumeText.trim()) {
+    throw new Error('Resume raw text not found. Please complete the onboarding resume upload first.');
+  }
+
+  // 3. Generate dynamic insights on-the-fly using Llama-3-8B
+  const { generateCareerDeepDiveInsights } = await import('./huggingfaceService.js');
+  const insights = await generateCareerDeepDiveInsights(resumeText, careerName);
+
+  // 4. Save to cache
+  await saveInsightsCache(userId, cleanCareerId, insights);
+
+  return { insights, cached: false };
+}
+
+// ===== GRANULAR USER SKILLS PROGRESSION =====
+
+/**
+ * Fetch granular skills profile for a user, enriched with catalog categories
+ */
+export async function getUserSkills(userId) {
+  const cleanUserId = mongoIdToUuid(userId);
+  const { data, error } = await supabase
+    .from('user_skills')
+    .select('*')
+    .eq('user_id', cleanUserId);
+
+  let skills = [];
+  if (error) {
+    if (!error.message?.includes('schema cache')) {
+      console.warn('⚠️ Error fetching user_skills, returning fallback from user_profiles:', error.message);
+    }
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('current_skills')
+      .eq('user_id', cleanUserId)
+      .maybeSingle();
+
+    const currentSkills = profile?.current_skills || [];
+    skills = currentSkills.map((name, idx) => ({
+      id: idx.toString(),
+      user_id: cleanUserId,
+      skill_name: name,
+      proficiency: 'Intermediate',
+      progress_percentage: 60,
+      source: 'profile'
+    }));
+  } else {
+    skills = data || [];
+  }
+
+  return enrichUserSkillsWithCatalog(skills);
+}
+
+/**
+ * Match user skill rows to catalog entries for category metadata
+ */
+async function enrichUserSkillsWithCatalog(userSkills) {
+  if (!userSkills || userSkills.length === 0) return [];
+
+  const { data: catalog } = await supabase.from('skills').select('name, category');
+  const categoryByName = new Map(
+    (catalog || []).map(s => [s.name.toLowerCase(), s.category || 'General'])
+  );
+
+  return userSkills.map(skill => ({
+    ...skill,
+    category: skill.category || categoryByName.get(skill.skill_name?.toLowerCase()) || 'General'
+  }));
+}
+
+/**
+ * Delete a user skill entry
+ */
+export async function deleteUserSkill(userId, skillName) {
+  const cleanUserId = mongoIdToUuid(userId);
+  const { error } = await supabase
+    .from('user_skills')
+    .delete()
+    .eq('user_id', cleanUserId)
+    .ilike('skill_name', skillName);
+
+  if (error) throw error;
+
+  // Keep user_profiles.current_skills in sync
+  const { data: profile } = await supabase
+    .from('user_profiles')
+    .select('current_skills')
+    .eq('user_id', cleanUserId)
+    .maybeSingle();
+
+  if (profile?.current_skills?.length) {
+    const updated = profile.current_skills.filter(
+      s => s.toLowerCase() !== skillName.toLowerCase()
+    );
+    await supabase
+      .from('user_profiles')
+      .update({ current_skills: updated })
+      .eq('user_id', cleanUserId);
+  }
+
+  return { deleted: true, skillName };
+}
+
+function computeImportance(difficultyLevel) {
+  if (difficultyLevel === 'Hard') return 90;
+  if (difficultyLevel === 'Easy') return 50;
+  return 70;
+}
+
+function computeReadiness(processedSkills) {
+  if (!processedSkills.length) return 0;
+  const totalWeight = processedSkills.reduce((sum, s) => sum + s.importance, 0);
+  const acquiredWeight = processedSkills.reduce((sum, s) => {
+    if (!s.acquired) return sum;
+    return sum + s.importance * (Math.min(100, s.progress_percentage || 0) / 100);
+  }, 0);
+  return totalWeight > 0 ? Math.round((acquiredWeight / totalWeight) * 100) : 0;
+}
+
+async function resolveCareerSkills(career, careerId) {
+  let { data: careerSkills } = await supabase
+    .from('skills')
+    .select('*')
+    .eq('career_id', mongoIdToUuid(careerId));
+
+  if ((!careerSkills || careerSkills.length === 0) && career?.name) {
+    const syncResult = await syncCareerCache(career.name);
+    careerSkills = syncResult.skills || [];
+    if (careerSkills.length === 0 && syncResult.career?.id) {
+      careerSkills = await getSkillsByCareer(syncResult.career.id);
+    }
+  }
+
+  return careerSkills || [];
+}
+
+async function processGapSkills(careerSkills, userSkills) {
+  const processed = await Promise.all(
+    careerSkills.map(async (s) => {
+      const matchedSkill = userSkills.find(
+        us => us.skill_name.toLowerCase() === s.name.toLowerCase()
+      );
+      const hasSkill = !!matchedSkill;
+      const importance = computeImportance(s.difficulty_level);
+      const progress = hasSkill ? (matchedSkill.progress_percentage || 0) : 0;
+      const priorityScore = hasSkill
+        ? 0
+        : Math.round(importance * (1 - progress / 100));
+
+      let recommendedCourses = [];
+      if (!hasSkill && s.id) {
+        try {
+          recommendedCourses = await getCoursesBySkill(s.id);
+        } catch (courseErr) {
+          console.warn(`⚠️ Could not fetch courses for skill "${s.name}":`, courseErr.message);
+        }
+      }
+
+      return {
+        id: s.id,
+        name: s.name,
+        category: s.category || 'General',
+        description: s.description || '',
+        difficulty_level: s.difficulty_level || 'Medium',
+        importance,
+        priorityScore,
+        acquired: hasSkill,
+        proficiency: hasSkill ? matchedSkill.proficiency : 'None',
+        progress_percentage: progress,
+        recommendedCourses: (recommendedCourses || []).slice(0, 3).map(c => ({
+          id: c.id,
+          title: c.title,
+          provider: c.provider,
+          url: c.url,
+          difficulty: c.difficulty,
+          price: c.price
+        }))
+      };
+    })
+  );
+
+  processed.sort((a, b) => b.priorityScore - a.priorityScore);
+  return processed;
+}
+
+/**
+ * Insert or update a granular user skill proficiency level
+ */
+export async function updateUserSkillProgress(userId, skillName, proficiency, progressPercentage, source = 'user') {
+  const cleanUserId = mongoIdToUuid(userId);
+  const { data, error } = await supabase
+    .from('user_skills')
+    .upsert({
+      user_id: cleanUserId,
+      skill_name: skillName,
+      proficiency: proficiency || 'Intermediate',
+      progress_percentage: progressPercentage !== undefined ? parseInt(progressPercentage) : 50,
+      source: source,
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'user_id,skill_name' })
+    .select()
+    .single();
+
+  if (error) {
+    if (!error.message?.includes('schema cache')) {
+      console.error('❌ Error updating user skill progress:', error.message);
+    }
+    // Fallback: Add to user_profiles current_skills if upsert fails (table not active yet)
+    try {
+      const { data: profile } = await supabase
+        .from('user_profiles')
+        .select('current_skills')
+        .eq('user_id', cleanUserId)
+        .maybeSingle();
+
+      let skills = profile?.current_skills || [];
+      if (!skills.some(s => s.toLowerCase() === skillName.toLowerCase())) {
+        skills = [...skills, skillName];
+        await supabase.from('user_profiles').update({ current_skills: skills }).eq('user_id', cleanUserId);
+      }
+    } catch (e) {
+      console.warn('Failed to update current_skills fallback:', e.message);
+    }
+    return {
+      user_id: cleanUserId,
+      skill_name: skillName,
+      proficiency: proficiency || 'Intermediate',
+      progress_percentage: progressPercentage || 50,
+      source
+    };
+  }
+  return data;
+}
+
+/**
+ * Compare user profile skills against career-required skills to map gaps and importance levels
+ */
+export async function getSkillGapAnalysis(userId, careerId) {
+  const cleanUserId = mongoIdToUuid(userId);
+  const cleanCareerId = mongoIdToUuid(careerId);
+
+  const { data: career } = await supabase
+    .from('careers')
+    .select('*')
+    .eq('id', cleanCareerId)
+    .maybeSingle();
+
+  if (!career) {
+    return {
+      careerId: cleanCareerId,
+      careerName: 'Unknown Career',
+      readiness: 0,
+      skills: [],
+      message: 'Career not found.'
+    };
+  }
+
+  const careerSkills = await resolveCareerSkills(career, cleanCareerId);
+  const userSkills = await getUserSkills(userId);
+
+  if (careerSkills.length === 0) {
+    return {
+      careerId: cleanCareerId,
+      careerName: career.name,
+      readiness: 0,
+      skills: [],
+      message: 'No skills are registered for this career path yet.'
+    };
+  }
+
+  const processed = await processGapSkills(careerSkills, userSkills);
+  const readiness = computeReadiness(processed);
+
+  return {
+    careerId: cleanCareerId,
+    careerName: career.name,
+    readiness,
+    skills: processed
+  };
+}
+
+/**
+ * Aggregated skills overview for dashboard KPIs
+ */
+export async function getSkillsOverview(userId, targetCareerId = null) {
+  const cleanUserId = mongoIdToUuid(userId);
+  const userSkills = await getUserSkills(userId);
+
+  const { data: profile, error: profileError } = await supabase
+    .from('user_profiles')
+    .select('target_career')
+    .eq('user_id', cleanUserId)
+    .maybeSingle();
+
+  if (profileError && !profileError.message?.includes('schema cache')) {
+    console.warn('⚠️ Profile fetch in getSkillsOverview:', profileError.message);
+  }
+
+  let targetReadiness = 0;
+  let priorityGapCount = 0;
+  let targetCareerName = profile?.target_career || null;
+
+  try {
+    if (targetCareerId) {
+      const gap = await getSkillGapAnalysis(userId, targetCareerId);
+      targetReadiness = gap.readiness ?? 0;
+      priorityGapCount = (gap.skills || []).filter(s => !s.acquired).length;
+      targetCareerName = gap.careerName || targetCareerName;
+    } else if (profile?.target_career) {
+      const { data: targetCareer } = await supabase
+        .from('careers')
+        .select('id, name')
+        .ilike('name', profile.target_career)
+        .maybeSingle();
+
+      if (targetCareer) {
+        const gap = await getSkillGapAnalysis(userId, targetCareer.id);
+        targetReadiness = gap.readiness ?? 0;
+        priorityGapCount = (gap.skills || []).filter(s => !s.acquired).length;
+        targetCareerName = gap.careerName || targetCareerName;
+      }
+    }
+  } catch (gapErr) {
+    console.warn('⚠️ Gap analysis in getSkillsOverview failed:', gapErr.message);
+  }
+
+  const expertCount = userSkills.filter(s => s.proficiency === 'Expert').length;
+  const intermediateCount = userSkills.filter(s => s.proficiency === 'Intermediate').length;
+  const beginnerCount = userSkills.filter(s => s.proficiency === 'Beginner').length;
+
+  const domainMap = new Map();
+  for (const skill of userSkills) {
+    const cat = skill.category || 'General';
+    const score = skill.progress_percentage || 0;
+    if (!domainMap.has(cat)) {
+      domainMap.set(cat, { total: 0, count: 0 });
+    }
+    const entry = domainMap.get(cat);
+    entry.total += score;
+    entry.count += 1;
+  }
+
+  const domainScores = Array.from(domainMap.entries()).map(([name, { total, count }]) => ({
+    name,
+    score: Math.round(total / count)
+  }));
+
+  const lastAnalyzed = userSkills.reduce((latest, s) => {
+    if (!s.updated_at) return latest;
+    const ts = new Date(s.updated_at).getTime();
+    return ts > latest ? ts : latest;
+  }, 0);
+
+  return {
+    totalSkills: userSkills.length,
+    expertCount,
+    intermediateCount,
+    beginnerCount,
+    targetReadiness,
+    priorityGapCount,
+    targetCareerName,
+    domainScores,
+    lastAnalyzedAt: lastAnalyzed ? new Date(lastAnalyzed).toISOString() : null
+  };
+}
+
+/**
+ * Readiness scores across all careers in the catalog
+ */
+export async function getCareerReadinessScores(userId) {
+  const careers = await getAllCategories();
+  const results = [];
+
+  for (const career of careers) {
+    const gap = await getSkillGapAnalysis(userId, career.id);
+    results.push({
+      careerId: career.id,
+      careerName: career.name,
+      readiness: gap.readiness,
+      totalRequired: gap.skills.length,
+      acquiredCount: gap.skills.filter(s => s.acquired).length,
+      topGaps: gap.skills.filter(s => !s.acquired).slice(0, 3).map(s => s.name)
+    });
+  }
+
+  results.sort((a, b) => b.readiness - a.readiness);
+  return results;
+}
+
+/**
+ * Data-driven skills advisor from profile, gaps, and onboarding recommendations
+ */
+export async function getSkillsAdvisor(userId, targetCareerId = null) {
+  const cleanUserId = mongoIdToUuid(userId);
+  const userSkills = await getUserSkills(userId);
+  const profile = await getUserProfile(userId);
+  const recommendations = await getUserRecommendations(userId);
+
+  let gap = { skills: [], readiness: 0, careerName: profile?.target_career || 'your target career' };
+  if (targetCareerId) {
+    gap = await getSkillGapAnalysis(userId, targetCareerId);
+  } else if (profile?.target_career) {
+    const { data: targetCareer } = await supabase
+      .from('careers')
+      .select('id')
+      .ilike('name', profile.target_career)
+      .maybeSingle();
+    if (targetCareer) {
+      gap = await getSkillGapAnalysis(userId, targetCareer.id);
+    }
+  }
+
+  const strengths = userSkills
+    .filter(s => s.proficiency === 'Expert' || (s.progress_percentage || 0) >= 75)
+    .sort((a, b) => (b.progress_percentage || 0) - (a.progress_percentage || 0))
+    .slice(0, 5)
+    .map(s => s.skill_name);
+
+  const criticalGaps = gap.skills
+    .filter(s => !s.acquired)
+    .slice(0, 5)
+    .map(s => s.name);
+
+  const nextActions = gap.skills
+    .filter(s => !s.acquired)
+    .slice(0, 3)
+    .map(s => {
+      const topCourse = s.recommendedCourses?.[0];
+      return {
+        action: topCourse
+          ? `Take "${topCourse.title}" on ${topCourse.provider || 'online platform'}`
+          : `Build proficiency in ${s.name}`,
+        skill: s.name,
+        urgency: s.priorityScore >= 80 ? 'high' : s.priorityScore >= 60 ? 'medium' : 'low',
+        courseId: topCourse?.id || null,
+        courseUrl: topCourse?.url || null
+      };
+    });
+
+  const growthText = recommendations?.growth_suggestions?.trim() || '';
+  const summary = growthText
+    ? growthText
+    : userSkills.length === 0
+      ? 'Complete onboarding or run AI resume analysis to populate your skills profile.'
+      : `You are ${gap.readiness}% ready for ${gap.careerName}. You have ${userSkills.length} tracked skills with ${strengths.length} core strengths and ${criticalGaps.length} priority gaps to address.`;
+
+  const weeklyFocus = criticalGaps.length >= 2
+    ? `Focus on closing ${criticalGaps.slice(0, 2).join(' and ')} before exploring secondary skills.`
+    : criticalGaps.length === 1
+      ? `Your top priority is building ${criticalGaps[0]}.`
+      : gap.readiness >= 80
+        ? 'Strong alignment — consider advancing expert-level skills or exploring adjacent careers.'
+        : 'Keep updating your skill progress as you complete courses and projects.';
+
+  return {
+    summary,
+    strengths,
+    criticalGaps,
+    nextActions,
+    weeklyFocus,
+    readiness: gap.readiness,
+    careerName: gap.careerName,
+    cached: !!growthText
+  };
+}
+
+/**
+ * Search skills catalog for autocomplete
+ */
+export async function suggestSkills(query) {
+  const allSkills = await getAllSkills();
+  const q = (query || '').trim().toLowerCase();
+  if (!q) return allSkills.slice(0, 20);
+
+  const seen = new Set();
+  const matches = [];
+  for (const skill of allSkills) {
+    const key = skill.name.toLowerCase();
+    if (seen.has(key)) continue;
+    if (key.includes(q)) {
+      seen.add(key);
+      matches.push({ id: skill.id, name: skill.name, category: skill.category || 'General' });
+    }
+    if (matches.length >= 15) break;
+  }
+  return matches;
 }

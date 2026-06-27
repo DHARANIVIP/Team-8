@@ -1,5 +1,5 @@
 import express from 'express';
-import { getAllCategories, getCategoryById, createCategory, syncCareerCache, getPersonalizedCareerData } from '../services/supabaseService.js';
+import { getAllCategories, getCategoryById, createCategory, syncCareerCache, getPersonalizedCareerData, toggleSavedCareer, getCareerDeepDiveInsights } from '../services/supabaseService.js';
 import { getIndustryNews } from '../services/industryService.js';
 import { protect } from '../middleware/auth.js';
 
@@ -64,6 +64,44 @@ router.get('/personalized', protect, async (req, res) => {
   } catch (error) {
     console.error('❌ Personalized categories retrieval failed:', error.message);
     res.status(500).json({ error: 'Failed to fetch personalized career paths', details: error.message });
+  }
+});
+
+/**
+ * POST /api/categories/:id/toggle-save
+ * Toggle save/bookmark state of a specific career path
+ */
+router.post('/:id/toggle-save', protect, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const careerId = req.params.id;
+    const result = await toggleSavedCareer(userId, careerId);
+    res.json(result);
+  } catch (error) {
+    console.error('❌ Toggle saved career failed:', error.message);
+    res.status(500).json({ error: 'Failed to toggle bookmark status', details: error.message });
+  }
+});
+
+/**
+ * POST /api/categories/:id/insights
+ * Retrieve cached insights or query Llama-3-8B dynamically for career guidance
+ */
+router.post('/:id/insights', protect, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const careerId = req.params.id;
+    
+    const career = await getCategoryById(careerId);
+    if (!career) {
+      return res.status(404).json({ error: 'Target career not found' });
+    }
+
+    const result = await getCareerDeepDiveInsights(userId, careerId, career.name);
+    res.json(result);
+  } catch (error) {
+    console.error('❌ Dynamic insights generation failed:', error.message);
+    res.status(500).json({ error: 'Failed to compile AI insights deep-dive', details: error.message });
   }
 });
 
