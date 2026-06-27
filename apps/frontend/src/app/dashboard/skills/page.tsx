@@ -1,30 +1,115 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import DashboardNavbar from '@/components/DashboardNavbar';
 import { isAuthenticated } from '@/lib/services/auth-service';
 import { getProfile } from '@/lib/services/profile-service';
 import { getCategories } from '@/lib/services/career-service';
-import { getSkillsByCareer } from '@/lib/services/skill-service';
-
-function levelColor(l: number, acquired: boolean) {
-  if (acquired) return '#50c878'; // Green for acquired
-  if (l >= 80) return '#ff9e42'; // Amber for high importance gap
-  return '#ffb066'; // Orange/gold for medium importance gap
-}
+import {
+  getUserSkills,
+  getSkillGapAnalysis,
+  getSkillsOverview,
+  getSkillsAdvisor,
+  getCareerReadiness,
+  triggerAISkillsAnalysis,
+} from '@/lib/services/skill-service';
+import type {
+  CareerReadiness,
+  GapAnalysisResponse,
+  SkillsAdvisorResponse,
+  SkillsOverview,
+  SkillsTab,
+  UserSkill,
+} from '@/lib/types/skills';
+import {
+  SkillsKpiStrip,
+  SkillsTabNav,
+  AddSkillModal,
+  SkillsSidebar,
+  OverviewTab,
+  ProfileTab,
+  GapAnalysisTab,
+  SkillMatrixTab,
+  CareerFitTab,
+} from '@/features/skills';
 
 export default function SkillsPage() {
   const router = useRouter();
-  const [careersList, setCareersList] = useState<any[]>([]);
-  const [selectedCareerId, setSelectedCareerId] = useState('');
-  const [userProfile, setUserProfile] = useState<any>(null);
-  const [skills, setSkills] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [skillsLoading, setSkillsLoading] = useState(false);
+
+  const [activeTab, setActiveTab] = useState<SkillsTab>('overview');
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [gapLoading, setGapLoading] = useState(false);
+  const [fitLoading, setFitLoading] = useState(false);
+  const [advisorLoading, setAdvisorLoading] = useState(false);
+  const [aiAnalyzing, setAiAnalyzing] = useState(false);
   const [error, setError] = useState('');
-  const [filter, setFilter] = useState('All');
+  const [showAddModal, setShowAddModal] = useState(false);
+
+  const [careersList, setCareersList] = useState<{ id: string; name: string }[]>([]);
+  const [selectedCareerId, setSelectedCareerId] = useState('');
+  const [mySkills, setMySkills] = useState<UserSkill[]>([]);
+  const [overview, setOverview] = useState<SkillsOverview | null>(null);
+  const [gap, setGap] = useState<GapAnalysisResponse | null>(null);
+  const [advisor, setAdvisor] = useState<SkillsAdvisorResponse | null>(null);
+  const [careerReadiness, setCareerReadiness] = useState<CareerReadiness[]>([]);
+
+  const loadSkills = useCallback(async () => {
+    const skills = await getUserSkills();
+    setMySkills(skills);
+    return skills;
+  }, []);
+
+  const loadGap = useCallback(async (careerId: string) => {
+    if (!careerId) return;
+    setGapLoading(true);
+    try {
+      const data = await getSkillGapAnalysis(careerId);
+      setGap(data);
+    } catch (err) {
+      console.error('Gap load failed:', err);
+    } finally {
+      setGapLoading(false);
+    }
+  }, []);
+
+  const loadOverviewAndAdvisor = useCallback(async (careerId: string) => {
+    setAdvisorLoading(true);
+    try {
+      const [overviewResult, advisorResult] = await Promise.allSettled([
+        getSkillsOverview(careerId || undefined),
+        getSkillsAdvisor(careerId || undefined),
+      ]);
+
+      if (overviewResult.status === 'fulfilled') {
+        setOverview(overviewResult.value);
+      } else {
+        console.error('Overview load failed:', overviewResult.reason);
+      }
+
+      if (advisorResult.status === 'fulfilled') {
+        setAdvisor(advisorResult.value);
+      } else {
+        console.error('Advisor load failed:', advisorResult.reason);
+      }
+
+      if (overviewResult.status === 'rejected' && advisorResult.status === 'rejected') {
+        console.warn('Overview and advisor unavailable, page will use partial data');
+      }
+    } catch (err) {
+      console.error('Overview/advisor load failed:', err);
+    } finally {
+      setAdvisorLoading(false);
+    }
+  }, []);
+
+  const refreshAll = useCallback(async (careerId: string) => {
+    await loadSkills();
+    await Promise.all([
+      loadGap(careerId),
+      loadOverviewAndAdvisor(careerId),
+    ]);
+  }, [loadSkills, loadGap, loadOverviewAndAdvisor]);
 
   useEffect(() => {
     if (!isAuthenticated()) {
@@ -32,183 +117,210 @@ export default function SkillsPage() {
       return;
     }
 
-    async function loadInitialData() {
+    async function init() {
       try {
-        setLoading(true);
+        setInitialLoading(true);
         setError('');
 
         const profile = await getProfile();
-        setUserProfile(profile);
+        if (!profile.onboarding_completed) {
+          router.push('/onboarding');
+          return;
+        }
 
         const categoriesResponse = await getCategories();
         const list = categoriesResponse.categories || [];
         setCareersList(list);
 
+        let careerId = '';
         if (list.length > 0) {
-          // Default to profile's target career
-          const matched = list.find((c: any) => c.name.toLowerCase() === (profile.target_career || '').toLowerCase());
-          if (matched) {
-            setSelectedCareerId(matched.id);
-          } else {
-            setSelectedCareerId(list[0].id);
-          }
+          const matched = list.find(
+            (c: { name: string }) =>
+              c.name.toLowerCase() === (profile.target_career || '').toLowerCase()
+          );
+          careerId = matched?.id || list[0].id;
+          setSelectedCareerId(careerId);
         }
-      } catch (err: any) {
-        console.error('Failed to load skills matrix base data:', err);
-        setError('Failed to retrieve user profile and career choices.');
+
+        await loadSkills();
+        if (careerId) {
+          await Promise.all([
+            loadGap(careerId),
+            loadOverviewAndAdvisor(careerId),
+          ]);
+        }
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : 'Failed to load skills data');
       } finally {
-        setLoading(false);
+        setInitialLoading(false);
       }
     }
 
-    loadInitialData();
-  }, [router]);
+    init();
+  }, [router, loadSkills, loadGap, loadOverviewAndAdvisor]);
 
-  // Fetch skills when selected career changes
   useEffect(() => {
-    if (!selectedCareerId) return;
+    if (!selectedCareerId || initialLoading) return;
+    loadGap(selectedCareerId);
+    loadOverviewAndAdvisor(selectedCareerId);
+  }, [selectedCareerId, initialLoading, loadGap, loadOverviewAndAdvisor]);
 
-    async function fetchCareerSkills() {
+  useEffect(() => {
+    if (activeTab !== 'fit' || careerReadiness.length > 0) return;
+
+    async function loadFit() {
+      setFitLoading(true);
       try {
-        setSkillsLoading(true);
-        const fetchedSkills = await getSkillsByCareer(selectedCareerId);
-        setSkills(fetchedSkills || []);
+        const scores = await getCareerReadiness();
+        setCareerReadiness(scores);
       } catch (err) {
-        console.error('Failed to load career skills:', err);
+        console.error('Career fit load failed:', err);
       } finally {
-        setSkillsLoading(false);
+        setFitLoading(false);
       }
     }
 
-    fetchCareerSkills();
-  }, [selectedCareerId]);
+    loadFit();
+  }, [activeTab, careerReadiness.length]);
 
-  const selectedCareerName = careersList.find(c => c.id === selectedCareerId)?.name || '';
+  const handleAnalyze = async () => {
+    try {
+      setAiAnalyzing(true);
+      setError('');
+      await triggerAISkillsAnalysis();
+      await refreshAll(selectedCareerId);
+      if (activeTab === 'fit') {
+        const scores = await getCareerReadiness();
+        setCareerReadiness(scores);
+      }
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'AI analysis failed');
+    } finally {
+      setAiAnalyzing(false);
+    }
+  };
 
-  // Process skills to calculate match status and required importance
-  const processedSkills = skills.map((s) => {
-    const userSkills = userProfile?.current_skills || [];
-    const hasSkill = userSkills.some((us: string) => us.toLowerCase() === s.name.toLowerCase());
-    
-    // Map O*NET difficulty level to importance percentages
-    let importance = 70;
-    if (s.difficulty_level === 'Hard') importance = 90;
-    if (s.difficulty_level === 'Easy') importance = 50;
-
-    return {
-      id: s.id,
-      name: s.name,
-      category: s.category || 'Technical',
-      importance,
-      acquired: hasSkill
-    };
-  });
-
-  const categories = ['All', ...Array.from(new Set(processedSkills.map((s) => s.category)))];
-  const filtered = filter === 'All' ? processedSkills : processedSkills.filter((s) => s.category === filter);
+  const handleRefresh = () => refreshAll(selectedCareerId);
 
   return (
-    <div style={{ background:'#0a0a0a', minHeight:'100vh' }}>
+    <div style={{ background: '#0a0a0a', minHeight: '100vh', color: '#ffffff' }}>
       <DashboardNavbar />
-      <main className="page-container animate-slide-up" style={{ padding:'24px 0' }}>
-        {/* ── Header ── */}
-        <div style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          paddingBottom: '20px', borderBottom: '1px solid rgba(255, 158, 66, 0.15)', marginBottom: '24px'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <div>
-              <span className="section-label" style={{ display: 'block', marginBottom: '2px' }}>SKILL MAPPING</span>
-              <h1 style={{ color: '#ffffff', fontWeight: 700, fontSize: '24px', margin: 0, letterSpacing: '0.5px', fontFamily: 'Outfit, sans-serif' }}>Skill Proficiency Matrix</h1>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '13px', margin: '4px 0 0' }}>Select a career to see required skills and your gap areas</p>
-            </div>
+
+      <main className="page-container animate-slide-up" style={{ padding: '24px 0', maxWidth: '1100px', margin: '0 auto' }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            paddingBottom: '20px',
+            borderBottom: '1px solid rgba(255, 158, 66, 0.15)',
+            marginBottom: '24px',
+            flexWrap: 'wrap',
+            gap: '16px',
+          }}
+        >
+          <div>
+            <span className="section-label" style={{ display: 'block', marginBottom: '2px' }}>SKILL INTELLIGENCE</span>
+            <h1 style={{ color: '#ffffff', fontWeight: 700, fontSize: '24px', margin: 0, letterSpacing: '0.5px', fontFamily: 'Outfit, sans-serif' }}>
+              Skills Hub
+            </h1>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '13px', margin: '4px 0 0' }}>
+              Track proficiencies, analyze gaps, and plan your learning path with real career data.
+            </p>
+          </div>
+
+          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              className="btn-ghost"
+              onClick={() => setShowAddModal(true)}
+              style={{ fontSize: '12px', padding: '10px 16px' }}
+            >
+              + Add Skill
+            </button>
+            <button
+              type="button"
+              onClick={handleAnalyze}
+              disabled={aiAnalyzing}
+              className="btn-primary"
+              style={{ fontSize: '12px', padding: '10px 20px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+            >
+              {aiAnalyzing ? (
+                <>
+                  <span className="spinner" style={{ width: '12px', height: '12px', border: '2px solid #000', borderTop: '2px solid transparent' }} />
+                  Analyzing...
+                </>
+              ) : (
+                <>🤖 Analyze via AI</>
+              )}
+            </button>
           </div>
         </div>
 
         {error && (
-          <div style={{ padding: '24px', background: 'rgba(239,68,68,0.06)', border: '1px solid #ef4444', color: '#ef4444', fontSize: '14px', textAlign: 'center', marginBottom: '20px', borderRadius: '6px' }}>
+          <div style={{ padding: '16px', background: 'rgba(239,68,68,0.06)', border: '1px solid #ef4444', color: '#ef4444', fontSize: '13px', borderRadius: '4px', marginBottom: '20px' }}>
             {error}
           </div>
         )}
 
-        {loading ? (
-          <div style={{ padding: '48px', textAlign: 'center', opacity: 0.8, display: 'flex', justifyContent: 'center', alignItems: 'center' }} className="card">
+        {initialLoading ? (
+          <div style={{ height: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <div className="spinner" />
           </div>
         ) : (
           <>
-            {/* Career Selector */}
-            <div className="card" style={{ marginBottom:'20px', padding:'20px 24px' }}>
-              <p style={{ color:'var(--text-secondary)', fontSize:'13px', marginBottom:'12px', fontWeight:600, letterSpacing: '0.02em' }}>SELECT TARGET CAREER</p>
-              <div style={{ display:'flex', gap:'8px', flexWrap:'wrap' }}>
-                {careersList.map((c) => (
-                  <button key={c.id} onClick={() => { setSelectedCareerId(c.id); setFilter('All'); }}
-                    className={selectedCareerId === c.id ? 'btn-primary' : 'btn-ghost'}
-                    style={{ fontSize:'12px', padding:'6px 14px' }}>
-                    {c.name}
-                  </button>
-                ))}
+            <SkillsKpiStrip overview={overview} />
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 300px', gap: '24px', alignItems: 'start' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', minWidth: 0 }}>
+                <SkillsTabNav activeTab={activeTab} onTabChange={setActiveTab} skillCount={mySkills.length} />
+
+                {activeTab === 'overview' && (
+                  <OverviewTab
+                    overview={overview}
+                    gap={gap}
+                    advisor={advisor}
+                    onGoToGap={() => setActiveTab('gap')}
+                    onAnalyze={handleAnalyze}
+                    aiAnalyzing={aiAnalyzing}
+                  />
+                )}
+                {activeTab === 'profile' && (
+                  <ProfileTab skills={mySkills} onRefresh={handleRefresh} />
+                )}
+                {activeTab === 'gap' && (
+                  <GapAnalysisTab
+                    careers={careersList}
+                    selectedCareerId={selectedCareerId}
+                    onCareerChange={setSelectedCareerId}
+                    gap={gap}
+                    loading={gapLoading}
+                    onRefresh={handleRefresh}
+                  />
+                )}
+                {activeTab === 'matrix' && <SkillMatrixTab skills={mySkills} />}
+                {activeTab === 'fit' && (
+                  <CareerFitTab
+                    readiness={careerReadiness}
+                    loading={fitLoading}
+                    onSelectCareer={setSelectedCareerId}
+                    onGoToGap={setActiveTab}
+                  />
+                )}
               </div>
-            </div>
 
-            {/* Category Filter */}
-            <div style={{ display:'flex', gap:'8px', marginBottom:'20px', flexWrap: 'wrap' }}>
-              {categories.map((cat) => (
-                <button key={cat} onClick={() => setFilter(cat)}
-                  className={filter === cat ? 'btn-primary' : 'btn-ghost'}
-                  style={{ fontSize:'12px', padding:'6px 14px' }}>
-                  {cat}
-                </button>
-              ))}
-            </div>
-
-            {/* Skill Matrix */}
-            <div className="card" style={{ padding:'28px' }}>
-              <p style={{ color:'var(--text-secondary)', fontSize:'13px', marginBottom:'20px', fontWeight: 500 }}>
-                Showing <span style={{ color:'var(--accent)', fontWeight:700 }}>{filtered.length}</span> skills for <span style={{ color:'#ffffff', fontWeight:600 }}>{selectedCareerName}</span>
-              </p>
-              
-              {skillsLoading ? (
-                <div style={{ padding: '24px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                  <div className="spinner" />
-                </div>
-              ) : filtered.length === 0 ? (
-                <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '24px' }}>No skills associated with this category yet.</p>
-              ) : (
-                <div style={{ display:'flex', flexDirection:'column', gap:'16px' }}>
-                  {filtered.map((s) => (
-                    <div key={s.name}>
-                      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'8px', flexWrap: 'wrap', gap: '8px' }}>
-                        <div style={{ display:'flex', alignItems:'center', gap:'10px', flexWrap: 'wrap' }}>
-                          <span style={{ color:'#ffffff', fontSize:'14px', fontWeight:600, fontFamily: 'Outfit, sans-serif' }}>{s.name}</span>
-                          <span className="badge badge-muted" style={{ fontSize:'10px' }}>{s.category}</span>
-                          {s.acquired ? (
-                            <span className="badge" style={{ background: 'rgba(80,200,120,0.1)', color: '#50c878', border: '1px solid rgba(80,200,120,0.2)' }}>Acquired</span>
-                          ) : (
-                            <span className="badge badge-accent">Gap Area</span>
-                          )}
-                        </div>
-                        <span style={{ color: levelColor(s.importance, s.acquired), fontWeight:700, fontSize:'13px', fontFamily: 'Inter, sans-serif' }}>
-                          Importance: {s.importance}%
-                        </span>
-                      </div>
-                      <div className="strength-bar">
-                        <div style={{ height:'100%', width:`${s.importance}%`, background: levelColor(s.importance, s.acquired) }} className="strength-bar-fill" />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <div style={{ marginTop:'24px' }}>
-              <Link href="/dashboard/courses" className="btn-primary" style={{ fontSize:'13px', padding: '10px 22px' }}>
-                Find Courses for These Skills →
-              </Link>
+              <SkillsSidebar gap={gap} advisor={advisor} advisorLoading={advisorLoading} />
             </div>
           </>
         )}
       </main>
+
+      <AddSkillModal
+        open={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        onAdded={handleRefresh}
+        existingNames={mySkills.map(s => s.skill_name)}
+      />
     </div>
   );
 }
