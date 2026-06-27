@@ -119,7 +119,18 @@ export default function LoginPage() {
     if (tokenParam && userParam) {
       localStorage.setItem('token', tokenParam);
       localStorage.setItem('user', decodeURIComponent(userParam));
-      router.push('/dashboard');
+      
+      let onboardingCompleted = false;
+      try {
+        const userObj = JSON.parse(decodeURIComponent(userParam));
+        onboardingCompleted = !!userObj.onboardingCompleted;
+      } catch (e) {}
+
+      if (onboardingCompleted) {
+        router.push('/dashboard');
+      } else {
+        router.push('/onboarding');
+      }
       return;
     }
 
@@ -138,7 +149,21 @@ export default function LoginPage() {
     setToastVisible(false);
     setTimeout(() => {
       setShowToast(false);
-      router.push('/dashboard');
+      
+      const userStr = localStorage.getItem('user');
+      let onboardingCompleted = false;
+      if (userStr) {
+        try {
+          const userObj = JSON.parse(userStr);
+          onboardingCompleted = !!userObj.onboardingCompleted;
+        } catch (e) {}
+      }
+
+      if (onboardingCompleted) {
+        router.push('/dashboard');
+      } else {
+        router.push('/onboarding');
+      }
     }, 300);
   };
 

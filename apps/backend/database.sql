@@ -185,3 +185,51 @@ ALTER TABLE roadmap_nodes ADD COLUMN IF NOT EXISTS source_node_id VARCHAR(255);
 -- Original node ID from roadmap.sh JSON
 
 
+-- =========================================================================
+-- MIGRATION: ONBOARDING & AI PERSONALIZED RECOMMENDATIONS
+-- =========================================================================
+
+-- 1. Extend user_profiles table with onboarding details
+ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS education_background VARCHAR(255);
+ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS major_stream VARCHAR(255);
+ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS learning_style TEXT[] DEFAULT '{}';
+ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS resume_url TEXT;
+ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS resume_raw_text TEXT;
+ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS resume_embeddings REAL[]; -- 768 dimensions vector
+ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS onboarding_completed BOOLEAN DEFAULT FALSE;
+
+-- 2. Create user_recommendations table to store custom AI insights
+CREATE TABLE IF NOT EXISTS user_recommendations (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES user_profiles(user_id) ON DELETE CASCADE,
+    matched_domains JSONB DEFAULT '[]', -- List of career domains with matching percentages
+    suggested_career_paths UUID[] DEFAULT '{}', -- References to careers.id
+    recommended_skills UUID[] DEFAULT '{}', -- Skills they need to acquire
+    recommended_courses UUID[] DEFAULT '{}', -- Course suggestions
+    certifications TEXT[] DEFAULT '{}', -- Dynamically generated certifications suggestions
+    growth_suggestions TEXT DEFAULT '', -- Custom textual growth advice from LLM
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT unique_user_rec UNIQUE (user_id)
+);
+
+
+-- =========================================================================
+-- MIGRATION: ONBOARDING ENRICHED FIELDS (v2)
+-- =========================================================================
+
+-- Additional onboarding detail columns for user_profiles
+ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS career_goal TEXT;
+ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS years_experience VARCHAR(50) DEFAULT 'Beginner';
+ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS availability VARCHAR(100);
+ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS resume_filename VARCHAR(255);
+ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS target_role VARCHAR(255);
+ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS salary_expectation VARCHAR(100);
+
+-- Career enrichment columns
+ALTER TABLE careers ADD COLUMN IF NOT EXISTS job_roles TEXT[] DEFAULT '{}';
+ALTER TABLE careers ADD COLUMN IF NOT EXISTS certifications TEXT[] DEFAULT '{}';
+ALTER TABLE careers ADD COLUMN IF NOT EXISTS industry_tags TEXT[] DEFAULT '{}';
+
+-- Per-career match score index in recommendations
+ALTER TABLE user_recommendations ADD COLUMN IF NOT EXISTS career_match_scores JSONB DEFAULT '{}';
+-- Structure: { "<career_id>": 85, "<career_id_2>": 72, ... }

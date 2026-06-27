@@ -55,6 +55,11 @@ export default function DashboardPage() {
         const profile = await getProfile();
         setUserProfile(profile);
 
+        if (!profile.onboarding_completed) {
+          router.push('/onboarding');
+          return;
+        }
+
         // 2. Fetch categories
         const catsData = await getCategories();
         const catsList = catsData.categories || [];

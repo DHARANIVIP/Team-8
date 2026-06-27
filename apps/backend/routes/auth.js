@@ -6,6 +6,7 @@ import User from '../models/User.js';
 import { protect } from '../middleware/auth.js';
 import '../config/passport.js';
 import { sendPasswordResetEmail } from '../services/emailService.js';
+import { getUserProfile } from '../services/supabaseService.js';
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'mastermind_super_secret_jwt_key';
@@ -15,7 +16,7 @@ router.get('/google', passport.authenticate('google', { scope: ['profile', 'emai
 
 router.get('/google/callback',
   passport.authenticate('google', { session: false, failureRedirect: '/login?error=oauth_failed' }),
-  (req, res) => {
+  async (req, res) => {
     try {
       const token = jwt.sign(
         { userId: req.user._id, email: req.user.email },
@@ -23,10 +24,21 @@ router.get('/google/callback',
         { expiresIn: '24h' }
       );
       
+      let onboardingCompleted = false;
+      try {
+        const profile = await getUserProfile(req.user._id);
+        if (profile) {
+          onboardingCompleted = !!profile.onboarding_completed;
+        }
+      } catch (profileErr) {
+        console.warn('⚠️ Failed to check onboarding status during Google callback:', profileErr.message);
+      }
+      
       const userObj = {
         id: req.user._id,
         email: req.user.email,
-        name: req.user.name
+        name: req.user.name,
+        onboardingCompleted
       };
       
       res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/login?token=${token}&user=${encodeURIComponent(JSON.stringify(userObj))}`);
@@ -42,7 +54,7 @@ router.get('/github', passport.authenticate('github', { scope: ['user:email'] })
 
 router.get('/github/callback',
   passport.authenticate('github', { session: false, failureRedirect: '/login?error=oauth_failed' }),
-  (req, res) => {
+  async (req, res) => {
     try {
       const token = jwt.sign(
         { userId: req.user._id, email: req.user.email },
@@ -50,10 +62,21 @@ router.get('/github/callback',
         { expiresIn: '24h' }
       );
       
+      let onboardingCompleted = false;
+      try {
+        const profile = await getUserProfile(req.user._id);
+        if (profile) {
+          onboardingCompleted = !!profile.onboarding_completed;
+        }
+      } catch (profileErr) {
+        console.warn('⚠️ Failed to check onboarding status during GitHub callback:', profileErr.message);
+      }
+      
       const userObj = {
         id: req.user._id,
         email: req.user.email,
-        name: req.user.name
+        name: req.user.name,
+        onboardingCompleted
       };
       
       res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/login?token=${token}&user=${encodeURIComponent(JSON.stringify(userObj))}`);
@@ -100,7 +123,8 @@ router.post('/signup', async (req, res) => {
       user: {
         id: user._id,
         email: user.email,
-        name: user.name
+        name: user.name,
+        onboardingCompleted: false
       }
     });
   } catch (error) {
@@ -134,13 +158,24 @@ router.post('/signin', async (req, res) => {
       { expiresIn: '24h' }
     );
 
+    let onboardingCompleted = false;
+    try {
+      const profile = await getUserProfile(user._id);
+      if (profile) {
+        onboardingCompleted = !!profile.onboarding_completed;
+      }
+    } catch (profileErr) {
+      console.warn('⚠️ Failed to check onboarding status during signin:', profileErr.message);
+    }
+
     res.json({
       message: 'Login successful',
       token,
       user: {
         id: user._id,
         email: user.email,
-        name: user.name
+        name: user.name,
+        onboardingCompleted
       }
     });
   } catch (error) {

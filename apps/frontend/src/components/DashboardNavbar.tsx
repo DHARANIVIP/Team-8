@@ -13,7 +13,7 @@ const navLinks = [
   { href: '/dashboard/roadmaps',   label: 'Roadmaps' },
 ];
 
-/* ── theme token ── */
+/* ── theme token (Orange Theme Maintained) ── */
 const ACCENT = '#ff9e42';
 const ACCENT_RGBA = 'rgba(255,158,66,0.08)';
 const ACCENT_BORDER = 'rgba(255,158,66,0.25)';
@@ -28,7 +28,7 @@ export default function DashboardNavbar() {
     router.push('/login');
   };
 
-  const isMainDashboard = pathname === '/dashboard';
+  const isOnboarding = pathname === '/onboarding';
 
   return (
     <nav style={{
@@ -53,17 +53,17 @@ export default function DashboardNavbar() {
       }}>
         {/* ── Left: Logo ── */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-          <Link href="/dashboard" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
+          <Link href={isOnboarding ? '#' : '/dashboard'} style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
             <img src="/studentlogo.jpeg" alt="Logo" style={{ height: '36px', objectFit: 'contain', borderRadius: '6px' }} />
           </Link>
         </div>
 
-        {isMainDashboard ? (
+        {!isOnboarding ? (
           <>
             {/* ── Center: Navigation ── */}
             <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
               {navLinks.map((link) => {
-                const isActive = pathname === link.href;
+                const isActive = pathname === link.href || (link.href !== '/dashboard' && pathname.startsWith(link.href));
                 return (
                   <Link
                     key={link.href}
@@ -210,10 +210,11 @@ export default function DashboardNavbar() {
             </div>
           </>
         ) : (
-          /* Simplified header for other feature pages */
+          /* Simplified sign out button for onboarding page */
           <div>
             <Link
-              href="/dashboard"
+              href="/login"
+              onClick={handleSignOut}
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -221,8 +222,8 @@ export default function DashboardNavbar() {
                 fontSize: '12px',
                 padding: '6px 14px',
                 borderRadius: '6px',
-                border: `1px solid ${ACCENT}`,
-                color: ACCENT,
+                border: '1px solid rgba(239,68,68,0.3)',
+                color: '#ef4444',
                 background: 'transparent',
                 fontWeight: 600,
                 textDecoration: 'none',
@@ -230,15 +231,15 @@ export default function DashboardNavbar() {
                 fontFamily: 'Outfit, sans-serif'
               }}
               onMouseEnter={(e) => {
-                (e.currentTarget as HTMLElement).style.background = ACCENT_RGBA;
-                (e.currentTarget as HTMLElement).style.color = '#ffffff';
+                (e.currentTarget as HTMLElement).style.background = 'rgba(239,68,68,0.08)';
+                (e.currentTarget as HTMLElement).style.borderColor = '#ef4444';
               }}
               onMouseLeave={(e) => {
                 (e.currentTarget as HTMLElement).style.background = 'transparent';
-                (e.currentTarget as HTMLElement).style.color = ACCENT;
+                (e.currentTarget as HTMLElement).style.borderColor = 'rgba(239,68,68,0.3)';
               }}
             >
-              ← Back to Dashboard
+              Sign Out
             </Link>
           </div>
         )}

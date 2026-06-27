@@ -1,6 +1,7 @@
 import express from 'express';
-import { getAllCategories, getCategoryById, createCategory, syncCareerCache } from '../services/supabaseService.js';
+import { getAllCategories, getCategoryById, createCategory, syncCareerCache, getPersonalizedCareerData } from '../services/supabaseService.js';
 import { getIndustryNews } from '../services/industryService.js';
+import { protect } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -48,6 +49,21 @@ router.get('/', async (req, res) => {
     ];
     
     res.json({ categories: mockCategories, latestNews: [] });
+  }
+});
+
+/**
+ * GET /api/categories/personalized
+ * Retrieve all career categories customized to user's match score and skill gaps
+ */
+router.get('/personalized', protect, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const personalizedData = await getPersonalizedCareerData(userId);
+    res.json({ categories: personalizedData });
+  } catch (error) {
+    console.error('❌ Personalized categories retrieval failed:', error.message);
+    res.status(500).json({ error: 'Failed to fetch personalized career paths', details: error.message });
   }
 });
 

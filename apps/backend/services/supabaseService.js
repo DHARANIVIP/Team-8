@@ -293,6 +293,171 @@ export async function updateUserProfile(userId, profile) {
   }
 }
 
+export async function upsertUserRecommendations(userId, payload) {
+  const cleanUserId = mongoIdToUuid(userId);
+  
+  // Format UUID arrays safely
+  const careerPaths = (payload.suggested_career_paths || []).map(id => mongoIdToUuid(id));
+  const recommendedSkills = (payload.recommended_skills || []).map(id => mongoIdToUuid(id));
+  const recommendedCourses = (payload.recommended_courses || []).map(id => mongoIdToUuid(id));
+
+  const { data, error } = await supabase
+    .from('user_recommendations')
+    .upsert({
+      user_id: cleanUserId,
+      matched_domains: payload.matched_domains || [],
+      suggested_career_paths: careerPaths,
+      recommended_skills: recommendedSkills,
+      recommended_courses: recommendedCourses,
+      certifications: payload.certifications || [],
+      growth_suggestions: payload.growth_suggestions || ''
+    }, { onConflict: 'user_id' })
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+export async function getUserRecommendations(userId) {
+  const cleanUserId = mongoIdToUuid(userId);
+  const { data, error } = await supabase
+    .from('user_recommendations')
+    .select('*')
+    .eq('user_id', cleanUserId)
+    .maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
+export async function getOnboardingStatus(userId) {
+  const cleanUserId = mongoIdToUuid(userId);
+  const { data } = await supabase
+    .from('user_profiles')
+    .select('onboarding_completed')
+    .eq('user_id', cleanUserId)
+    .maybeSingle();
+  return !!(data?.onboarding_completed);
+}
+
+const getIndustryForCareerName = (careerName) => {
+  const name = (careerName || '').toLowerCase();
+  if (name.includes('software') || name.includes('cloud') || name.includes('architect') || name.includes('engineer')) {
+    if (name.includes('data')) return 'Data & AI';
+    return 'Technology';
+  }
+  if (name.includes('data') || name.includes('scientist') || name.includes('ai') || name.includes('analyst')) {
+    if (name.includes('cyber') || name.includes('security')) return 'Security';
+    return 'Data & AI';
+  }
+  if (name.includes('design') || name.includes('ux') || name.includes('ui') || name.includes('designer')) return 'Design';
+  if (name.includes('product') || name.includes('manager') || name.includes('business')) return 'Business';
+  return 'Technology';
+};
+
+export async function getPersonalizedCareerData(userId) {
+  try {
+    const cleanUserId = mongoIdToUuid(userId);
+    
+    // 1. Fetch all careers
+    const { data: allCareers, error: careersError } = await supabase
+      .from('careers')
+      .select('*');
+    if (careersError) throw careersError;
+
+    // 2. Fetch user recommendations
+    const { data: recommendations } = await supabase
+      .from('user_recommendations')
+      .select('*')
+      .eq('user_id', cleanUserId)
+      .maybeSingle();
+
+    // 3. Fetch user profile
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('current_skills')
+      .eq('user_id', cleanUserId)
+      .maybeSingle();
+
+    const userSkills = profile?.current_skills || [];
+
+    // 4. Fetch skills and courses
+    const { data: allSkills } = await supabase.from('skills').select('*');
+    const { data: allCourses } = await supabase.from('courses').select('*');
+
+    // Helper maps
+    const skillsByCareer = {};
+    if (allSkills) {
+      allSkills.forEach(s => {
+        if (!skillsByCareer[s.career_id]) {
+          skillsByCareer[s.career_id] = [];
+        }
+        skillsByCareer[s.career_id].push(s);
+      });
+    }
+
+    // 5. Enrich careers list
+    const enrichedCareers = (allCareers || []).map(c => {
+      const careerSkills = skillsByCareer[c.id] || [];
+      const matched = [];
+      const gaps = [];
+
+      careerSkills.forEach(s => {
+        const hasSkill = userSkills.some(us => us.toLowerCase() === s.name.toLowerCase());
+        if (hasSkill) {
+          matched.push(s.name);
+        } else {
+          gaps.push(s.name);
+        }
+      });
+
+      const gapSkillIds = careerSkills
+        .filter(s => gaps.includes(s.name))
+        .map(s => s.id);
+
+      const suggestedCourses = allCourses
+        ? allCourses.filter(course => gapSkillIds.includes(course.skill_id)).slice(0, 3)
+        : [];
+
+      // Determine match score
+      let matchScore = null;
+      if (recommendations) {
+        if (recommendations.career_match_scores && recommendations.career_match_scores[c.id] !== undefined) {
+          matchScore = recommendations.career_match_scores[c.id];
+        } else if (recommendations.matched_domains) {
+          const industry = getIndustryForCareerName(c.name);
+          const domainMatch = recommendations.matched_domains.find(d => d && d.name === industry);
+          if (domainMatch) {
+            matchScore = domainMatch.score;
+          }
+        }
+        if (matchScore === null && recommendations.suggested_career_paths) {
+          const isSuggested = recommendations.suggested_career_paths.includes(c.id);
+          if (isSuggested) matchScore = 85;
+        }
+      }
+
+      return {
+        ...c,
+        matchScore,
+        skills: careerSkills,
+        matchedSkills: matched,
+        gapSkills: gaps,
+        suggestedCourses
+      };
+    });
+
+    // Sort by match score descending, placing careers without match scores at the end
+    return enrichedCareers.sort((a, b) => {
+      const scoreA = a.matchScore !== null ? a.matchScore : -1;
+      const scoreB = b.matchScore !== null ? b.matchScore : -1;
+      return scoreB - scoreA;
+    });
+  } catch (error) {
+    console.error('❌ Failed in getPersonalizedCareerData:', error.message);
+    throw error;
+  }
+}
+
 // ===== CACHING & DYNAMIC SYNC RESOLVERS =====
 
 /**
