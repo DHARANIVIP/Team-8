@@ -12,11 +12,19 @@ const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'mastermind_super_secret_jwt_key';
 
 // ── Google OAuth Routes ──
-router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+router.get('/google', (req, res, next) => {
+  if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+    return res.status(501).json({ error: 'Google OAuth is not configured on this server.' });
+  }
+  passport.authenticate('google', { scope: ['profile', 'email'] })(req, res, next);
+});
 
-router.get('/google/callback',
-  passport.authenticate('google', { session: false, failureRedirect: '/login?error=oauth_failed' }),
-  async (req, res) => {
+router.get('/google/callback', (req, res, next) => {
+  if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+    return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/login?error=oauth_not_configured`);
+  }
+  passport.authenticate('google', { session: false, failureRedirect: '/login?error=oauth_failed' })(req, res, next);
+}, async (req, res) => {
     try {
       const token = jwt.sign(
         { userId: req.user._id, email: req.user.email },
@@ -50,11 +58,19 @@ router.get('/google/callback',
 );
 
 // ── GitHub OAuth Routes ──
-router.get('/github', passport.authenticate('github', { scope: ['user:email'] }));
+router.get('/github', (req, res, next) => {
+  if (!process.env.GITHUB_CLIENT_ID || !process.env.GITHUB_CLIENT_SECRET) {
+    return res.status(501).json({ error: 'GitHub OAuth is not configured on this server.' });
+  }
+  passport.authenticate('github', { scope: ['user:email'] })(req, res, next);
+});
 
-router.get('/github/callback',
-  passport.authenticate('github', { session: false, failureRedirect: '/login?error=oauth_failed' }),
-  async (req, res) => {
+router.get('/github/callback', (req, res, next) => {
+  if (!process.env.GITHUB_CLIENT_ID || !process.env.GITHUB_CLIENT_SECRET) {
+    return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/login?error=oauth_not_configured`);
+  }
+  passport.authenticate('github', { session: false, failureRedirect: '/login?error=oauth_failed' })(req, res, next);
+}, async (req, res) => {
     try {
       const token = jwt.sign(
         { userId: req.user._id, email: req.user.email },
