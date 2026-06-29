@@ -1,6 +1,6 @@
 import { getToken } from './auth-service';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_URL = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') || '';
 
 export async function getCategories() {
   try {
