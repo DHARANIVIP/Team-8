@@ -25,7 +25,7 @@ export default function SkillsSidebar({ gap, advisor, advisorLoading }: SkillsSi
           flexDirection: 'column',
           alignItems: 'center',
           textAlign: 'center',
-          border: '1px solid rgba(255, 158, 66, 0.15)',
+          border: '1px solid rgba(37, 99, 235, 0.15)',
         }}
       >
         <span style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: '12px' }}>

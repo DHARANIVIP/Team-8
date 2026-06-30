@@ -50,7 +50,7 @@ function SnapTile({ icon, label, value }: { icon: string; label: string; value: 
   return (
     <div style={{
       background: 'var(--surface-alt)',
-      border: '1px solid rgba(255, 158, 66, 0.1)',
+      border: '1px solid rgba(37, 99, 235, 0.1)',
       borderRadius: '6px',
       padding: '14px 18px',
       display: 'flex',
@@ -76,7 +76,7 @@ function ToggleRow({ label, sub, checked }: { label: string; sub?: string; check
       justifyContent: 'space-between',
       padding: '12px 16px',
       background: 'var(--surface-alt)',
-      border: '1px solid rgba(255, 158, 66, 0.08)',
+      border: '1px solid rgba(37, 99, 235, 0.08)',
       borderRadius: '6px',
     }}>
       <div>
@@ -192,7 +192,7 @@ export default function ProfilePage() {
         {/* ── Header ── */}
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          paddingBottom: '20px', borderBottom: '1px solid rgba(255, 158, 66, 0.15)', marginBottom: '24px'
+          paddingBottom: '20px', borderBottom: '1px solid rgba(37, 99, 235, 0.15)', marginBottom: '24px'
         }}>
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <h1 style={{ color: '#ffffff', fontWeight: 700, fontSize: '24px', margin: 0, letterSpacing: '0.5px', fontFamily: 'Outfit, sans-serif' }}>My Profile</h1>
@@ -219,7 +219,7 @@ export default function ProfilePage() {
               <div style={{
                 position: 'absolute', top: '-40px', right: '-40px',
                 width: '180px', height: '180px', borderRadius: '50%',
-                background: 'radial-gradient(circle, rgba(255,158,66,0.12) 0%, transparent 70%)',
+                background: 'radial-gradient(circle, rgba(37, 99, 235,0.12) 0%, transparent 70%)',
                 pointerEvents: 'none',
               }} />
 
@@ -236,7 +236,7 @@ export default function ProfilePage() {
                 fontWeight: 800,
                 color: '#0a0a0a',
                 flexShrink: 0,
-                border: '3px solid rgba(255,158,66,0.3)',
+                border: '3px solid rgba(37, 99, 235,0.3)',
                 fontFamily: 'Outfit, sans-serif'
               }}>
                 {displayName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'ST'}

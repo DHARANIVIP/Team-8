@@ -206,7 +206,7 @@ export default function CategoriesPage() {
         {/* ── Header ── */}
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          paddingBottom: '20px', borderBottom: '1px solid rgba(255, 158, 66, 0.15)', marginBottom: '24px'
+          paddingBottom: '20px', borderBottom: '1px solid rgba(37, 99, 235, 0.15)', marginBottom: '24px'
         }}>
           <div>
             <span className="section-label" style={{ display: 'block', marginBottom: '2px' }}>CAREER CATEGORIES</span>
@@ -259,7 +259,7 @@ export default function CategoriesPage() {
                   {topRecommendations.map((career: any, index: number) => (
                     <div key={career.id} style={{
                       background: 'var(--surface-alt)',
-                      border: '1px solid rgba(255, 158, 66, 0.1)',
+                      border: '1px solid rgba(37, 99, 235, 0.1)',
                       padding: '12px 16px',
                       display: 'flex',
                       flexDirection: 'column',
@@ -269,7 +269,7 @@ export default function CategoriesPage() {
                         <span style={{ color: '#ffffff', fontWeight: 600, fontSize: '13px' }}>{index + 1}. {career.name}</span>
                         <span style={{ color: 'var(--accent)', fontWeight: 700, fontSize: '12px' }}>{career.matchScore}% Match</span>
                       </div>
-                      <div style={{ background: 'rgba(255, 158, 66, 0.1)', height: '6px', border: '1px solid rgba(255, 158, 66, 0.15)', overflow: 'hidden' }}>
+                      <div style={{ background: 'rgba(37, 99, 235, 0.1)', height: '6px', border: '1px solid rgba(37, 99, 235, 0.15)', overflow: 'hidden' }}>
                         <div style={{ background: 'var(--accent)', height: '100%', width: `${career.matchScore}%` }} />
                       </div>
                     </div>
@@ -313,8 +313,8 @@ export default function CategoriesPage() {
                       <span key={cert} style={{
                         fontSize: '11px',
                         padding: '4px 10px',
-                        background: 'rgba(255, 158, 66, 0.1)',
-                        border: '1px solid rgba(255, 158, 66, 0.3)',
+                        background: 'rgba(37, 99, 235, 0.1)',
+                        border: '1px solid rgba(37, 99, 235, 0.3)',
                         color: 'var(--accent)',
                         fontWeight: 600
                       }}>
@@ -402,7 +402,7 @@ export default function CategoriesPage() {
                       <span style={{ fontSize: '11px', color: 'var(--accent)', fontWeight: 700 }}>
                         Compatibility score: {matchScore}%
                       </span>
-                      <div style={{ background: 'rgba(255, 158, 66, 0.05)', height: '6px', border: '1px solid rgba(255, 158, 66, 0.1)', overflow: 'hidden' }}>
+                      <div style={{ background: 'rgba(37, 99, 235, 0.05)', height: '6px', border: '1px solid rgba(37, 99, 235, 0.1)', overflow: 'hidden' }}>
                         <div style={{ background: 'var(--accent)', height: '100%', width: `${matchScore}%` }} />
                       </div>
                     </div>
@@ -415,13 +415,13 @@ export default function CategoriesPage() {
 
                   {/* AI Why Recommended explanation */}
                   {c.cachedInsights?.why_recommended && (
-                    <div style={{ background: 'rgba(255, 158, 66, 0.04)', borderLeft: '2px solid var(--accent)', padding: '8px 12px', fontSize: '11px', color: 'var(--text-secondary)', fontStyle: 'italic', marginTop: '-8px' }}>
+                    <div style={{ background: 'rgba(37, 99, 235, 0.04)', borderLeft: '2px solid var(--accent)', padding: '8px 12px', fontSize: '11px', color: 'var(--text-secondary)', fontStyle: 'italic', marginTop: '-8px' }}>
                       💡 {c.cachedInsights.why_recommended}
                     </div>
                   )}
 
                   {/* Match Insights: user matching skills and gap skills */}
-                  <div style={{ borderTop: '1px solid rgba(255, 158, 66, 0.08)', paddingTop: '12px' }}>
+                  <div style={{ borderTop: '1px solid rgba(37, 99, 235, 0.08)', paddingTop: '12px' }}>
                     <p style={{ color: 'var(--text-muted)', fontSize: '10px', fontWeight: 700, marginBottom: '6px', letterSpacing: '0.05em' }}>MATCH INSIGHTS</p>
                     
                     {/* Skills we have */}
@@ -453,7 +453,7 @@ export default function CategoriesPage() {
                             <span key={s} style={{
                               fontSize: '10px',
                               padding: '2px 8px',
-                              border: '1px solid rgba(255, 158, 66, 0.4)',
+                              border: '1px solid rgba(37, 99, 235, 0.4)',
                               color: '#ffffff'
                             }}>
                               {s}
@@ -466,7 +466,7 @@ export default function CategoriesPage() {
 
                   {/* Suggested courses */}
                   {careerSuggestedCourses.length > 0 && (
-                    <div style={{ background: 'rgba(255, 158, 66, 0.03)', borderLeft: '2px solid var(--accent)', padding: '10px 12px' }}>
+                    <div style={{ background: 'rgba(37, 99, 235, 0.03)', borderLeft: '2px solid var(--accent)', padding: '10px 12px' }}>
                       <p style={{ color: 'var(--accent)', fontSize: '10px', fontWeight: 700, marginBottom: '4px', letterSpacing: '0.05em' }}>SUGGESTED COURSES</p>
                       <ul style={{ listStyleType: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '4px' }}>
                         {careerSuggestedCourses.map((course: any) => (
@@ -539,7 +539,7 @@ export default function CategoriesPage() {
           height: '100vh',
           background: 'rgba(10, 10, 10, 0.95)',
           backdropFilter: 'blur(20px)',
-          borderLeft: '1px solid rgba(255, 158, 66, 0.2)',
+          borderLeft: '1px solid rgba(37, 99, 235, 0.2)',
           boxShadow: '-8px 0 32px rgba(0,0,0,0.8)',
           zIndex: 9999,
           padding: '32px',
@@ -549,7 +549,7 @@ export default function CategoriesPage() {
           animation: 'slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
         }}>
           {/* Header */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', borderBottom: '1px solid rgba(255, 158, 66, 0.15)', paddingBottom: '16px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', borderBottom: '1px solid rgba(37, 99, 235, 0.15)', paddingBottom: '16px' }}>
             <div>
               <span style={{ fontSize: '10px', color: 'var(--accent)', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
                 AI Guidance deep-dive
@@ -585,7 +585,7 @@ export default function CategoriesPage() {
                 <h4 style={{ color: 'var(--accent)', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' }}>
                   Why Recommended
                 </h4>
-                <p style={{ color: '#ffffff', fontSize: '13px', lineHeight: 1.6, margin: 0, fontStyle: 'italic', background: 'rgba(255, 158, 66, 0.03)', padding: '12px', borderLeft: '3px solid var(--accent)' }}>
+                <p style={{ color: '#ffffff', fontSize: '13px', lineHeight: 1.6, margin: 0, fontStyle: 'italic', background: 'rgba(37, 99, 235, 0.03)', padding: '12px', borderLeft: '3px solid var(--accent)' }}>
                   "{insightsData.why_recommended}"
                 </p>
               </div>
@@ -627,7 +627,7 @@ export default function CategoriesPage() {
                 <ul style={{ padding: 0, margin: 0, listStyleType: 'none', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {insightsData.learning_priorities?.map((pri: string, i: number) => (
                     <li key={i} style={{ color: 'var(--text-secondary)', fontSize: '12px', display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
-                      <span style={{ background: 'rgba(255, 158, 66, 0.1)', color: 'var(--accent)', width: '18px', height: '18px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', fontWeight: 700, flexShrink: 0 }}>
+                      <span style={{ background: 'rgba(37, 99, 235, 0.1)', color: 'var(--accent)', width: '18px', height: '18px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', fontWeight: 700, flexShrink: 0 }}>
                         {i + 1}
                       </span>
                       <span>{pri}</span>
@@ -644,7 +644,7 @@ export default function CategoriesPage() {
                   </h4>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                     {insightsData.certifications.map((cert: string) => (
-                      <span key={cert} style={{ fontSize: '10px', padding: '4px 10px', background: 'rgba(255, 158, 66, 0.08)', border: '1px solid rgba(255, 158, 66, 0.25)', color: 'var(--accent)', fontWeight: 600 }}>
+                      <span key={cert} style={{ fontSize: '10px', padding: '4px 10px', background: 'rgba(37, 99, 235, 0.08)', border: '1px solid rgba(37, 99, 235, 0.25)', color: 'var(--accent)', fontWeight: 600 }}>
                         {cert}
                       </span>
                     ))}
@@ -666,11 +666,11 @@ export default function CategoriesPage() {
 
               {/* Timeline Roadmap */}
               {insightsData.roadmap && insightsData.roadmap.length > 0 && (
-                <div style={{ borderTop: '1px solid rgba(255,158,66,0.15)', paddingTop: '16px', marginTop: '8px' }}>
+                <div style={{ borderTop: '1px solid rgba(37, 99, 235,0.15)', paddingTop: '16px', marginTop: '8px' }}>
                   <h4 style={{ color: '#ffffff', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '12px' }}>
                     Personal Growth Roadmap
                   </h4>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', position: 'relative', paddingLeft: '16px', borderLeft: '1px solid rgba(255, 158, 66, 0.2)' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', position: 'relative', paddingLeft: '16px', borderLeft: '1px solid rgba(37, 99, 235, 0.2)' }}>
                     {insightsData.roadmap.map((step: string, i: number) => (
                       <div key={i} style={{ position: 'relative' }}>
                         <div style={{ position: 'absolute', left: '-21px', top: '3px', width: '9px', height: '9px', borderRadius: '50%', background: 'var(--accent)' }} />

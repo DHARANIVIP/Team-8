@@ -15,10 +15,10 @@ export default function SkillGapPanel({ careerName, matchedSkills = [], gapSkill
   return (
     <div style={{
       background: 'rgba(18, 18, 18, 0.4)',
-      border: '1px solid rgba(255, 158, 66, 0.1)',
+      border: '1px solid rgba(37, 99, 235, 0.1)',
       padding: '20px',
       borderRadius: '8px',
-      boxShadow: 'inset 0 0 12px rgba(255, 158, 66, 0.03)',
+      boxShadow: 'inset 0 0 12px rgba(37, 99, 235, 0.03)',
       display: 'flex',
       flexDirection: 'column',
       gap: '16px'
@@ -40,7 +40,7 @@ export default function SkillGapPanel({ careerName, matchedSkills = [], gapSkill
             {coverage}% Acquired
           </span>
         </div>
-        <div style={{ background: 'rgba(255, 158, 66, 0.05)', height: '8px', border: '1px solid rgba(255, 158, 66, 0.15)', overflow: 'hidden' }}>
+        <div style={{ background: 'rgba(37, 99, 235, 0.05)', height: '8px', border: '1px solid rgba(37, 99, 235, 0.15)', overflow: 'hidden' }}>
           <div style={{ 
             background: coverage > 60 ? '#10b981' : 'var(--accent)', 
             height: '100%', 
@@ -51,7 +51,7 @@ export default function SkillGapPanel({ careerName, matchedSkills = [], gapSkill
       </div>
 
       {/* Detailed Skill Lists */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', borderTop: '1px solid rgba(255, 158, 66, 0.08)', paddingTop: '14px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', borderTop: '1px solid rgba(37, 99, 235, 0.08)', paddingTop: '14px' }}>
         {/* Acquired Skills */}
         <div>
           <p style={{ color: '#10b981', fontSize: '11px', fontWeight: 700, marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -88,8 +88,8 @@ export default function SkillGapPanel({ careerName, matchedSkills = [], gapSkill
                 <span key={skill} style={{
                   fontSize: '10px',
                   padding: '3px 8px',
-                  background: 'rgba(255, 158, 66, 0.08)',
-                  border: '1px solid rgba(255, 158, 66, 0.25)',
+                  background: 'rgba(37, 99, 235, 0.08)',
+                  border: '1px solid rgba(37, 99, 235, 0.25)',
                   color: 'var(--accent)',
                   fontWeight: 600
                 }}>

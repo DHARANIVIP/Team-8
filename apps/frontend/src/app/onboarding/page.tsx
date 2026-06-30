@@ -223,13 +223,13 @@ export default function OnboardingPage() {
   const helpPanel = getHelpText();
 
   return (
-    <div style={{ background: '#0a0a0a', minHeight: '100vh', display: 'flex', flexDirection: 'column', color: '#ffffff' }}>
+    <div style={{ background: 'var(--bg)', minHeight: '100vh', display: 'flex', flexDirection: 'column', color: 'var(--text-primary)' }}>
       <DashboardNavbar />
       
       <main style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 24px' }}>
         {loading ? (
           /* Stepped Loader HUD matching Postman AI Loading State */
-          <div className="card animate-fade-in" style={{ width: '580px', padding: '40px', background: 'var(--surface)', border: '1px solid rgba(255, 158, 66, 0.25)', textAlign: 'center', borderRadius: '0px' }}>
+          <div className="card animate-fade-in" style={{ width: '580px', padding: '40px', background: 'var(--surface)', border: '1px solid rgba(37, 99, 235, 0.25)', textAlign: 'center', borderRadius: '0px' }}>
             <div className="spinner" style={{ marginBottom: '24px', borderColor: 'var(--accent) transparent transparent transparent' }} />
             <h2 style={{ fontSize: '22px', fontWeight: 800, color: '#ffffff', marginBottom: '8px', fontFamily: 'Outfit, sans-serif', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
               Mastermind AI Analyzing Profile
@@ -237,7 +237,7 @@ export default function OnboardingPage() {
             <p style={{ color: 'var(--text-secondary)', fontSize: '13px', marginBottom: '24px' }}>
               We are parsing your credentials and running vector models to compile recommendations
             </p>
-            <div style={{ textAlign: 'left', background: 'rgba(10, 10, 10, 0.8)', border: '1px solid rgba(255, 158, 66, 0.15)', padding: '24px', borderRadius: '0px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <div style={{ textAlign: 'left', background: 'rgba(10, 10, 10, 0.8)', border: '1px solid rgba(37, 99, 235, 0.15)', padding: '24px', borderRadius: '0px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {loadingStatus.map((status, idx) => (
                 <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '13px', color: idx === loadingStatus.length - 1 ? 'var(--accent)' : 'var(--text-secondary)' }}>
                   <span style={{ color: 'var(--accent)', fontWeight: 'bold' }}>{idx === loadingStatus.length - 1 ? '⚡' : '✓'}</span>
@@ -250,10 +250,10 @@ export default function OnboardingPage() {
           <div style={{ display: 'flex', gap: '24px', width: '1000px', maxWidth: '100%' }}>
             
             {/* Left Main Form Card */}
-            <div className="card animate-slide-up" style={{ flex: 1, padding: '40px', background: 'var(--surface)', border: '1px solid rgba(255, 158, 66, 0.2)', borderRadius: '0px' }}>
+            <div className="card animate-slide-up" style={{ flex: 1, padding: '40px', background: 'var(--surface)', border: '1px solid rgba(37, 99, 235, 0.2)', borderRadius: '0px' }}>
               
               {/* Header progress tracker */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px', borderBottom: '1px solid rgba(255, 158, 66, 0.15)', paddingBottom: '16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px', borderBottom: '1px solid rgba(37, 99, 235, 0.15)', paddingBottom: '16px' }}>
                 <div>
                   <span className="section-label" style={{ marginBottom: '4px', color: 'var(--accent)', fontWeight: 600 }}>Step {step} of 5</span>
                   <h1 style={{ fontSize: '24px', fontWeight: 800, color: '#ffffff', fontFamily: 'Outfit, sans-serif' }}>
@@ -274,7 +274,7 @@ export default function OnboardingPage() {
                   </span>
                   <div style={{ display: 'flex', gap: '4px', marginTop: '6px' }}>
                     {[1, 2, 3, 4, 5].map((s) => (
-                      <div key={s} style={{ width: '16px', height: '4px', background: s <= step ? 'var(--accent)' : 'rgba(255, 158, 66, 0.15)', transition: 'background-color 0.25s ease' }} />
+                      <div key={s} style={{ width: '16px', height: '4px', background: s <= step ? 'var(--accent)' : 'rgba(37, 99, 235, 0.15)', transition: 'background-color 0.25s ease' }} />
                     ))}
                   </div>
                 </div>
@@ -303,7 +303,7 @@ export default function OnboardingPage() {
                           key={opt}
                           onClick={() => setEducation(opt)}
                           className={education === opt ? 'btn-primary' : 'btn-ghost'}
-                          style={{ fontSize: '12px', padding: '8px 16px', borderRadius: '0px', border: '1px solid rgba(255,158,66,0.3)' }}
+                          style={{ fontSize: '12px', padding: '8px 16px', borderRadius: '0px', border: '1px solid rgba(37, 99, 235,0.3)' }}
                         >
                           {opt}
                         </button>
@@ -322,7 +322,7 @@ export default function OnboardingPage() {
                         placeholder="e.g. Computer Science, Finance, Design"
                         value={major}
                         onChange={(e) => setMajor(e.target.value)}
-                        style={{ background: 'var(--surface-alt)', border: '1px solid rgba(255,158,66,0.15)', color: '#ffffff', borderRadius: '0px' }}
+                        style={{ background: 'var(--surface-alt)', border: '1px solid rgba(37, 99, 235,0.15)', color: '#ffffff', borderRadius: '0px' }}
                       />
                     </div>
                     <div>
@@ -335,7 +335,7 @@ export default function OnboardingPage() {
                         placeholder="e.g. Delhi University, MIT, self-taught"
                         value={institutionName}
                         onChange={(e) => setInstitutionName(e.target.value)}
-                        style={{ background: 'var(--surface-alt)', border: '1px solid rgba(255,158,66,0.15)', color: '#ffffff', borderRadius: '0px' }}
+                        style={{ background: 'var(--surface-alt)', border: '1px solid rgba(37, 99, 235,0.15)', color: '#ffffff', borderRadius: '0px' }}
                       />
                     </div>
                   </div>
@@ -350,7 +350,7 @@ export default function OnboardingPage() {
                       placeholder="e.g. 2024, 2026, N/A"
                       value={graduationYear}
                       onChange={(e) => setGraduationYear(e.target.value)}
-                      style={{ background: 'var(--surface-alt)', border: '1px solid rgba(255,158,66,0.15)', color: '#ffffff', borderRadius: '0px' }}
+                      style={{ background: 'var(--surface-alt)', border: '1px solid rgba(37, 99, 235,0.15)', color: '#ffffff', borderRadius: '0px' }}
                     />
                   </div>
 
@@ -379,7 +379,7 @@ export default function OnboardingPage() {
                       placeholder="e.g. I want to become a Senior DevOps Engineer in a product startup, focusing on infrastructure scaling."
                       value={careerGoal}
                       onChange={(e) => setCareerGoal(e.target.value)}
-                      style={{ background: 'var(--surface-alt)', border: '1px solid rgba(255,158,66,0.15)', color: '#ffffff', borderRadius: '0px', padding: '12px', resize: 'vertical' }}
+                      style={{ background: 'var(--surface-alt)', border: '1px solid rgba(37, 99, 235,0.15)', color: 'var(--text-primary)', borderRadius: '0px', padding: '12px', resize: 'vertical' }}
                     />
                   </div>
 
@@ -393,7 +393,7 @@ export default function OnboardingPage() {
                       placeholder="e.g. Full-Stack Developer, AI Researcher, UX Architect"
                       value={targetRole}
                       onChange={(e) => setTargetRole(e.target.value)}
-                      style={{ background: 'var(--surface-alt)', border: '1px solid rgba(255,158,66,0.15)', color: '#ffffff', borderRadius: '0px' }}
+                      style={{ background: 'var(--surface-alt)', border: '1px solid rgba(37, 99, 235,0.15)', color: '#ffffff', borderRadius: '0px' }}
                     />
                   </div>
 
@@ -407,7 +407,7 @@ export default function OnboardingPage() {
                           key={opt}
                           onClick={() => setSalaryExpectation(opt)}
                           className={salaryExpectation === opt ? 'btn-primary' : 'btn-ghost'}
-                          style={{ fontSize: '12px', padding: '8px 16px', borderRadius: '0px', border: '1px solid rgba(255,158,66,0.3)' }}
+                          style={{ fontSize: '12px', padding: '8px 16px', borderRadius: '0px', border: '1px solid rgba(37, 99, 235,0.3)' }}
                         >
                           {opt}
                         </button>
@@ -416,7 +416,7 @@ export default function OnboardingPage() {
                   </div>
 
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '16px' }}>
-                    <button onClick={() => setStep(1)} className="btn-ghost" style={{ padding: '10px 24px', borderRadius: '0px', border: '1px solid rgba(255,158,66,0.3)' }}>
+                    <button onClick={() => setStep(1)} className="btn-ghost" style={{ padding: '10px 24px', borderRadius: '0px', border: '1px solid rgba(37, 99, 235,0.3)' }}>
                       ← Back
                     </button>
                     <button onClick={() => setStep(3)} className="btn-primary" style={{ padding: '10px 24px', borderRadius: '0px' }}>
@@ -445,8 +445,8 @@ export default function OnboardingPage() {
                             key={opt.name}
                             onClick={() => toggleInterest(opt.name)}
                             style={{
-                              border: `1px solid ${selected ? 'var(--accent)' : 'rgba(255, 158, 66, 0.15)'}`,
-                              background: selected ? 'rgba(255, 158, 66, 0.08)' : 'var(--surface-alt)',
+                              border: `1px solid ${selected ? 'var(--accent)' : 'rgba(37, 99, 235, 0.15)'}`,
+                              background: selected ? 'rgba(37, 99, 235, 0.08)' : 'var(--surface-alt)',
                               padding: '14px 18px',
                               cursor: 'pointer',
                               transition: 'all 0.2s ease',
@@ -479,7 +479,7 @@ export default function OnboardingPage() {
                       value={skillInput}
                       onChange={(e) => setSkillInput(e.target.value)}
                       onKeyDown={addSkill}
-                      style={{ background: 'var(--surface-alt)', border: '1px solid rgba(255,158,66,0.15)', color: '#ffffff', marginBottom: '10px', borderRadius: '0px' }}
+                      style={{ background: 'var(--surface-alt)', border: '1px solid rgba(37, 99, 235,0.15)', color: '#ffffff', marginBottom: '10px', borderRadius: '0px' }}
                     />
                     <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                       {skills.map((sk) => (
@@ -490,7 +490,7 @@ export default function OnboardingPage() {
                             alignItems: 'center',
                             gap: '6px',
                             background: 'var(--surface-alt)',
-                            border: '1px solid rgba(255, 158, 66, 0.3)',
+                            border: '1px solid rgba(37, 99, 235, 0.3)',
                             padding: '4px 10px',
                             fontSize: '12px',
                             color: '#ffffff'
@@ -521,7 +521,7 @@ export default function OnboardingPage() {
                           key={opt}
                           onClick={() => setYearsExperience(opt)}
                           className={yearsExperience === opt ? 'btn-primary' : 'btn-ghost'}
-                          style={{ fontSize: '12px', padding: '8px 16px', borderRadius: '0px', border: '1px solid rgba(255,158,66,0.3)' }}
+                          style={{ fontSize: '12px', padding: '8px 16px', borderRadius: '0px', border: '1px solid rgba(37, 99, 235,0.3)' }}
                         >
                           {opt}
                         </button>
@@ -530,7 +530,7 @@ export default function OnboardingPage() {
                   </div>
 
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '16px' }}>
-                    <button onClick={() => setStep(2)} className="btn-ghost" style={{ padding: '10px 24px', borderRadius: '0px', border: '1px solid rgba(255,158,66,0.3)' }}>
+                    <button onClick={() => setStep(2)} className="btn-ghost" style={{ padding: '10px 24px', borderRadius: '0px', border: '1px solid rgba(37, 99, 235,0.3)' }}>
                       ← Back
                     </button>
                     <button onClick={() => setStep(4)} className="btn-primary" style={{ padding: '10px 24px', borderRadius: '0px' }}>
@@ -559,7 +559,7 @@ export default function OnboardingPage() {
                             key={opt}
                             onClick={() => toggleLearningStyle(opt)}
                             className={selected ? 'btn-primary' : 'btn-ghost'}
-                            style={{ fontSize: '12px', padding: '8px 16px', borderRadius: '0px', border: '1px solid rgba(255,158,66,0.3)' }}
+                            style={{ fontSize: '12px', padding: '8px 16px', borderRadius: '0px', border: '1px solid rgba(37, 99, 235,0.3)' }}
                           >
                             {selected ? '✓ ' : ''}{opt}
                           </button>
@@ -578,7 +578,7 @@ export default function OnboardingPage() {
                           key={opt}
                           onClick={() => setAvailability(opt)}
                           className={availability === opt ? 'btn-primary' : 'btn-ghost'}
-                          style={{ fontSize: '12px', padding: '8px 16px', borderRadius: '0px', border: '1px solid rgba(255,158,66,0.3)' }}
+                          style={{ fontSize: '12px', padding: '8px 16px', borderRadius: '0px', border: '1px solid rgba(37, 99, 235,0.3)' }}
                         >
                           {opt}
                         </button>
@@ -586,7 +586,7 @@ export default function OnboardingPage() {
                     </div>
                   </div>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', background: 'var(--surface-alt)', border: '1px solid rgba(255,158,66,0.1)', padding: '18px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', background: 'var(--surface-alt)', border: '1px solid rgba(37, 99, 235,0.1)', padding: '18px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <div>
                         <p style={{ margin: 0, fontWeight: 600, fontSize: '14px' }}>Include Industry Certifications</p>
@@ -602,7 +602,7 @@ export default function OnboardingPage() {
                   </div>
 
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '16px' }}>
-                    <button onClick={() => setStep(3)} className="btn-ghost" style={{ padding: '10px 24px', borderRadius: '0px', border: '1px solid rgba(255,158,66,0.3)' }}>
+                    <button onClick={() => setStep(3)} className="btn-ghost" style={{ padding: '10px 24px', borderRadius: '0px', border: '1px solid rgba(37, 99, 235,0.3)' }}>
                       ← Back
                     </button>
                     <button onClick={() => setStep(5)} className="btn-primary" style={{ padding: '10px 24px', borderRadius: '0px' }}>
@@ -621,7 +621,7 @@ export default function OnboardingPage() {
 
                   <div
                     style={{
-                      border: `2px dashed ${resumeFile ? 'var(--accent)' : 'rgba(255, 158, 66, 0.3)'}`,
+                      border: `2px dashed ${resumeFile ? 'var(--accent)' : 'rgba(37, 99, 235, 0.3)'}`,
                       background: 'var(--surface-alt)',
                       padding: '36px',
                       textAlign: 'center',
@@ -656,7 +656,7 @@ export default function OnboardingPage() {
                   </div>
 
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px' }}>
-                    <button onClick={() => setStep(4)} className="btn-ghost" style={{ padding: '10px 24px', borderRadius: '0px', border: '1px solid rgba(255,158,66,0.3)' }}>
+                    <button onClick={() => setStep(4)} className="btn-ghost" style={{ padding: '10px 24px', borderRadius: '0px', border: '1px solid rgba(37, 99, 235,0.3)' }}>
                       ← Back
                     </button>
                     <div style={{ display: 'flex', gap: '10px' }}>
@@ -676,7 +676,7 @@ export default function OnboardingPage() {
             </div>
             
             {/* Right Help Sidebar */}
-            <div style={{ width: '320px', padding: '30px', background: 'rgba(10, 10, 10, 0.6)', border: '1px solid rgba(255,158,66,0.15)', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div style={{ width: '320px', padding: '30px', background: 'rgba(10, 10, 10, 0.6)', border: '1px solid rgba(37, 99, 235,0.15)', display: 'flex', flexDirection: 'column', gap: '20px' }}>
               <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 800, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                 {helpPanel.title}
               </h3>
@@ -688,7 +688,7 @@ export default function OnboardingPage() {
                   </div>
                 ))}
               </div>
-              <div style={{ marginTop: 'auto', borderTop: '1px solid rgba(255,158,66,0.1)', paddingTop: '20px', fontSize: '11px', color: 'var(--text-muted)' }}>
+              <div style={{ marginTop: 'auto', borderTop: '1px solid rgba(37, 99, 235,0.1)', paddingTop: '20px', fontSize: '11px', color: 'var(--text-muted)' }}>
                 <p style={{ margin: 0, lineHeight: '1.4' }}>All recommendations are computed using vector space mapping against validated O*NET indices and Hugging Face models.</p>
               </div>
             </div>

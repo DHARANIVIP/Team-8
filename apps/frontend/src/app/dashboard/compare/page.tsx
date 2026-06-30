@@ -38,7 +38,7 @@ function SalaryBar({ label, min, max, maxAll }: { label:string; min:number; max:
         <div style={{
           position:'absolute', left:`${(min / maxAll) * 100}%`,
           width:`${((max - min) / maxAll) * 100}%`,
-          height:'100%', background:'linear-gradient(90deg, #ffb066, var(--accent))',
+          height:'100%', background:'linear-gradient(90deg, #DBEAFE, var(--accent))',
           borderRadius:'4px',
         }} />
       </div>
@@ -170,7 +170,7 @@ export default function ComparePage() {
         {/* ── Header ── */}
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          paddingBottom: '20px', borderBottom: '1px solid rgba(255, 158, 66, 0.15)', marginBottom: '24px'
+          paddingBottom: '20px', borderBottom: '1px solid rgba(37, 99, 235, 0.15)', marginBottom: '24px'
         }}>
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <div>
@@ -256,10 +256,10 @@ export default function ComparePage() {
 
               {/* Career B */}
               <div className="card" style={{ padding:'24px', textAlign:'center', display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
-                <h2 style={{ color:'#ffb066', fontWeight:800, fontSize:'18px', marginBottom:'6px', fontFamily: 'Outfit, sans-serif' }}>{selectedCareerBName}</h2>
+                <h2 style={{ color:'#DBEAFE', fontWeight:800, fontSize:'18px', marginBottom:'6px', fontFamily: 'Outfit, sans-serif' }}>{selectedCareerBName}</h2>
                 <p style={{ color:'var(--text-secondary)', fontSize:'13px', marginBottom:'12px' }}>{dataB.industry}</p>
                 <p style={{ color:'#ffffff', fontWeight:800, fontSize:'24px', fontFamily: 'Inter, sans-serif' }}>{dataB.salary}</p>
-                <p style={{ color:'#ffb066', fontSize:'13px', marginTop:'6px', fontWeight: 600 }}>↑ {dataB.growth} growth</p>
+                <p style={{ color:'#DBEAFE', fontSize:'13px', marginTop:'6px', fontWeight: 600 }}>↑ {dataB.growth} growth</p>
               </div>
             </div>
 
@@ -280,7 +280,7 @@ export default function ComparePage() {
                 <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', borderBottom:'1px solid var(--border-dark)', paddingBottom:'12px', marginBottom:'6px' }}>
                   <span style={{ color:'var(--text-muted)', fontSize:'11px', textTransform:'uppercase', letterSpacing:'0.08em', fontWeight: 700 }}>Metric</span>
                   <span style={{ color:'var(--accent)', fontSize:'11px', textTransform:'uppercase', letterSpacing:'0.08em', fontWeight: 700 }}>{selectedCareerAName}</span>
-                  <span style={{ color:'#ffb066', fontSize:'11px', textTransform:'uppercase', letterSpacing:'0.08em', fontWeight: 700 }}>{selectedCareerBName}</span>
+                  <span style={{ color:'#DBEAFE', fontSize:'11px', textTransform:'uppercase', letterSpacing:'0.08em', fontWeight: 700 }}>{selectedCareerBName}</span>
                 </div>
                 {rows.map((row, index) => (
                   <div key={row.label} style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', padding:'12px 0', borderBottom: index === rows.length - 1 ? 'none' : '1px solid var(--border-dark)' }}>
@@ -328,13 +328,13 @@ export default function ComparePage() {
 
               {/* Unique B */}
               <div className="card" style={{ padding:'20px 22px' }}>
-                <p style={{ color:'#ffb066', fontSize:'11px', fontWeight:700, letterSpacing:'0.08em', textTransform:'uppercase', marginBottom:'14px' }}>
+                <p style={{ color:'#DBEAFE', fontSize:'11px', fontWeight:700, letterSpacing:'0.08em', textTransform:'uppercase', marginBottom:'14px' }}>
                   Only in {selectedCareerBName} ({uniqueB.length})
                 </p>
                 <div style={{ display:'flex', flexWrap:'wrap', gap:'8px' }}>
                   {uniqueB.length > 0 ? (
                     uniqueB.map((s: string) => (
-                      <span key={s} className="skill-pill" style={{ color: '#ffb066', borderColor: 'rgba(255,176,102,0.2)', background: 'rgba(255,176,102,0.04)' }}>{s}</span>
+                      <span key={s} className="skill-pill" style={{ color: '#DBEAFE', borderColor: 'rgba(255,176,102,0.2)', background: 'rgba(255,176,102,0.04)' }}>{s}</span>
                     ))
                   ) : (
                     <span style={{ color: 'var(--text-muted)', fontSize: '13px' }}>None</span>

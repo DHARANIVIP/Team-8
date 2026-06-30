@@ -43,21 +43,21 @@ export default function SkillMatrixTab({ skills }: SkillMatrixTabProps) {
       <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '360px' }}>
         <thead>
           <tr>
-            <th style={{ textAlign: 'left', fontSize: '11px', color: 'var(--text-muted)', padding: '8px', borderBottom: '1px solid rgba(255,158,66,0.15)' }}>Category</th>
+            <th style={{ textAlign: 'left', fontSize: '11px', color: 'var(--text-muted)', padding: '8px', borderBottom: '1px solid rgba(37, 99, 235,0.15)' }}>Category</th>
             {LEVELS.map(level => (
-              <th key={level} style={{ textAlign: 'center', fontSize: '11px', color: 'var(--text-muted)', padding: '8px', borderBottom: '1px solid rgba(255,158,66,0.15)' }}>{level}</th>
+              <th key={level} style={{ textAlign: 'center', fontSize: '11px', color: 'var(--text-muted)', padding: '8px', borderBottom: '1px solid rgba(37, 99, 235,0.15)' }}>{level}</th>
             ))}
           </tr>
         </thead>
         <tbody>
           {categories.map(cat => (
             <tr key={cat}>
-              <td style={{ fontSize: '12px', color: '#ffffff', fontWeight: 600, padding: '10px 8px', borderBottom: '1px solid rgba(255,158,66,0.08)' }}>{cat}</td>
+              <td style={{ fontSize: '12px', color: '#ffffff', fontWeight: 600, padding: '10px 8px', borderBottom: '1px solid rgba(37, 99, 235,0.08)' }}>{cat}</td>
               {LEVELS.map(level => {
                 const count = matrix[cat][level];
                 const intensity = count / maxCell;
                 return (
-                  <td key={level} style={{ textAlign: 'center', padding: '10px 8px', borderBottom: '1px solid rgba(255,158,66,0.08)' }}>
+                  <td key={level} style={{ textAlign: 'center', padding: '10px 8px', borderBottom: '1px solid rgba(37, 99, 235,0.08)' }}>
                     <div
                       style={{
                         display: 'inline-flex',
@@ -66,8 +66,8 @@ export default function SkillMatrixTab({ skills }: SkillMatrixTabProps) {
                         minWidth: '36px',
                         height: '36px',
                         borderRadius: '4px',
-                        background: count > 0 ? `rgba(255, 158, 66, ${0.15 + intensity * 0.55})` : 'rgba(255,158,66,0.03)',
-                        border: `1px solid rgba(255, 158, 66, ${count > 0 ? 0.3 : 0.08})`,
+                        background: count > 0 ? `rgba(37, 99, 235, ${0.15 + intensity * 0.55})` : 'rgba(37, 99, 235,0.03)',
+                        border: `1px solid rgba(37, 99, 235, ${count > 0 ? 0.3 : 0.08})`,
                         color: count > 0 ? '#ffffff' : 'var(--text-muted)',
                         fontWeight: 700,
                         fontSize: '13px',

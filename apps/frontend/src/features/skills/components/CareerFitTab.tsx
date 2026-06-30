@@ -62,7 +62,7 @@ export default function CareerFitTab({ readiness, loading, onSelectCareer, onGoT
                 {item.readiness}%
               </span>
             </div>
-            <div style={{ height: '10px', background: 'rgba(255,158,66,0.05)', border: '1px solid rgba(255,158,66,0.1)', overflow: 'hidden', borderRadius: '2px' }}>
+            <div style={{ height: '10px', background: 'rgba(37, 99, 235,0.05)', border: '1px solid rgba(37, 99, 235,0.1)', overflow: 'hidden', borderRadius: '2px' }}>
               <div
                 style={{
                   height: '100%',

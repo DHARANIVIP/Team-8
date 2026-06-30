@@ -175,6 +175,11 @@ export default function DashboardPage() {
           </div>
         ) : (
           <>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '12px' }}>
+              <button onClick={() => router.push('/dashboard')} className="btn-primary" style={{ padding: '10px 18px', fontSize: '14px' }}>
+                Launch AI Analysis
+              </button>
+            </div>
             {/* ── Stats Cards ── */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
               {stats.map((s) => (
@@ -183,8 +188,8 @@ export default function DashboardPage() {
                     width: '42px',
                     height: '42px',
                     borderRadius: '6px',
-                    border: '1px solid rgba(255, 158, 66, 0.25)',
-                    background: 'rgba(255, 158, 66, 0.05)',
+                    border: '1px solid rgba(37, 99, 235, 0.25)',
+                    background: 'rgba(37, 99, 235, 0.05)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -210,16 +215,16 @@ export default function DashboardPage() {
                   <div key={c.name} style={{
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                     padding: '12px 18px', background: 'var(--surface-alt)', borderRadius: '6px',
-                    border: '1px solid rgba(255, 158, 66, 0.08)',
+                    border: '1px solid rgba(37, 99, 235, 0.08)',
                     flexWrap: 'wrap',
                     gap: '12px'
                   }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
                       <span style={{ color: '#ffffff', fontWeight: 600, fontSize: '14px', fontFamily: 'Outfit, sans-serif' }}>{c.name}</span>
                       <span className="badge" style={{
-                        background: 'rgba(255, 158, 66, 0.12)',
+                        background: 'rgba(37, 99, 235, 0.12)',
                         color: 'var(--accent)',
-                        border: '1px solid rgba(255, 158, 66, 0.3)'
+                        border: '1px solid rgba(37, 99, 235, 0.3)'
                       }}>
                         {c.badge}
                       </span>
@@ -274,13 +279,13 @@ export default function DashboardPage() {
                   { icon: '🗺', title: 'Learning Roadmaps',  sub: 'Step-by-step developer guides', link: '/dashboard/roadmaps' },
                 ].map((a) => (
                   <Link key={a.title} href={a.link} style={{ textDecoration: 'none' }}>
-                    <div className="card card-hover" style={{ padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: '12px', cursor: 'pointer', height: '100%', border: '1px solid rgba(255, 158, 66, 0.1)' }}>
+                    <div className="card card-hover" style={{ padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: '12px', cursor: 'pointer', height: '100%', border: '1px solid rgba(37, 99, 235, 0.1)' }}>
                       <div style={{
                         width: '36px',
                         height: '36px',
                         borderRadius: '6px',
-                        border: '1px solid rgba(255, 158, 66, 0.2)',
-                        background: 'rgba(255, 158, 66, 0.04)',
+                        border: '1px solid rgba(37, 99, 235, 0.2)',
+                        background: 'rgba(37, 99, 235, 0.04)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -324,7 +329,7 @@ export default function DashboardPage() {
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   {goals.map((g, i) => (
-                    <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--surface-alt)', padding: '10px 16px', borderRadius: '6px', border: '1px solid rgba(255, 158, 66, 0.08)' }}>
+                    <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--surface-alt)', padding: '10px 16px', borderRadius: '6px', border: '1px solid rgba(37, 99, 235, 0.08)' }}>
                       <span style={{ color: 'var(--text-primary)', fontSize: '13px' }}>{g}</span>
                       <button onClick={() => removeGoal(i)} style={{ background: 'transparent', color: '#ef4444', border: 'none', cursor: 'pointer', fontSize: '14px', padding: '4px' }}>✕</button>
                     </div>
@@ -337,12 +342,12 @@ export default function DashboardPage() {
             <section className="card" style={{ padding: '28px' }}>
               <span className="section-label">CAREER SNAPSHOT</span>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px', marginBottom: '20px' }}>
-                <div style={{ background: 'var(--surface-alt)', borderRadius: '6px', padding: '18px 20px', border: '1px solid rgba(255, 158, 66, 0.08)' }}>
+                <div style={{ background: 'var(--surface-alt)', borderRadius: '6px', padding: '18px 20px', border: '1px solid rgba(37, 99, 235, 0.08)' }}>
                   <p style={{ color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '6px', fontWeight: 500 }}>Most Promising Career</p>
                   <p style={{ color: '#ffffff', fontWeight: 700, fontSize: '16px', fontFamily: 'Outfit, sans-serif' }}>{mostPopularCareer.name}</p>
                   <p style={{ color: 'var(--accent)', fontSize: '12px', marginTop: '6px', fontWeight: 600 }}>{mostPopularCareer.salary}</p>
                 </div>
-                <div style={{ background: 'var(--surface-alt)', borderRadius: '6px', padding: '18px 20px', border: '1px solid rgba(255, 158, 66, 0.08)' }}>
+                <div style={{ background: 'var(--surface-alt)', borderRadius: '6px', padding: '18px 20px', border: '1px solid rgba(37, 99, 235, 0.08)' }}>
                   <p style={{ color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '6px', fontWeight: 500 }}>Highest Paying Career</p>
                   <p style={{ color: '#ffffff', fontWeight: 700, fontSize: '16px', fontFamily: 'Outfit, sans-serif' }}>{highestPayingCareer.name}</p>
                   <p style={{ color: 'var(--accent)', fontSize: '12px', marginTop: '6px', fontWeight: 600 }}>{highestPayingCareer.salary}</p>

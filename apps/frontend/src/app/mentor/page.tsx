@@ -9,12 +9,12 @@ export default function MentorPage() {
     <div style={{ minHeight: '100vh', background: '#0b0b0b', margin: 0 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 30px', background: '#090909', borderBottom: '1px solid #1a1a1a' }}>
         <div>
-          <h1 style={{ color: '#ff9e42', fontSize: '20px', margin: 0 }}>AI Mentor</h1>
+          <h1 style={{ color: '#2563EB', fontSize: '20px', margin: 0 }}>AI Mentor</h1>
           <p style={{ color: '#aaaaaa', fontSize: '13px', margin: '6px 0 0' }}>Your mentor page opens first after login.</p>
         </div>
         <button
           onClick={() => router.push('/dashboard')}
-          style={{ border: '1px solid #ff9e42', color: '#ff9e42', background: 'transparent', borderRadius: '8px', padding: '10px 16px', fontSize: '13px', cursor: 'pointer' }}
+          style={{ border: '1px solid #2563EB', color: '#2563EB', background: 'transparent', borderRadius: '8px', padding: '10px 16px', fontSize: '13px', cursor: 'pointer' }}
         >
           Go to Dashboard
         </button>

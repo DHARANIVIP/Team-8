@@ -39,7 +39,7 @@ export default function GapAnalysisTab({
             width: '100%',
             marginTop: '8px',
             background: '#0a0a0a',
-            border: '1px solid rgba(255, 158, 66, 0.3)',
+            border: '1px solid rgba(37, 99, 235, 0.3)',
             padding: '10px 14px',
             color: '#ffffff',
             fontSize: '13px',
@@ -92,7 +92,7 @@ export default function GapAnalysisTab({
                   </span>
                 </div>
 
-                <div style={{ height: '6px', background: 'rgba(255,158,66,0.03)', border: '1px solid rgba(255,158,66,0.08)', overflow: 'hidden' }}>
+                <div style={{ height: '6px', background: 'rgba(37, 99, 235,0.03)', border: '1px solid rgba(37, 99, 235,0.08)', overflow: 'hidden' }}>
                   <div style={{
                     height: '100%',
                     width: `${skill.acquired ? skill.progress_percentage || 60 : 8}%`,

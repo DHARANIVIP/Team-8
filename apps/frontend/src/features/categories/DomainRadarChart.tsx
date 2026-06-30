@@ -73,10 +73,10 @@ export default function DomainRadarChart({ domains = [] }: DomainRadarChartProps
       alignItems: 'center',
       justifyContent: 'center',
       background: 'rgba(18, 18, 18, 0.4)',
-      border: '1px solid rgba(255, 158, 66, 0.1)',
+      border: '1px solid rgba(37, 99, 235, 0.1)',
       padding: '20px',
       borderRadius: '8px',
-      boxShadow: 'inset 0 0 12px rgba(255, 158, 66, 0.03)'
+      boxShadow: 'inset 0 0 12px rgba(37, 99, 235, 0.03)'
     }}>
       <h3 style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '16px', fontFamily: 'Outfit, sans-serif', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
         Domain Profile Map
@@ -97,7 +97,7 @@ export default function DomainRadarChart({ domains = [] }: DomainRadarChartProps
             key={idx}
             points={points}
             fill="none"
-            stroke="rgba(255, 158, 66, 0.08)"
+            stroke="rgba(37, 99, 235, 0.08)"
             strokeWidth="1"
           />
         ))}
@@ -112,7 +112,7 @@ export default function DomainRadarChart({ domains = [] }: DomainRadarChartProps
               y1={center}
               x2={outerPoint.x}
               y2={outerPoint.y}
-              stroke="rgba(255, 158, 66, 0.08)"
+              stroke="rgba(37, 99, 235, 0.08)"
               strokeWidth="1"
             />
           );
@@ -121,7 +121,7 @@ export default function DomainRadarChart({ domains = [] }: DomainRadarChartProps
         {/* User Match Score Polygon Area */}
         <polygon
           points={scorePoints}
-          fill="rgba(255, 158, 66, 0.18)"
+          fill="rgba(37, 99, 235, 0.18)"
           stroke="var(--accent)"
           strokeWidth="2"
           filter="url(#radar-glow)"

@@ -11,23 +11,33 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  border-radius: 0px !important;
 }
 
 :root {
-  --accent:          #ff9e42;
-  --accent-soft:     #ffb066;
-  --accent-glow:     rgba(255, 158, 66, 0.15);
-  --accent-glow-strong: rgba(255, 158, 66, 0.35);
-  --text-primary:    #e5e5e5;
-  --text-secondary:  #a3a3a3;
-  --text-muted:      #737373;
-  --bg:              #0a0a0a;      /* Deeper cyber black background */
-  --surface:         #121212;     /* Dark charcoal surface */
-  --surface-alt:     #1a1a1a;     /* Slightly lighter for hover states */
-  --border:          rgba(255, 158, 66, 0.15); /* Accent-tinted borders */
-  --border-dark:     #1e1e1e;     /* Subtler boundary border */
-  --border-focus:    #ff9e42;
+  --primary: #F6F9FF;
+  --secondary: #E8EFFD;
+  --tertiary: #F1F7FF;
+  --accent: #2563EB;
+  --highlight: #DBEAFE;
+
+  --text-grey: #0F172A;
+
+  --button-primary: #2563EB;
+
+  --bg: #F7FBFF;
+  --surface: #FFFFFF;
+  --surface-alt: #EEF4FF;
+
+  --border: #DCE7FF;
+  --border-dark: #C7D7F7;
+  --border-focus: #2563EB;
+
+  --accent-soft: #93C5FD;
+  --accent-glow: #BFDBFE;
+
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
+  --text-muted: #64748B;
 }
 
 html, body {
@@ -42,10 +52,55 @@ html, body {
 }
 
 /* ─────────────────────────────────────────
+   HEADING & TEXT OVERRIDES FOR LIGHT THEME
+   ───────────────────────────────────────── */
+/* Sections that used dark backgrounds should now be light */
+[style*="background: #0a0a0a"],
+[style*="background:#0a0a0a"],
+[style*="background: #090909"],
+[style*="background:#090909"],
+[style*="background: #121212"],
+[style*="background:#121212"],
+[style*="background: #1a1a1c"],
+[style*="background:#1a1a1c"],
+[style*="background: #1c1c1e"],
+[style*="background:#1c1c1e"],
+[style*="background: #222222"],
+[style*="background:#222222"],
+[style*="background: rgba(10, 10, 10"],
+[style*="background: rgba(18, 18, 18"],
+[style*="background: rgba(18, 18, 18, 0.4"],
+[style*="background: rgba(18, 18, 18, 0.7"],
+[style*="background: rgba(10, 10, 10, 0.7"],
+[style*="background: rgba(10, 10, 10, 0.8"],
+[style*="background: rgba(10, 10, 10, 0.95"],
+[style*="background: rgba(0,0,0,0.7"],
+[style*="background: rgba(10,10,10,0.7"],
+[style*="background: rgba(10,10,10,0.6"],
+[style*="background: rgba(37, 99, 235, 0.15"] {
+  background: var(--surface-alt) !important;
+}
+
+.dashboard-theme {
+  background-color: var(--bg);
+}
+
+/* White text on dark bg → now dark text on light bg */
+[style*="color: #ffffff"],
+[style*="color:#ffffff"],
+[style*="color: '#ffffff'"],
+[style*="color: 'white'"],
+[style*="color: rgb(255, 255, 255)"],
+[style*="color: #fff"],
+[style*="color:#fff"] {
+  color: var(--text-primary) !important;
+}
+
+/* ─────────────────────────────────────────
    TYPOGRAPHY
    ───────────────────────────────────────── */
 h1, h2, h3, h4, h5, h6 {
-  color: #ffffff;
+  color: #0f172a; /* dark text */
   font-family: 'Outfit', sans-serif;
   font-weight: 700;
   line-height: 1.25;
@@ -53,11 +108,11 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 p {
-  color: var(--text-secondary);
+  color: var(--text-grey);
 }
 
 a {
-  color: var(--accent);
+  color: var(--button-primary);
   text-decoration: none;
   transition: all 0.2s ease;
 }
@@ -73,13 +128,10 @@ a:hover {
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 16px;
   padding: 24px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-  transition: border-color 0.25s cubic-bezier(0.4, 0, 0.2, 1), 
-              background-color 0.25s cubic-bezier(0.4, 0, 0.2, 1), 
-              box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-              transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 10px 25px rgba(37, 99, 235, 0.08);
+  transition: transform 0.25s ease;
 }
 
 .card-hover {
@@ -87,12 +139,10 @@ a:hover {
 }
 
 .card-hover:hover {
-  border-color: var(--accent) !important;
-  background: var(--surface-alt) !important;
-  box-shadow: 0 0 16px var(--accent-glow), 0 4px 24px rgba(0, 0, 0, 0.3) !important;
-  transform: translateY(-2px);
+  background: #F5F9FF;
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(37,99,235,0.08);
 }
-
 /* ─────────────────────────────────────────
    BUTTONS
    ───────────────────────────────────────── */
@@ -100,22 +150,22 @@ a:hover {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: var(--accent) !important;
-  color: #0a0a0a !important; /* Solid high-contrast dark text */
+  background: var(--button-primary) !important;
+  color: #ffffff !important; 
   font-family: 'Outfit', sans-serif;
   font-weight: 700;
   font-size: 14px;
   padding: 10px 22px;
-  border-radius: 6px;
-  border: 1px solid var(--accent) !important;
+  border-radius: 8px;
+  border: 1px solid var(--button-primary) !important;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   white-space: nowrap;
 }
 
 .btn-primary:hover {
-  background: var(--accent-soft) !important;
-  box-shadow: 0 0 14px var(--accent-glow-strong) !important;
+  background: linear-gradient(90deg, var(--button-primary), #1E3A8A) !important;
+  box-shadow: 0 10px 30px rgba(37,99,235,0.12) !important;
   transform: translateY(-1px);
 }
 
@@ -128,22 +178,22 @@ a:hover {
   align-items: center;
   gap: 8px;
   background: transparent !important;
-  color: var(--accent) !important;
+  color: var(--button-primary) !important;
   font-family: 'Outfit', sans-serif;
   font-weight: 600;
   font-size: 14px;
   padding: 10px 22px;
   border-radius: 6px;
-  border: 1px solid var(--accent) !important;
+  border: 1px solid var(--button-primary) !important;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   white-space: nowrap;
 }
 
 .btn-outline:hover {
-  background: rgba(255, 158, 66, 0.08) !important;
-  border-color: var(--accent-soft) !important;
-  box-shadow: 0 0 12px var(--accent-glow) !important;
+  background: var(--primary) !important;
+  border-color: var(--button-primary) !important;
+  box-shadow: 0 8px 20px rgba(37,99,235,0.06) !important;
   transform: translateY(-1px);
 }
 
@@ -156,22 +206,22 @@ a:hover {
   align-items: center;
   gap: 8px;
   background: transparent !important;
-  color: var(--text-secondary) !important;
+  color: var(--text-grey) !important;
   font-family: 'Outfit', sans-serif;
   font-weight: 500;
   font-size: 14px;
   padding: 8px 16px;
-  border-radius: 6px;
-  border: 1px solid var(--border-dark) !important;
+  border-radius: 8px;
+  border: 1px solid var(--border) !important;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .btn-ghost:hover {
-  border-color: var(--accent) !important;
-  color: var(--accent) !important;
-  background: rgba(255, 158, 66, 0.05) !important;
-  box-shadow: 0 0 8px var(--accent-glow) !important;
+  border-color: var(--button-primary) !important;
+  color: var(--button-primary) !important;
+  background: rgba(37,99,235,0.06) !important;
+  box-shadow: 0 8px 18px rgba(37,99,235,0.06) !important;
 }
 
 /* ─────────────────────────────────────────
@@ -179,11 +229,11 @@ a:hover {
    ───────────────────────────────────────── */
 .input-field, select, textarea {
   width: 100%;
-  background: var(--surface-alt);
-  border: 1px solid var(--border-dark) !important;
-  border-radius: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border) !important;
+  border-radius: 8px;
   padding: 11px 14px;
-  color: var(--text-primary);
+  color: var(--text-grey);
   font-family: 'Outfit', sans-serif;
   font-size: 14px;
   outline: none;
@@ -191,12 +241,12 @@ a:hover {
 }
 
 .input-field::placeholder {
-  color: var(--text-muted);
+  color: #94a3b8;
 }
 
 .input-field:focus, select:focus, textarea:focus {
-  border-color: var(--accent) !important;
-  box-shadow: 0 0 10px var(--accent-glow) !important;
+  border-color: var(--button-primary) !important;
+  box-shadow: 0 6px 18px rgba(37,99,235,0.08) !important;
   background: var(--surface);
 }
 
@@ -247,10 +297,10 @@ a:hover {
 }
 
 .badge-accent {
-  background: rgba(255, 158, 66, 0.12);
-  color: var(--accent);
-  border: 1px solid rgba(255, 158, 66, 0.3) !important;
-  box-shadow: 0 0 5px var(--accent-glow) !important;
+  background: rgba(37,99,235,0.08);
+  color: var(--button-primary);
+  border: 1px solid rgba(37,99,235,0.12) !important;
+  box-shadow: 0 6px 18px rgba(37,99,235,0.06) !important;
 }
 
 .badge-muted {
@@ -275,7 +325,7 @@ a:hover {
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--accent);
+  color: var(--button-primary);
   margin-bottom: 14px;
 }
 
@@ -285,7 +335,7 @@ a:hover {
 .auth-bg {
   min-height: 100vh;
   width: 100%;
-  background: radial-gradient(ellipse at center, #111111 0%, #060606 100%);
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -298,12 +348,32 @@ a:hover {
    ───────────────────────────────────────── */
 .auth-card {
   background: var(--surface);
-  border: 1px solid var(--border) !important;
-  border-radius: 8px;
+  border: 1px solid rgba(37,99,235,0.08) !important;
+  border-radius: 12px;
   padding: 36px 40px;
   width: 420px;
   max-width: 100%;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 0 0 25px var(--accent-glow) !important;
+  box-shadow: 0 12px 40px rgba(30,58,138,0.06), 0 6px 24px rgba(37,99,235,0.04) !important;
+}
+
+.auth-card .input-field {
+  background: var(--surface-alt) !important;
+  border-color: rgba(37,99,235,0.15) !important;
+  color: var(--text-primary) !important;
+}
+
+.auth-card .input-field::placeholder {
+  color: #94a3b8 !important;
+}
+
+.auth-card .btn-ghost {
+  background: rgba(248,250,255,0.85) !important;
+  color: var(--button-primary) !important;
+  border-color: rgba(37,99,235,0.25) !important;
+}
+
+.auth-card .btn-ghost:hover {
+  background: rgba(37,99,235,0.08) !important;
 }
 
 /* ─────────────────────────────────────────
@@ -483,7 +553,7 @@ button[style*="239,68"]:hover {
 .spinner {
   width: 28px;
   height: 28px;
-  border: 3px solid rgba(255, 158, 66, 0.1);
+  border: 3px solid rgba(37, 99, 235, 0.1);
   border-top: 3px solid var(--accent);
   border-radius: 50% !important;
   animation: spin 0.8s linear infinite;
@@ -493,4 +563,13 @@ button[style*="239,68"]:hover {
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+/* Hero Background */
+.hero {
+  background: radial-gradient(
+    circle at top right,
+    #DBEAFE 0%,
+    #FFFFFF 45%
+  );
 }

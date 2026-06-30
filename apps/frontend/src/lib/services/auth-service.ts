@@ -29,7 +29,11 @@ export async function signup(name: string, email: string, password: string) {
     }
     return data;
   } catch (error) {
-    console.error('Signup error:', error);
+    // Provide a friendlier error message when the backend is unreachable
+    const errMsg = (error as any)?.message || String(error);
+    if (errMsg.includes('Failed to fetch') || errMsg.includes('NetworkError') || errMsg.includes('network')) {
+      throw new Error(`Unable to reach backend at ${API_URL}. Is the backend server running?`);
+    }
     throw error;
   }
 }

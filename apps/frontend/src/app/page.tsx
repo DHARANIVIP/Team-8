@@ -6,18 +6,18 @@ import Link from 'next/link';
 function Navbar() {
   return (
     <nav style={{
-      border: '1px solid rgba(255, 158, 66, 0.15)',
+      border: '1px solid var(--border)',
       padding: '16px 24px',
-      background: 'rgba(10, 10, 10, 0.8)',
-      backdropFilter: 'blur(12px)',
+      background: 'var(--surface)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
+      boxShadow: '0 12px 36px rgba(37, 99, 235, 0.08)'
     }}>
       <div style={{
-        border: '1px solid rgba(255, 158, 66, 0.3)',
+        border: '1px solid rgba(37, 99, 235, 0.3)',
         padding: '6px 14px',
-        background: 'rgba(255, 158, 66, 0.05)',
+        background: 'rgba(37, 99, 235, 0.05)',
       }}>
         <span style={{ color: 'var(--accent)', fontWeight: 800, fontSize: '14px', letterSpacing: '0.08em', fontFamily: 'Outfit, sans-serif', textTransform: 'uppercase' }}>
           Mastermind
@@ -38,25 +38,23 @@ function Navbar() {
 // ── HeroSection ──────────────────────────────────────────────────────────────
 function HeroSection() {
   return (
-    <section className="card animate-fade-in" style={{
+    <section className="hero card animate-fade-in" style={{
       flex: '1.6 1 600px',
       minWidth: '320px',
       padding: '48px 40px',
       display: 'flex',
-      flexDirection: 'column',
+      flexDirection: 'column', 
       justifyContent: 'center',
-      background: 'var(--surface)',
-      border: '1px solid var(--border)',
       position: 'relative',
       overflow: 'hidden'
     }}>
-      <div style={{ position: 'absolute', top: '-100px', right: '-100px', width: '400px', height: '400px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(255, 158, 66, 0.05) 0%, transparent 70%)', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', top: '-100px', right: '-100px', width: '400px', height: '400px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(37, 99, 235, 0.05) 0%, transparent 70%)', pointerEvents: 'none' }} />
       
       <div style={{ position: 'relative', zIndex: 1 }}>
         <span className="section-label" style={{ fontSize: '11px', letterSpacing: '0.12em', color: 'var(--accent)' }}>
           CAREER GUIDANCE PORTAL
         </span>
-        <h1 style={{ fontSize: '42px', fontWeight: 800, lineHeight: 1.15, marginBottom: '20px', color: '#ffffff', fontFamily: 'Outfit, sans-serif' }}>
+        <h1 style={{ fontSize: '42px', fontWeight: 800, lineHeight: 1.15, marginBottom: '20px', color: '#0f172a', fontFamily: 'Outfit, sans-serif' }}>
           Explore Careers,<br />Build Your Future.
         </h1>
         <p style={{ fontSize: '15px', color: 'var(--text-secondary)', maxWidth: '580px', marginBottom: '32px', lineHeight: 1.7 }}>
@@ -156,12 +154,12 @@ function SpotlightShowcase() {
   return (
     <section className="card" style={{
       padding: '56px 48px',
-      background: 'linear-gradient(135deg, rgba(255, 158, 66, 0.05) 0%, rgba(18, 18, 18, 0.8) 100%)',
+      background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.08) 0%, rgba(246, 249, 255, 1) 100%)',
       border: '1px solid var(--border)',
       position: 'relative',
       overflow: 'hidden',
     }}>
-      <div style={{ position: 'absolute', bottom: '-80px', right: '-80px', width: '300px', height: '300px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(255, 158, 66, 0.06) 0%, transparent 70%)', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', bottom: '-80px', right: '-80px', width: '300px', height: '300px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(37, 99, 235, 0.06) 0%, transparent 70%)', pointerEvents: 'none' }} />
       
       <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '40px', alignItems: 'center', justifyContent: 'space-between', position: 'relative', zIndex: 1 }}>
         <div style={{ flex: '1 1 600px', minWidth: '320px' }}>
@@ -173,13 +171,13 @@ function SpotlightShowcase() {
             Get direct access to official Frontend, Backend, DevOps, and Machine Learning curriculum syllabi, now rendered side-by-side with an interactive checklist! Track your learning progress, check off completed milestones, and view your dynamic progress updates in real-time.
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '24px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', color: '#ffffff', fontWeight: 500 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', color: 'var(--text-primary)', fontWeight: 500 }}>
               <span style={{ color: 'var(--accent)', fontSize: '16px' }}>✓</span> PDF Dual-View Toggle
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', color: '#ffffff', fontWeight: 500 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', color: 'var(--text-primary)', fontWeight: 500 }}>
               <span style={{ color: 'var(--accent)', fontSize: '16px' }}>✓</span> Dynamic Progress HUD
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', color: '#ffffff', fontWeight: 500 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', color: 'var(--text-primary)', fontWeight: 500 }}>
               <span style={{ color: 'var(--accent)', fontSize: '16px' }}>✓</span> Local Persistence Sync
             </div>
           </div>
@@ -209,7 +207,7 @@ function Footer() {
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function Home() {
   return (
-    <div style={{ background: '#0a0a0a', minHeight: '100vh', padding: '32px 0' }}>
+    <div style={{ background: 'var(--bg)', minHeight: '100vh', padding: '32px 0' }}>
       <main className="animate-slide-up" style={{
         maxWidth: '1400px',
         width: '100%',

@@ -34,7 +34,7 @@ export default function SkillsKpiStrip({ overview }: SkillsKpiStripProps) {
           style={{
             padding: '16px 18px',
             background: 'rgba(18, 18, 18, 0.4)',
-            border: '1px solid rgba(255, 158, 66, 0.1)',
+            border: '1px solid rgba(37, 99, 235, 0.1)',
           }}
         >
           <span

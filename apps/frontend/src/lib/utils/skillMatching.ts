@@ -49,7 +49,7 @@ export function proficiencyColor(proficiency: string): { bg: string; color: stri
   if (proficiency === 'Beginner') {
     return { bg: 'rgba(148, 163, 184, 0.1)', color: '#94a3b8', border: '1px solid rgba(148, 163, 184, 0.3)' };
   }
-  return { bg: 'rgba(255, 158, 66, 0.1)', color: 'var(--accent)', border: '1px solid rgba(255, 158, 66, 0.3)' };
+  return { bg: 'rgba(37, 99, 235, 0.1)', color: 'var(--accent)', border: '1px solid rgba(37, 99, 235, 0.3)' };
 }
 
 export function urgencyColor(urgency: string): string {

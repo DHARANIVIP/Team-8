@@ -65,7 +65,7 @@ export default function ProfileTab({ skills, onRefresh }: ProfileTabProps) {
             <div
               key={skill.skill_name}
               className="card card-hover"
-              style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px', background: 'rgba(18, 18, 18, 0.4)', border: '1px solid rgba(255, 158, 66, 0.08)' }}
+              style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px', background: 'rgba(18, 18, 18, 0.4)', border: '1px solid rgba(37, 99, 235, 0.08)' }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
@@ -84,14 +84,14 @@ export default function ProfileTab({ skills, onRefresh }: ProfileTabProps) {
                   <span>Progress</span>
                   <span>{skill.progress_percentage || 0}%</span>
                 </div>
-                <div style={{ background: 'rgba(255,158,66,0.05)', height: '6px', border: '1px solid rgba(255,158,66,0.1)', overflow: 'hidden' }}>
+                <div style={{ background: 'rgba(37, 99, 235,0.05)', height: '6px', border: '1px solid rgba(37, 99, 235,0.1)', overflow: 'hidden' }}>
                   <div style={{ height: '100%', width: `${skill.progress_percentage || 0}%`, background: skill.proficiency === 'Expert' ? '#10b981' : 'var(--accent)' }} />
                 </div>
               </div>
 
               {isEditing ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', paddingTop: '10px', borderTop: '1px solid rgba(255,158,66,0.1)' }}>
-                  <select value={editingProficiency} onChange={e => setEditingProficiency(e.target.value)} style={{ width: '100%', background: '#0a0a0a', border: '1px solid rgba(255,158,66,0.3)', color: '#fff', fontSize: '11px', padding: '4px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', paddingTop: '10px', borderTop: '1px solid rgba(37, 99, 235,0.1)' }}>
+                  <select value={editingProficiency} onChange={e => setEditingProficiency(e.target.value)} style={{ width: '100%', background: '#0a0a0a', border: '1px solid rgba(37, 99, 235,0.3)', color: '#fff', fontSize: '11px', padding: '4px' }}>
                     <option value="Beginner">Beginner</option>
                     <option value="Intermediate">Intermediate</option>
                     <option value="Expert">Expert</option>
@@ -106,7 +106,7 @@ export default function ProfileTab({ skills, onRefresh }: ProfileTabProps) {
                 <div style={{ display: 'flex', gap: '6px' }}>
                   <button
                     className="btn-ghost"
-                    style={{ flex: 1, fontSize: '10px', padding: '5px', border: '1px dashed rgba(255,158,66,0.2)' }}
+                    style={{ flex: 1, fontSize: '10px', padding: '5px', border: '1px dashed rgba(37, 99, 235,0.2)' }}
                     onClick={() => {
                       setEditingSkillName(skill.skill_name);
                       setEditingProficiency(skill.proficiency || 'Intermediate');

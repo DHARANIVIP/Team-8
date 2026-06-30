@@ -53,7 +53,7 @@ function MatrixBackground() {
       ctx.fillStyle = 'rgba(10, 10, 10, 0.1)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      ctx.fillStyle = 'rgba(255, 158, 66, 0.15)'; // Mild orange matrix code rain
+      ctx.fillStyle = 'rgba(37, 99, 235, 0.15)'; // Mild orange matrix code rain
       ctx.font = `${fontSize}px monospace`;
 
       for (let i = 0; i < drops.length; i++) {
@@ -183,7 +183,7 @@ export default function SignupPage() {
             padding: '16px 20px',
             minWidth: '300px',
             maxWidth: '380px',
-            boxShadow: '0 8px 32px rgba(255, 158, 66, 0.25), 0 4px 12px rgba(0,0,0,0.3)',
+            boxShadow: '0 8px 32px rgba(37, 99, 235, 0.25), 0 4px 12px rgba(0,0,0,0.3)',
             display: 'flex',
             alignItems: 'flex-start',
             gap: '12px',
@@ -236,15 +236,15 @@ export default function SignupPage() {
       <MatrixBackground />
 
       <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
-        <h1 style={{ color: '#ffffff', fontSize: '24px', fontWeight: 800, marginBottom: '18px', textAlign: 'center', textShadow: '0 0 8px rgba(255, 158, 66, 0.25)' }}>
+        <h1 style={{ color: 'var(--text-primary)', fontSize: '24px', fontWeight: 800, marginBottom: '18px', textAlign: 'center', textShadow: '0 0 8px rgba(37, 99, 235, 0.12)' }}>
           Create your account
         </h1>
 
-        <form onSubmit={handleSubmit} className="auth-card animate-fade-in" style={{ borderRadius: '0px', border: '1px solid rgba(255, 158, 66, 0.15)', background: 'var(--surface)' }}>
+        <form onSubmit={handleSubmit} className="auth-card animate-fade-in" style={{ borderRadius: '0px', border: '1px solid rgba(37, 99, 235, 0.15)', background: 'var(--surface)' }}>
           <div style={{ textAlign: 'center', marginBottom: '24px' }}>
             <Link href="/" style={{
-              border: '1px solid rgba(255, 158, 66, 0.3)',
-              background: 'rgba(255, 158, 66, 0.05)',
+              border: '1px solid rgba(37, 99, 235, 0.3)',
+              background: 'rgba(37, 99, 235, 0.05)',
               padding: '8px 18px',
               color: 'var(--accent)',
               fontSize: '11px',
@@ -301,7 +301,7 @@ export default function SignupPage() {
                 style={{
                   paddingLeft: '40px',
                   borderRadius: '0px',
-                  border: '1px solid rgba(255, 158, 66, 0.3)',
+                  border: '1px solid rgba(37, 99, 235, 0.3)',
                   background: 'rgba(10, 10, 10, 0.7)'
                 }}
               />
@@ -330,7 +330,7 @@ export default function SignupPage() {
                 style={{
                   paddingLeft: '40px',
                   borderRadius: '0px',
-                  border: '1px solid rgba(255, 158, 66, 0.3)',
+                  border: '1px solid rgba(37, 99, 235, 0.3)',
                   background: 'rgba(10, 10, 10, 0.7)'
                 }}
               />
@@ -360,7 +360,7 @@ export default function SignupPage() {
                   paddingLeft: '40px',
                   paddingRight: '40px',
                   borderRadius: '0px',
-                  border: '1px solid rgba(255, 158, 66, 0.3)',
+                  border: '1px solid rgba(37, 99, 235, 0.3)',
                   background: 'rgba(10, 10, 10, 0.7)'
                 }}
               />
@@ -396,7 +396,7 @@ export default function SignupPage() {
                   paddingLeft: '40px',
                   paddingRight: '40px',
                   borderRadius: '0px',
-                  border: '1px solid rgba(255, 158, 66, 0.3)',
+                  border: '1px solid rgba(37, 99, 235, 0.3)',
                   background: 'rgba(10, 10, 10, 0.7)'
                 }}
               />
@@ -443,9 +443,9 @@ export default function SignupPage() {
                 fontSize: '13px',
                 width: '50%',
                 justifyContent: 'center',
-                border: '1px solid rgba(255, 158, 66, 0.3)',
-                background: 'rgba(10, 10, 10, 0.6)',
-                color: '#ffffff',
+                border: '1px solid rgba(37, 99, 235, 0.3)',
+                background: 'var(--surface-alt)',
+                color: 'var(--text-primary)',
                 fontWeight: 600,
                 borderRadius: '0px',
                 cursor: 'pointer'
@@ -471,7 +471,7 @@ export default function SignupPage() {
                 fontSize: '13px',
                 width: '50%',
                 justifyContent: 'center',
-                border: '1px solid rgba(255, 158, 66, 0.3)',
+                border: '1px solid rgba(37, 99, 235, 0.3)',
                 background: 'rgba(10, 10, 10, 0.6)',
                 color: '#ffffff',
                 fontWeight: 600,

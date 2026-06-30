@@ -108,7 +108,7 @@ export default function OverviewTab({
       )}
 
       {advisor && advisor.criticalGaps.length > 0 && (
-        <div style={{ background: 'rgba(255, 158, 66, 0.04)', borderLeft: '2px solid var(--accent)', padding: '12px 16px' }}>
+        <div style={{ background: 'rgba(37, 99, 235, 0.04)', borderLeft: '2px solid var(--accent)', padding: '12px 16px' }}>
           <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: 0 }}>
             <strong style={{ color: 'var(--accent)' }}>Focus areas:</strong> {advisor.criticalGaps.join(', ')}
           </p>

@@ -14,7 +14,7 @@ export default function ReadinessRing({ percentage, size = 100, label }: Readine
   return (
     <div style={{ position: 'relative', width: size, height: size, margin: '0 auto' }}>
       <svg width={size} height={size} viewBox="0 0 100 100">
-        <circle cx="50" cy="50" r={r} fill="transparent" stroke="rgba(255, 158, 66, 0.05)" strokeWidth="6" />
+        <circle cx="50" cy="50" r={r} fill="transparent" stroke="rgba(37, 99, 235, 0.05)" strokeWidth="6" />
         <circle
           cx="50"
           cy="50"

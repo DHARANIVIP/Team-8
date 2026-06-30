@@ -213,7 +213,7 @@ export default function SkillsPage() {
             alignItems: 'center',
             justifyContent: 'space-between',
             paddingBottom: '20px',
-            borderBottom: '1px solid rgba(255, 158, 66, 0.15)',
+            borderBottom: '1px solid rgba(37, 99, 235, 0.15)',
             marginBottom: '24px',
             flexWrap: 'wrap',
             gap: '16px',

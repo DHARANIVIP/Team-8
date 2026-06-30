@@ -15,7 +15,7 @@ const providers = ['All', 'Coursera', 'Udemy', 'edX', 'YouTube', 'Official Docs'
 
 const diffColor: Record<string, string> = {
   Beginner: '#50c878',
-  Intermediate: '#ff9e42',
+  Intermediate: '#2563EB',
   Advanced: '#ef4444',
 };
 
@@ -139,7 +139,7 @@ export default function CoursesPage() {
         {/* ── Header ── */}
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          paddingBottom: '20px', borderBottom: '1px solid rgba(255, 158, 66, 0.15)', marginBottom: '24px'
+          paddingBottom: '20px', borderBottom: '1px solid rgba(37, 99, 235, 0.15)', marginBottom: '24px'
         }}>
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <div>

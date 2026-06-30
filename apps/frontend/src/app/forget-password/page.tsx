@@ -31,7 +31,7 @@ function MatrixBackground() {
       ctx.fillStyle = 'rgba(10, 10, 10, 0.1)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      ctx.fillStyle = 'rgba(255, 158, 66, 0.15)'; // Mild orange matrix code rain
+      ctx.fillStyle = 'rgba(37, 99, 235, 0.15)'; // Mild orange matrix code rain
       ctx.font = `${fontSize}px monospace`;
 
       for (let i = 0; i < drops.length; i++) {
@@ -138,7 +138,7 @@ export default function ForgetPasswordPage() {
             padding: '16px 20px',
             minWidth: '300px',
             maxWidth: '380px',
-            boxShadow: '0 8px 32px rgba(255, 158, 66, 0.25), 0 4px 12px rgba(0,0,0,0.3)',
+            boxShadow: '0 8px 32px rgba(37, 99, 235, 0.25), 0 4px 12px rgba(0,0,0,0.3)',
             display: 'flex',
             alignItems: 'flex-start',
             gap: '12px',
@@ -191,7 +191,7 @@ export default function ForgetPasswordPage() {
       <MatrixBackground />
 
       <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
-        <div className="auth-card animate-fade-in" style={{ borderRadius: '0px', border: '1px solid rgba(255, 158, 66, 0.15)', background: 'var(--surface)' }}>
+        <div className="auth-card animate-fade-in" style={{ borderRadius: '0px', border: '1px solid rgba(37, 99, 235, 0.15)', background: 'var(--surface)' }}>
           <h1 style={{
             color: '#ffffff',
             fontSize: '20px',
@@ -199,7 +199,7 @@ export default function ForgetPasswordPage() {
             marginBottom: '10px',
             textAlign: 'center',
             letterSpacing: '0.5px',
-            textShadow: '0 0 8px rgba(255, 158, 66, 0.25)'
+            textShadow: '0 0 8px rgba(37, 99, 235, 0.25)'
           }}>
             Reset password
           </h1>
@@ -231,8 +231,8 @@ export default function ForgetPasswordPage() {
 
           {message && (
             <div style={{
-              background: 'rgba(255, 158, 66, 0.08)',
-              border: '1px solid rgba(255, 158, 66, 0.3)',
+              background: 'rgba(37, 99, 235, 0.08)',
+              border: '1px solid rgba(37, 99, 235, 0.3)',
               borderRadius: '0px',
               color: 'var(--accent)',
               padding: '12px',
@@ -243,7 +243,7 @@ export default function ForgetPasswordPage() {
             }}>
               <p style={{ margin: '0 0 8px 0' }}>{message}</p>
               {resetToken && (
-                <div style={{ borderTop: '1px solid rgba(255, 158, 66, 0.15)', paddingTop: '8px', marginTop: '8px' }}>
+                <div style={{ borderTop: '1px solid rgba(37, 99, 235, 0.15)', paddingTop: '8px', marginTop: '8px' }}>
                   <p style={{ color: 'var(--text-muted)', fontSize: '11px', margin: '4px 0' }}>Development Mode Reset Link:</p>
                   <Link
                     href={`/reset-password?token=${resetToken}`}
@@ -282,7 +282,7 @@ export default function ForgetPasswordPage() {
                   style={{
                     paddingLeft: '40px',
                     borderRadius: '0px',
-                    border: '1px solid rgba(255, 158, 66, 0.3)',
+                    border: '1px solid rgba(37, 99, 235, 0.3)',
                     background: 'rgba(10, 10, 10, 0.7)'
                   }}
                 />

@@ -30,9 +30,9 @@ interface RoadmapDetail {
   nodes: RoadmapNode[];
 }
 
-const ACCENT = '#ff9e42';
-const ACCENT_RGBA = 'rgba(255,158,66,0.10)';
-const ACCENT_BORDER = 'rgba(255,158,66,0.30)';
+const ACCENT = '#2563EB';
+const ACCENT_RGBA = 'rgba(37, 99, 235,0.10)';
+const ACCENT_BORDER = 'rgba(37, 99, 235,0.30)';
 
 export default function RoadmapDetailPage() {
   const params = useParams();
@@ -106,7 +106,7 @@ export default function RoadmapDetailPage() {
     id === 'vibe-coding' || (roadmap && roadmap.name.toLowerCase().includes('vibe')) ? 'vibe-coding.pdf' : null;
 
   return (
-    <div style={{ background: '#0a0a0a', minHeight: '100vh' }}>
+    <div style={{ background: '#FFFFFF', minHeight: '100vh' }}>
       <DashboardNavbar />
 
       <main className="page-container animate-slide-up" style={{ padding: '24px 0' }}>
@@ -124,15 +124,15 @@ export default function RoadmapDetailPage() {
             padding: '8px 16px',
             border: `1px solid ${ACCENT}`,
             borderRadius: '6px',
-            background: 'rgba(255, 158, 66, 0.03)',
+            background: 'rgba(37, 99, 235, 0.03)',
             transition: 'all 0.2s ease',
           }}
           onMouseOver={(e) => {
-            e.currentTarget.style.background = 'rgba(255, 158, 66, 0.1)';
+            e.currentTarget.style.background = 'rgba(37, 99, 235, 0.1)';
             e.currentTarget.style.boxShadow = `0 0 12px ${ACCENT_RGBA}`;
           }}
           onMouseOut={(e) => {
-            e.currentTarget.style.background = 'rgba(255, 158, 66, 0.03)';
+            e.currentTarget.style.background = 'rgba(37, 99, 235, 0.03)';
             e.currentTarget.style.boxShadow = 'none';
           }}
           >
@@ -160,8 +160,8 @@ export default function RoadmapDetailPage() {
             <div style={{ height: '32px', width: '40%', background: '#222222', borderRadius: '4px' }}></div>
             <div style={{ height: '14px', width: '60%', background: '#222222', borderRadius: '4px' }}></div>
             <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '24px', marginTop: '16px' }}>
-              <div style={{ height: '400px', background: '#121212', border: '1px solid #1f1f1f', borderRadius: '8px' }}></div>
-              <div style={{ height: '400px', background: '#121212', border: '1px solid #1f1f1f', borderRadius: '8px' }}></div>
+              <div style={{ height: '400px', background: '#F8FAFC', border: '1px solid #CBD5E1', borderRadius: '8px' }}></div>
+              <div style={{ height: '400px', background: '#F8FAFC', border: '1px solid #CBD5E1', borderRadius: '8px' }}></div>
             </div>
           </div>
         )}
@@ -184,7 +184,7 @@ export default function RoadmapDetailPage() {
               </div>
 
               {/* Progress Panel */}
-              <div className="card" style={{ background: '#121212', padding: '16px 20px', border: '1px solid #1f1f1f', borderRadius: '8px', minWidth: '220px' }}>
+              <div className="card" style={{ background: '#F8FAFC', padding: '16px 20px', border: '1px solid #CBD5E1', borderRadius: '8px', minWidth: '220px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: 600, marginBottom: '8px' }}>
                   <span>YOUR PROGRESS</span>
                   <span style={{ color: ACCENT }}>{calculateProgress()}%</span>
@@ -205,9 +205,9 @@ export default function RoadmapDetailPage() {
                   onClick={() => setActiveTab('interactive')}
                   style={{
                     padding: '8px 18px',
-                    background: activeTab === 'interactive' ? 'rgba(255, 158, 66, 0.1)' : 'transparent',
-                    border: `1px solid ${activeTab === 'interactive' ? '#ff9e42' : '#2c2c2e'}`,
-                    color: activeTab === 'interactive' ? '#ff9e42' : '#888888',
+                    background: activeTab === 'interactive' ? 'rgba(37, 99, 235, 0.1)' : 'transparent',
+                    border: `1px solid ${activeTab === 'interactive' ? '#2563EB' : '#2c2c2e'}`,
+                    color: activeTab === 'interactive' ? '#2563EB' : '#888888',
                     fontSize: '13px',
                     fontWeight: 600,
                     borderRadius: '6px',
@@ -224,9 +224,9 @@ export default function RoadmapDetailPage() {
                   onClick={() => setActiveTab('pdf')}
                   style={{
                     padding: '8px 18px',
-                    background: activeTab === 'pdf' ? 'rgba(255, 158, 66, 0.1)' : 'transparent',
-                    border: `1px solid ${activeTab === 'pdf' ? '#ff9e42' : '#2c2c2e'}`,
-                    color: activeTab === 'pdf' ? '#ff9e42' : '#888888',
+                    background: activeTab === 'pdf' ? 'rgba(37, 99, 235, 0.1)' : 'transparent',
+                    border: `1px solid ${activeTab === 'pdf' ? '#2563EB' : '#2c2c2e'}`,
+                    color: activeTab === 'pdf' ? '#2563EB' : '#888888',
                     fontSize: '13px',
                     fontWeight: 600,
                     borderRadius: '6px',
@@ -252,8 +252,16 @@ export default function RoadmapDetailPage() {
                     rel="noopener noreferrer" 
                     style={{
                       padding: '8px 16px',
-                      background: '#ff9e42',
-                      color: '#000000',
+                      background: '#2563EB',
+                      color: '#0A0A0A  →  #FFFFFF
+#121212  →  #F8FAFC
+#1F1F1F  →  #CBD5E1
+#1A1A1C  →  #F1F5F9
+#1C1C1E  →  #EFF6FF
+#2C2C2E  →  #BFDBFE
+#AAAAAA  →  #475569
+#888888  →  #64748B
+#FFFFFF  →  #1E293B',
                       fontSize: '12px',
                       fontWeight: 600,
                       borderRadius: '6px',
@@ -313,7 +321,15 @@ export default function RoadmapDetailPage() {
                           borderRadius: '50%',
                           background: isCompleted ? ACCENT : isSelected ? '#1c1c1e' : '#121212',
                           border: `2px solid ${isCompleted || isSelected ? ACCENT : '#2c2c2e'}`,
-                          color: isCompleted ? '#000000' : isSelected ? ACCENT : '#888888',
+                          color: isCompleted ? '#0A0A0A  →  #FFFFFF
+#121212  →  #F8FAFC
+#1F1F1F  →  #CBD5E1
+#1A1A1C  →  #F1F5F9
+#1C1C1E  →  #EFF6FF
+#2C2C2E  →  #BFDBFE
+#AAAAAA  →  #475569
+#888888  →  #64748B
+#FFFFFF  →  #1E293B' : isSelected ? ACCENT : '#888888',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
@@ -336,7 +352,7 @@ export default function RoadmapDetailPage() {
                         style={{
                           flexGrow: 1,
                           padding: '16px 20px',
-                          background: isSelected ? 'rgba(255,158,66,0.03)' : '#121212',
+                          background: isSelected ? 'rgba(37, 99, 235,0.03)' : '#121212',
                           border: `1px solid ${isSelected ? ACCENT : '#1f1f1f'}`,
                           borderRadius: '8px',
                           cursor: 'pointer',
@@ -369,7 +385,7 @@ export default function RoadmapDetailPage() {
                     <span style={{ fontSize: '10px', fontWeight: 600, color: ACCENT, letterSpacing: '1px', textTransform: 'uppercase' }}>
                       STEP {selectedNode.sequence_order} SYLLABUS
                     </span>
-                    <h2 style={{ fontSize: '18px', fontWeight: 700, margin: '6px 0 12px 0', borderBottom: '1px solid #1f1f1f', paddingBottom: '12px' }}>
+                    <h2 style={{ fontSize: '18px', fontWeight: 700, margin: '6px 0 12px 0', borderBottom: '1px solid #CBD5E1', paddingBottom: '12px' }}>
                       {selectedNode.title}
                     </h2>
                     
@@ -398,7 +414,7 @@ export default function RoadmapDetailPage() {
                     </div>
 
                     <div>
-                      <h4 style={{ fontSize: '11px', fontWeight: 600, color: '#ff9e42', letterSpacing: '0.5px', textTransform: 'uppercase', marginBottom: '12px' }}>
+                      <h4 style={{ fontSize: '11px', fontWeight: 600, color: '#2563EB', letterSpacing: '0.5px', textTransform: 'uppercase', marginBottom: '12px' }}>
                         LEARNING RESOURCES
                       </h4>
                       

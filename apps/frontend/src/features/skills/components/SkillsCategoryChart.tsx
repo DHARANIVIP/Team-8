@@ -21,7 +21,7 @@ export default function SkillsCategoryChart({ domains }: SkillsCategoryChartProp
       style={{
         padding: '20px',
         background: 'rgba(18, 18, 18, 0.4)',
-        border: '1px solid rgba(255, 158, 66, 0.1)',
+        border: '1px solid rgba(37, 99, 235, 0.1)',
       }}
     >
       <h3 style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '16px', fontFamily: 'Outfit, sans-serif', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
@@ -34,7 +34,7 @@ export default function SkillsCategoryChart({ domains }: SkillsCategoryChartProp
               <span style={{ fontSize: '12px', color: '#ffffff', fontWeight: 600 }}>{d.name}</span>
               <span style={{ fontSize: '11px', color: 'var(--accent)', fontWeight: 700, fontFamily: 'monospace' }}>{d.score}%</span>
             </div>
-            <div style={{ height: '8px', background: 'rgba(255,158,66,0.05)', border: '1px solid rgba(255,158,66,0.1)', overflow: 'hidden' }}>
+            <div style={{ height: '8px', background: 'rgba(37, 99, 235,0.05)', border: '1px solid rgba(37, 99, 235,0.1)', overflow: 'hidden' }}>
               <div
                 style={{
                   height: '100%',

@@ -9,16 +9,18 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        accent:        '#ff9e42',
-        accentSoft:    '#ff9757',
-        textPrimary:   '#cccccc',
-        textSecondary: '#bbbbbb',
-        textMuted:     '#aaaaaa',
-        bg:            '#0d0d0d',
-        surface:       '#111111',
-        surfaceAlt:    '#1a1a1a',
-        border:        '#1f1f1f',
-        borderFocus:   '#2a2a2a',
+        primary:       '#DBEAFE', // Light Blue
+        secondary:     '#E0E7FF', // Soft Indigo
+        tertiary:      '#CCFBF1', // Mint
+        accent:        '#93C5FD', // Sky Blue
+        highlight:     '#FED7AA', // Soft Orange
+        textGrey:      '#1F2937', // Dark Gray
+        buttonPrimary: '#2563EB', // Medium Blue
+        bg:            '#FFFFFF', // White
+        surface:       '#F8FAFC', // Very Light Gray
+        surfaceAlt:    '#F1F8FF',
+        border:        '#CBD5E1', // Soft Gray
+        borderFocus:   '#2563EB',
       },
       fontFamily: {
         sans: ['"Segoe UI"', 'Segoe UI', 'sans-serif'],

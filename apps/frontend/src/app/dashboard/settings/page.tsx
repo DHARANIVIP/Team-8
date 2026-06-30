@@ -250,7 +250,7 @@ export default function SettingsPage() {
         {/* ── Page header ── */}
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          paddingBottom: '20px', borderBottom: '1px solid rgba(255, 158, 66, 0.15)', marginBottom: '24px'
+          paddingBottom: '20px', borderBottom: '1px solid rgba(37, 99, 235, 0.15)', marginBottom: '24px'
         }}>
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <h1 style={{ color: '#ffffff', fontWeight: 700, fontSize: '24px', margin: 0, letterSpacing: '0.5px', fontFamily: 'Outfit, sans-serif' }}>Settings</h1>

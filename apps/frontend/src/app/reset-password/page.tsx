@@ -32,7 +32,7 @@ function MatrixBackground() {
       ctx.fillStyle = 'rgba(10, 10, 10, 0.1)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      ctx.fillStyle = 'rgba(255, 158, 66, 0.15)'; // Mild orange matrix code rain
+      ctx.fillStyle = 'rgba(37, 99, 235, 0.15)'; // Mild orange matrix code rain
       ctx.font = `${fontSize}px monospace`;
 
       for (let i = 0; i < drops.length; i++) {
@@ -153,7 +153,7 @@ export default function ResetPasswordPage() {
             padding: '16px 20px',
             minWidth: '300px',
             maxWidth: '380px',
-            boxShadow: '0 8px 32px rgba(255, 158, 66, 0.25), 0 4px 12px rgba(0,0,0,0.3)',
+            boxShadow: '0 8px 32px rgba(37, 99, 235, 0.25), 0 4px 12px rgba(0,0,0,0.3)',
             display: 'flex',
             alignItems: 'flex-start',
             gap: '12px',
@@ -206,7 +206,7 @@ export default function ResetPasswordPage() {
       <MatrixBackground />
 
       <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
-        <div className="auth-card animate-fade-in" style={{ borderRadius: '0px', border: '1px solid rgba(255, 158, 66, 0.15)', background: 'var(--surface)' }}>
+        <div className="auth-card animate-fade-in" style={{ borderRadius: '0px', border: '1px solid rgba(37, 99, 235, 0.15)', background: 'var(--surface)' }}>
           <h1 style={{
             color: '#ffffff',
             fontSize: '20px',
@@ -214,7 +214,7 @@ export default function ResetPasswordPage() {
             marginBottom: '10px',
             textAlign: 'center',
             letterSpacing: '0.5px',
-            textShadow: '0 0 8px rgba(255, 158, 66, 0.25)'
+            textShadow: '0 0 8px rgba(37, 99, 235, 0.25)'
           }}>
             New password
           </h1>
@@ -264,7 +264,7 @@ export default function ResetPasswordPage() {
                   style={{
                     paddingLeft: '40px',
                     borderRadius: '0px',
-                    border: '1px solid rgba(255, 158, 66, 0.3)',
+                    border: '1px solid rgba(37, 99, 235, 0.3)',
                     background: 'rgba(10, 10, 10, 0.7)'
                   }}
                 />
@@ -290,7 +290,7 @@ export default function ResetPasswordPage() {
                   style={{
                     paddingLeft: '40px',
                     borderRadius: '0px',
-                    border: '1px solid rgba(255, 158, 66, 0.3)',
+                    border: '1px solid rgba(37, 99, 235, 0.3)',
                     background: 'rgba(10, 10, 10, 0.7)'
                   }}
                 />

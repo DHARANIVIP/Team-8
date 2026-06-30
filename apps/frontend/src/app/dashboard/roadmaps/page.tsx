@@ -15,7 +15,7 @@ interface RoadmapItem {
   source_slug?: string;
 }
 
-const ACCENT = '#ff9e42';
+const ACCENT = '#2563EB';
 
 export default function RoadmapsPage() {
   const [roadmaps, setRoadmaps] = useState<RoadmapItem[]>([]);
@@ -86,7 +86,7 @@ export default function RoadmapsPage() {
           </p>
 
           <div style={{ display: 'flex', gap: '6px', marginTop: 'auto', paddingTop: '8px', flexWrap: 'wrap' }}>
-            <span className="badge badge-muted" style={{ fontSize: '10px', background: 'rgba(255, 158, 66, 0.05)', color: 'var(--accent)', border: '1px solid rgba(255, 158, 66, 0.2)' }}>
+            <span className="badge badge-muted" style={{ fontSize: '10px', background: 'rgba(37, 99, 235, 0.05)', color: 'var(--accent)', border: '1px solid rgba(37, 99, 235, 0.2)' }}>
               {item.category}
             </span>
             <span className="badge badge-muted" style={{ fontSize: '10px' }}>
@@ -116,7 +116,7 @@ export default function RoadmapsPage() {
       <main className="page-container animate-slide-up" style={{ padding: '24px 0' }}>
         
         {/* Header Block */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', paddingBottom: '20px', borderBottom: '1px solid rgba(255, 158, 66, 0.15)', flexWrap: 'wrap', gap: '16px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', paddingBottom: '20px', borderBottom: '1px solid rgba(37, 99, 235, 0.15)', flexWrap: 'wrap', gap: '16px' }}>
           <div>
             <span className="section-label" style={{ display: 'block', marginBottom: '2px' }}>OFFICIAL PARTNERSHIPS</span>
             <h1 style={{ fontSize: '28px', fontWeight: 700, margin: 0, letterSpacing: '-0.5px', fontFamily: 'Outfit, sans-serif' }}>

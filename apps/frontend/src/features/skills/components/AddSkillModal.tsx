@@ -92,7 +92,7 @@ export default function AddSkillModal({ open, onClose, onAdded, existingNames }:
           style={{
             width: '100%',
             background: '#0a0a0a',
-            border: '1px solid rgba(255,158,66,0.3)',
+            border: '1px solid rgba(37, 99, 235,0.3)',
             color: '#ffffff',
             padding: '10px 12px',
             fontSize: '13px',
@@ -101,7 +101,7 @@ export default function AddSkillModal({ open, onClose, onAdded, existingNames }:
         />
 
         {suggestions.length > 0 && !selectedName && (
-          <div style={{ maxHeight: '120px', overflowY: 'auto', marginBottom: '12px', border: '1px solid rgba(255,158,66,0.15)' }}>
+          <div style={{ maxHeight: '120px', overflowY: 'auto', marginBottom: '12px', border: '1px solid rgba(37, 99, 235,0.15)' }}>
             {suggestions.map(s => (
               <button
                 key={s.id}
@@ -114,7 +114,7 @@ export default function AddSkillModal({ open, onClose, onAdded, existingNames }:
                   padding: '8px 12px',
                   background: 'transparent',
                   border: 'none',
-                  borderBottom: '1px solid rgba(255,158,66,0.08)',
+                  borderBottom: '1px solid rgba(37, 99, 235,0.08)',
                   color: '#ffffff',
                   fontSize: '12px',
                   cursor: 'pointer',
@@ -132,7 +132,7 @@ export default function AddSkillModal({ open, onClose, onAdded, existingNames }:
             <select
               value={proficiency}
               onChange={e => setProficiency(e.target.value)}
-              style={{ width: '100%', background: '#0a0a0a', border: '1px solid rgba(255,158,66,0.3)', color: '#fff', fontSize: '12px', padding: '6px' }}
+              style={{ width: '100%', background: '#0a0a0a', border: '1px solid rgba(37, 99, 235,0.3)', color: '#fff', fontSize: '12px', padding: '6px' }}
             >
               <option value="Beginner">Beginner</option>
               <option value="Intermediate">Intermediate</option>

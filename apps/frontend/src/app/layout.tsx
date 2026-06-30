@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import '../styles/globals.css';
+import MockInit from '@/components/MockInit';
 
 export const metadata: Metadata = {
   title: 'Mastermind – Student Career Guidance Portal',
@@ -9,7 +10,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body suppressHydrationWarning>{children}</body>
+      <body suppressHydrationWarning>
+        <MockInit />
+        {children}
+      </body>
     </html>
   );
 }
