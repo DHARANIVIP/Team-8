@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import DashboardNavbar from '@/components/DashboardNavbar';
 import { getSkillRecommendations, updateSkillRecommendationStatus } from '@/lib/services/skill-service';
@@ -30,6 +30,7 @@ export default function SkillsPage() {
   const router = useRouter();
 
   const [availableCareers, setAvailableCareers] = useState<CareerOption[]>([]);
+  const recommendationsRequestRef = useRef(false);
   const [selectedCareer, setSelectedCareer] = useState<CareerOption | null>(null);
   const [recommendations, setRecommendations] = useState<SkillRecommendation[]>([]);
   const [careerName, setCareerName] = useState('');
@@ -41,6 +42,8 @@ export default function SkillsPage() {
 
   // ── Load recommendations ─────────────────────────────────────────────────────
   const loadRecommendations = useCallback(async (careerId: string, force = false) => {
+    if (recommendationsRequestRef.current) return;
+    recommendationsRequestRef.current = true;
     try {
       setGenerating(true);
       setError('');
@@ -53,6 +56,7 @@ export default function SkillsPage() {
       setError(err.message || 'Failed to load skill recommendations');
       setRecommendations([]);
     } finally {
+      recommendationsRequestRef.current = false;
       setGenerating(false);
     }
   }, []);

@@ -9,7 +9,10 @@ import { sendPasswordResetEmail } from '../services/emailService.js';
 import { getUserProfile } from '../services/supabaseService.js';
 
 const router = express.Router();
-const JWT_SECRET = process.env.JWT_SECRET || 'mastermind_super_secret_jwt_key';
+const JWT_SECRET = process.env.JWT_SECRET || process.env.NEXTAUTH_SECRET || (process.env.NODE_ENV !== 'production' ? 'mastermind_dev_jwt_secret' : undefined);
+if (!JWT_SECRET) {
+  throw new Error('JWT_SECRET must be configured in production.');
+}
 
 // ── Google OAuth Routes ──
 router.get('/google', (req, res, next) => {
@@ -227,10 +230,13 @@ router.post('/forget-password', async (req, res) => {
 
     // Check if email credentials are configured
     if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-      console.warn('⚠️  EMAIL_USER or EMAIL_PASS not set in .env — falling back to dev mode (token in response)');
+      if (process.env.NODE_ENV === 'production') {
+        return res.status(503).json({ error: 'Password reset email is not configured.' });
+      }
+      console.warn('EMAIL_USER or EMAIL_PASS not set. Returning reset token only in development.');
       return res.json({
         message: 'Password reset token generated successfully',
-        resetToken, // dev-only fallback
+        resetToken,
         resetUrl: `${frontendUrl}/reset-password?token=${resetToken}`
       });
     }

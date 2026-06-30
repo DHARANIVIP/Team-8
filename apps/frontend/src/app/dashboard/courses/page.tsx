@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import DashboardNavbar from '@/components/DashboardNavbar';
 import { getCourseRecommendations } from '@/lib/services/course-service';
@@ -37,9 +37,12 @@ export default function CoursesPage() {
   const [catFilter, setCatFilter] = useState(ALL);
   const [diffFilter, setDiffFilter] = useState(ALL);
   const [provFilter, setProvFilter] = useState(ALL);
+  const recommendationsRequestRef = useRef(false);
 
   // ── Load recommendations ─────────────────────────────────────────────────────
   const loadRecommendations = useCallback(async (force = false) => {
+    if (recommendationsRequestRef.current) return;
+    recommendationsRequestRef.current = true;
     try {
       setGenerating(true);
       setError('');
@@ -59,6 +62,7 @@ export default function CoursesPage() {
       setError(err.message || 'Failed to load course recommendations');
       setRecommendations([]);
     } finally {
+      recommendationsRequestRef.current = false;
       setGenerating(false);
     }
   }, [router]);

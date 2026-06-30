@@ -7,3 +7,6 @@
 ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS institution_name VARCHAR(255);
 ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS graduation_year VARCHAR(10);
 ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS wants_certifications BOOLEAN DEFAULT FALSE;
+
+-- Keeps onboarding recommendation persistence compatible with current backend writes.
+ALTER TABLE user_recommendations ADD COLUMN IF NOT EXISTS certifications TEXT[] DEFAULT '{}';

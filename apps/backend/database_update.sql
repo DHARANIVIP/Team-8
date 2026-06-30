@@ -52,3 +52,11 @@ CREATE TABLE IF NOT EXISTS recommended_courses (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT unique_student_course_rec UNIQUE (student_id, course_id)
 );
+
+-- Onboarding columns used by routes/onboarding.js
+ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS institution_name VARCHAR(255);
+ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS graduation_year VARCHAR(10);
+ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS wants_certifications BOOLEAN DEFAULT FALSE;
+
+-- Recommendation metadata used by services/supabaseService.js
+ALTER TABLE user_recommendations ADD COLUMN IF NOT EXISTS certifications TEXT[] DEFAULT '{}';

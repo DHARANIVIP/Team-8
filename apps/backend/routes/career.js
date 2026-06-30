@@ -18,6 +18,7 @@ import {
 } from '../services/geminiCareerService.js';
 
 const router = express.Router();
+const careerGenerationLocks = new Set();
 
 /**
  * GET /api/career/analysis
@@ -151,6 +152,11 @@ router.get('/domains', protect, async (req, res) => {
 router.post('/recommendations', protect, async (req, res) => {
   try {
     const userId = req.user.userId;
+    if (careerGenerationLocks.has(userId)) {
+      return res.status(202).json({ message: 'Career recommendations are already being generated. Please refresh shortly.', inProgress: true });
+    }
+    careerGenerationLocks.add(userId);
+    res.on('finish', () => careerGenerationLocks.delete(userId));
     
     const profile = await getUserProfile(userId);
     if (!profile || !profile.onboarding_completed) {
@@ -304,6 +310,11 @@ router.post('/:id/learning-path', protect, async (req, res) => {
 router.post('/refresh', protect, async (req, res) => {
   try {
     const userId = req.user.userId;
+    if (careerGenerationLocks.has(userId)) {
+      return res.status(202).json({ message: 'Career recommendations are already being generated. Please refresh shortly.', inProgress: true });
+    }
+    careerGenerationLocks.add(userId);
+    res.on('finish', () => careerGenerationLocks.delete(userId));
     
     const profile = await getUserProfile(userId);
     if (!profile || !profile.onboarding_completed) {

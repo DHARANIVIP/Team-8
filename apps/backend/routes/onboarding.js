@@ -15,7 +15,8 @@ import {
   saveResumeAnalysis,
   getResumeAnalysis
 } from '../services/supabaseService.js';
-import { getGeminiAI, markKeyExhausted, isRateLimitError, parseRetryDelay } from '../services/geminiKeyManager.js';
+import { getGeminiAI, markKeyExhausted, isRateLimitError, parseRetryDelay, getGeminiUnavailableMessage } from '../services/geminiKeyManager.js';
+import { generateResumeInsights } from '../services/huggingfaceService.js';
 
 const router = express.Router();
 
@@ -207,10 +208,25 @@ router.post('/submit', protect, upload.single('resume'), async (req, res) => {
         }
 
         if (!geminiSuccess) {
-          return res.status(500).json({ error: 'All Gemini API keys are rate-limited. Please try again later or add more GEMINI_API_KEY_N to .env.' });
+          console.warn(getGeminiUnavailableMessage());
+          const hfInsights = await generateResumeInsights(resumeText, targetRole || careerGoal || 'Software Engineer');
+          insights = {
+            skills: hfInsights.skills || [],
+            certifications: hfInsights.certifications || [],
+            growth_suggestions: hfInsights.growth_suggestions || hfInsights.growthPlan || '',
+            education: education || 'Undergrad',
+            strengths: hfInsights.strengths || []
+          };
         }
       } else {
-        return res.status(500).json({ error: 'AI service not configured. Please set GEMINI_API_KEY environment variable.' });
+        const hfInsights = await generateResumeInsights(resumeText, targetRole || careerGoal || 'Software Engineer');
+        insights = {
+          skills: hfInsights.skills || [],
+          certifications: hfInsights.certifications || [],
+          growth_suggestions: hfInsights.growth_suggestions || hfInsights.growthPlan || '',
+          education: education || 'Undergrad',
+          strengths: hfInsights.strengths || []
+        };
       }
     } catch (geminiErr) {
       console.error('❌ Gemini analysis failed:', geminiErr.message);

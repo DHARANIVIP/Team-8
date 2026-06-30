@@ -1,6 +1,6 @@
 ﻿'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import DashboardNavbar from '@/components/DashboardNavbar';
@@ -62,6 +62,8 @@ export default function AICareerGuidancePage() {
   const [recommendations, setRecommendations] = useState<CareerRecommendation[]>([]);
   const [expandedCareer, setExpandedCareer] = useState<string | null>(null);
   const [analysisDate, setAnalysisDate] = useState<string>('');
+  const loadingRef = useRef(false);
+  const generatingRef = useRef(false);
 
   useEffect(() => {
     if (!isAuthenticated()) { router.push('/login'); return; }
@@ -69,6 +71,8 @@ export default function AICareerGuidancePage() {
   }, [router]);
 
   const loadRecommendations = async () => {
+    if (loadingRef.current) return;
+    loadingRef.current = true;
     try {
       setLoading(true);
       setError('');
@@ -94,11 +98,14 @@ export default function AICareerGuidancePage() {
       console.error('Failed to load career data:', err);
       setError('Failed to load career data. Please try again.');
     } finally {
+      loadingRef.current = false;
       setLoading(false);
     }
   };
 
   const autoGenerateRecommendations = async () => {
+    if (generatingRef.current) return;
+    generatingRef.current = true;
     try {
       setGenerating(true);
       setError('');
@@ -108,6 +115,10 @@ export default function AICareerGuidancePage() {
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
       });
       const data = await res.json();
+      if (res.status === 202 || data.inProgress) {
+        setError(data.message || 'Career recommendations are already being generated. Please refresh shortly.');
+        return;
+      }
       if (!res.ok) throw new Error(data.error || 'Failed to generate recommendations');
       setRecommendations(data.recommendations || []);
       setAnalysisDate(new Date().toISOString());
@@ -115,6 +126,7 @@ export default function AICareerGuidancePage() {
       console.error('Failed to auto-generate recommendations:', err);
       setError(err.message || 'AI analysis failed. Please try again.');
     } finally {
+      generatingRef.current = false;
       setGenerating(false);
     }
   };

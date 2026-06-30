@@ -1,5 +1,5 @@
 import OpenAI from 'openai';
-import { getGeminiAI, markKeyExhausted, isRateLimitError, parseRetryDelay } from './geminiKeyManager.js';
+import { getGeminiAI, markKeyExhausted, isRateLimitError, parseRetryDelay, getKeyCount, getGeminiUnavailableMessage, isInvalidKeyError } from './geminiKeyManager.js';
 
 /**
  * Gemini Career Service
@@ -44,11 +44,11 @@ function getModel() {
  * Returns the parsed text response, or throws if all keys fail.
  */
 async function runGeminiWithRotation(prompt, { json = false } = {}) {
-  const maxAttempts = 5; // try up to 5 different keys
+  const maxAttempts = Math.max(getKeyCount(), 1);
   let lastError;
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     const model = getModel();
-    if (!model) throw new Error('No Gemini API key configured.');
+    if (!model) throw new Error(getGeminiUnavailableMessage());
     try {
       const result = await model.generateContent(prompt);
       const text = (await result.response).text();
@@ -58,10 +58,13 @@ async function runGeminiWithRotation(prompt, { json = false } = {}) {
       if (isRateLimitError(error)) {
         const retrySec = parseRetryDelay(error);
         markKeyExhausted(null, retrySec);
-        console.log(`🔄 Gemini 429 — rotating to next key (attempt ${attempt + 1}/${maxAttempts})...`);
+        console.log(`Gemini 429; rotating key (attempt ${attempt + 1}/${maxAttempts})...`);
         continue;
       }
-      throw error; // non-429 error, propagate immediately
+      if (isInvalidKeyError(error)) {
+        throw new Error('Gemini API key is invalid or unauthorized. Check backend environment configuration.');
+      }
+      throw error; // non-retryable error, propagate immediately
     }
   }
   throw lastError || new Error('All Gemini keys exhausted.');
@@ -259,10 +262,6 @@ Requirements:
  * Generate learning path recommendations
  */
 export async function generateLearningPath(careerName, gapSkills, userLevel) {
-  if (!getGeminiAI()) {
-    throw new Error('AI service not configured. Please set GEMINI_API_KEY environment variable.');
-  }
-
   try {
     const prompt = `
 Create a learning path for someone wanting to become a ${careerName}.
@@ -406,17 +405,55 @@ Rules:
   }
 }
 
+function generateDeterministicCourseRecommendations(allCourses, context = {}) {
+  const skillGapSkills = context.skillGapSkills || [];
+  const skillRecommendations = context.skillRecommendations || [];
+  const gapIds = new Set(skillGapSkills.map(s => s.id).filter(Boolean));
+  const gapNames = [
+    ...skillGapSkills.map(s => s.name || s.skill_name),
+    ...skillRecommendations.map(s => s.skill_name || s.name)
+  ].filter(Boolean);
+  const normalizedGapNames = gapNames.map(name => String(name).toLowerCase());
+
+  const scored = (allCourses || []).map(course => {
+    let score = 0;
+    if (course.skill_id && gapIds.has(course.skill_id)) score += 6;
+    const haystack = [course.title, course.description, course.category, ...(course.tags || [])]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase();
+    for (const gapName of normalizedGapNames) {
+      if (gapName && haystack.includes(gapName)) score += 3;
+    }
+    if (course.rating) score += Math.min(Number(course.rating) || 0, 5) / 5;
+    return { course, score };
+  })
+    .filter(item => item.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 8);
+
+  const selected = scored.length > 0 ? scored : (allCourses || []).slice(0, 8).map(course => ({ course, score: 0 }));
+  return {
+    skillGap: gapNames.length ? Array.from(new Set(gapNames)).slice(0, 8) : ['General skill growth'],
+    recommendedCourses: selected.map(({ course }, idx) => ({
+      courseId: course.id,
+      reason: gapNames.length
+        ? 'Recommended from the course catalog because it matches your current skill gaps.'
+        : 'Recommended from the available course catalog while AI recommendations are temporarily unavailable.',
+      priority_order: idx + 1,
+      learning_sequence: idx + 1,
+      expected_outcome: course.learning_outcomes?.[0] || 'Build practical skills for your target career.'
+    })),
+    fallback: 'deterministic'
+  };
+}
+
 /**
  * Workflow B: Generate course recommendations based on student profile and available courses
  * AI selects courses from the provided list that close the student's skill gap
  */
 export async function generateCourseRecommendations(profile, allCourses, context = {}) {
   const { selectedCareer, skillGapSkills, skillRecommendations } = context;
-
-  if (!getGeminiAI()) {
-    throw new Error('AI service not configured. Please set GEMINI_API_KEY environment variable.');
-  }
-
   try {
     // Include up to 80 courses in the prompt (all available)
     const coursesSummary = allCourses.slice(0, 80).map(c => ({
@@ -501,13 +538,15 @@ Rules:
     
     // Validate courseIds exist in the provided list
     const validIds = new Set(allCourses.map(c => c.id));
-    if (parsed.recommendedCourses) {
-      parsed.recommendedCourses = parsed.recommendedCourses.filter(rc => validIds.has(rc.courseId));
+    parsed.recommendedCourses = (parsed.recommendedCourses || []).filter(rc => validIds.has(rc.courseId));
+    if (parsed.recommendedCourses.length === 0) {
+      return generateDeterministicCourseRecommendations(allCourses, context);
     }
-    
+
     return parsed;
   } catch (error) {
-    console.error('❌ Gemini course recommendation failed:', error.message);
-    throw new Error(`AI course recommendation failed: ${error.message}`);
+    console.error('Gemini course recommendation failed:', error.message);
+    console.log('Using deterministic course recommendations from the local course catalog.');
+    return generateDeterministicCourseRecommendations(allCourses, context);
   }
 }

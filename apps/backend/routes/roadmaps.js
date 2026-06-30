@@ -135,6 +135,37 @@ router.get('/personal/:careerId', protect, async (req, res) => {
 });
 
 /**
+ * GET /api/roadmaps/source/roadmap.sh
+ * Returns only the roadmaps sourced from roadmap.sh
+ */
+router.get('/source/roadmap.sh', async (req, res) => {
+  try {
+    const { data: dbRoadmaps, error } = await supabase
+      .from('roadmaps')
+      .select('*')
+      .eq('source', 'roadmap.sh');
+
+    if (error || !dbRoadmaps || dbRoadmaps.length === 0) {
+      // Fallback: return standard frontend/backend paths
+      const fallback = STANDARD_PATHS.filter(p => p.source === 'roadmap.sh');
+      return res.json(fallback);
+    }
+    
+    // Merge standard path descriptions
+    const blended = dbRoadmaps.map(db => {
+      const match = STANDARD_PATHS.find(p => p.name.toLowerCase() === db.name.toLowerCase());
+      return match ? { ...match, ...db } : db;
+    });
+    
+    res.json(blended);
+  } catch (err) {
+    console.error('Error fetching roadmap.sh sources:', err.message);
+    const fallback = STANDARD_PATHS.filter(p => p.source === 'roadmap.sh');
+    res.json(fallback);
+  }
+});
+
+/**
  * GET /api/roadmaps/:idOrSlug
  * Retrieve detailed sequence nodes & resources for a specific roadmap
  */
@@ -207,37 +238,6 @@ router.post('/sync', async (req, res) => {
     res.json({ message: 'Sync process completed', results });
   } catch (error) {
     res.status(500).json({ error: 'Sync trigger failed', details: error.message });
-  }
-});
-
-/**
- * GET /api/roadmaps/source/roadmap.sh
- * Returns only the roadmaps sourced from roadmap.sh
- */
-router.get('/source/roadmap.sh', async (req, res) => {
-  try {
-    const { data: dbRoadmaps, error } = await supabase
-      .from('roadmaps')
-      .select('*')
-      .eq('source', 'roadmap.sh');
-
-    if (error || !dbRoadmaps || dbRoadmaps.length === 0) {
-      // Fallback: return standard frontend/backend paths
-      const fallback = STANDARD_PATHS.filter(p => p.source === 'roadmap.sh');
-      return res.json(fallback);
-    }
-    
-    // Merge standard path descriptions
-    const blended = dbRoadmaps.map(db => {
-      const match = STANDARD_PATHS.find(p => p.name.toLowerCase() === db.name.toLowerCase());
-      return match ? { ...match, ...db } : db;
-    });
-    
-    res.json(blended);
-  } catch (err) {
-    console.error('Error fetching roadmap.sh sources:', err.message);
-    const fallback = STANDARD_PATHS.filter(p => p.source === 'roadmap.sh');
-    res.json(fallback);
   }
 });
 

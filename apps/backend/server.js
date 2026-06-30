@@ -147,3 +147,14 @@ const server = app.listen(PORT, async () => {
     console.error('❌ Error checking Supabase columns on startup:', err.message);
   }
 });
+
+
+server.on('error', (error) => {
+  if (error.code === 'EADDRINUSE') {
+    console.error(`Port ${PORT} is already in use. Stop the existing backend process or set PORT to another value.`);
+    process.exit(1);
+  }
+
+  console.error('Server failed to start:', error.message);
+  process.exit(1);
+});
