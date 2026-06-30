@@ -1,12 +1,12 @@
 import { getToken } from './auth-service';
+import { parseResponse } from '@/lib/services/fetch-utils';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') || '';
 
 export async function getCategories() {
   try {
     const response = await fetch(`${API_URL}/api/categories`);
-    if (!response.ok) throw new Error('Failed to fetch categories');
-    return await response.json();
+    return await parseResponse(response);
   } catch (error) {
     console.error('Career Service error:', error);
     throw error;
@@ -23,8 +23,7 @@ export async function getPersonalizedCategories() {
         'Authorization': `Bearer ${token}`
       }
     });
-    if (!response.ok) throw new Error('Failed to fetch personalized categories');
-    return await response.json();
+    return await parseResponse(response);
   } catch (error) {
     console.error('Personalized Career Service error:', error);
     throw error;
@@ -34,8 +33,7 @@ export async function getPersonalizedCategories() {
 export async function getCategoryById(id: string) {
   try {
     const response = await fetch(`${API_URL}/api/categories/${id}`);
-    if (!response.ok) throw new Error('Failed to fetch category');
-    return await response.json();
+    return await parseResponse(response);
   } catch (error) {
     console.error('Career Service error:', error);
     throw error;
@@ -49,8 +47,7 @@ export async function createCategory(category: any) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(category),
     });
-    if (!response.ok) throw new Error('Failed to create category');
-    return await response.json();
+    return await parseResponse(response);
   } catch (error) {
     console.error('Career Service error:', error);
     throw error;
@@ -68,8 +65,7 @@ export async function toggleSavedCareer(id: string) {
         'Authorization': `Bearer ${token}`
       }
     });
-    if (!response.ok) throw new Error('Failed to toggle bookmark');
-    return await response.json();
+    return await parseResponse(response);
   } catch (error) {
     console.error('Toggle saved career error:', error);
     throw error;
@@ -87,10 +83,29 @@ export async function getCareerInsights(id: string) {
         'Authorization': `Bearer ${token}`
       }
     });
-    if (!response.ok) throw new Error('Failed to fetch career deep-dive insights');
-    return await response.json();
+    return await parseResponse(response);
   } catch (error) {
     console.error('Get career insights error:', error);
+    throw error;
+  }
+}
+
+export async function generateLiveRecommendations() {
+  const token = getToken();
+  if (!token) throw new Error('Not authenticated');
+
+  try {
+    const response = await fetch(`${API_URL}/api/categories/recommendation`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    const data = await parseResponse(response);
+    return Array.isArray(data) ? { recommendations: data } : data;
+  } catch (error) {
+    console.error('Generate live recommendations error:', error);
     throw error;
   }
 }

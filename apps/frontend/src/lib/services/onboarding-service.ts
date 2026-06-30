@@ -1,4 +1,5 @@
 import { getToken } from './auth-service';
+import { parseResponse } from '@/lib/services/fetch-utils';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') || '';
 
@@ -15,10 +16,7 @@ export async function submitOnboarding(formData: FormData) {
       body: formData,
     });
 
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.error || 'Failed to submit onboarding');
-    }
+    const data = await parseResponse(response);
     return data;
   } catch (error) {
     console.error('submitOnboarding error:', error);
@@ -37,10 +35,7 @@ export async function getRecommendations() {
       },
     });
 
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.error || 'Failed to fetch recommendations');
-    }
+    const data = await parseResponse(response);
     return data;
   } catch (error) {
     console.warn('getRecommendations:', error);

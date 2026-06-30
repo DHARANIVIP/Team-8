@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import DashboardNavbar from '@/components/DashboardNavbar';
 import { isAuthenticated } from '@/lib/services/auth-service';
-import { getCategories, getPersonalizedCategories, toggleSavedCareer, getCareerInsights } from '@/lib/services/career-service';
+import { getCategories, getPersonalizedCategories, toggleSavedCareer, getCareerInsights, generateLiveRecommendations } from '@/lib/services/career-service';
 import { getRecommendations } from '@/lib/services/onboarding-service';
 import { getProfile } from '@/lib/services/profile-service';
 import { DomainRadarChart, SkillGapPanel } from '@/features/categories';
@@ -31,10 +31,14 @@ export default function CategoriesPage() {
   const router = useRouter();
   const [careersList, setCareersList] = useState<any[]>([]);
   const [recommendations, setRecommendations] = useState<any>(null);
+  const [liveRecommendations, setLiveRecommendations] = useState<any[]>([]);
   const [userProfile, setUserProfile] = useState<any>(null);
   const [activeFilter, setActiveFilter] = useState('All');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [liveRecommendationError, setLiveRecommendationError] = useState('');
+  const [isGeneratingLiveRecommendations, setIsGeneratingLiveRecommendations] = useState(false);
+  const [liveRecommendationStep, setLiveRecommendationStep] = useState(0);
 
   const [activeInsightsCareer, setActiveInsightsCareer] = useState<any | null>(null);
   const [loadingInsights, setLoadingInsights] = useState(false);
@@ -163,6 +167,11 @@ export default function CategoriesPage() {
     if (career.matchScore !== undefined && career.matchScore !== null) {
       return career.matchScore;
     }
+    const liveMatch = liveRecommendations.find((rec: any) => 
+      rec.career_id === career.id || rec.career_name?.toLowerCase() === career.name.toLowerCase()
+    );
+    if (liveMatch) return liveMatch.match_percentage;
+
     if (!recommendations || !recommendations.suggestedCareers) return null;
     const matched = recommendations.suggestedCareers.find((sc: any) => 
       sc.id === career.id || sc.name.toLowerCase() === career.name.toLowerCase()
@@ -189,15 +198,49 @@ export default function CategoriesPage() {
   };
 
   // Get sorted top recommended careers for HUD
-  const topRecommendations = recommendations?.suggestedCareers 
-    ? [...recommendations.suggestedCareers].sort((a: any, b: any) => b.matchScore - a.matchScore).slice(0, 3)
-    : [];
+  const topRecommendations = liveRecommendations.length > 0
+    ? [...liveRecommendations].sort((a: any, b: any) => b.match_percentage - a.match_percentage).slice(0, 3)
+    : recommendations?.suggestedCareers
+      ? [...recommendations.suggestedCareers].sort((a: any, b: any) => b.matchScore - a.matchScore).slice(0, 3)
+      : [];
 
   const topCareerMeta = topRecommendations[0];
   const topCareerObj = topCareerMeta
-    ? careersList.find((c: any) => c.id === topCareerMeta.id || c.name.toLowerCase() === topCareerMeta.name.toLowerCase())
+    ? careersList.find((c: any) => c.id === topCareerMeta.career_id || c.id === topCareerMeta.id || c.name.toLowerCase() === (topCareerMeta.career_name || topCareerMeta.name || '').toLowerCase())
     : null;
   const topSkillMatch = topCareerObj ? getSkillMatchDetails(topCareerObj) : null;
+
+  const liveRecommendationSteps = [
+    'Fetching student profile from DB...',
+    'Retrieving available industry roles...',
+    'Compiling structured prompt for AI...',
+    'Querying Gemini generative models...',
+    'Validating and parsing AI response...',
+    'Saving matches to database...'
+  ];
+
+  const handleGenerateLiveRecommendations = async () => {
+    setLiveRecommendationError('');
+    setIsGeneratingLiveRecommendations(true);
+    setLiveRecommendationStep(0);
+
+    try {
+      for (let i = 0; i < liveRecommendationSteps.length; i += 1) {
+        setLiveRecommendationStep(i);
+        await new Promise((resolve) => setTimeout(resolve, 120));
+      }
+
+      const response = await generateLiveRecommendations();
+      setLiveRecommendations(response.recommendations || []);
+      setLiveRecommendationStep(liveRecommendationSteps.length);
+      setError('');
+    } catch (err: any) {
+      setLiveRecommendationError(err.message || 'Unable to generate AI career recommendations.');
+      console.error('Live recommendation generation failed:', err);
+    } finally {
+      setIsGeneratingLiveRecommendations(false);
+    }
+  };
 
   return (
     <div style={{ background:'#0a0a0a', minHeight:'100vh' }}>
@@ -212,12 +255,81 @@ export default function CategoriesPage() {
             <span className="section-label" style={{ display: 'block', marginBottom: '2px' }}>CAREER CATEGORIES</span>
             <h1 style={{ color: '#ffffff', fontWeight: 700, fontSize: '24px', margin: 0, letterSpacing: '0.5px', fontFamily: 'Outfit, sans-serif' }}>Explore Career Paths</h1>
             <p style={{ color: 'var(--text-secondary)', fontSize: '13px', margin: '4px 0 0' }}>
-              {recommendations 
-                ? 'Your career matching dashboard, updated with AI recommendations from your resume' 
-                : 'Browse industry roadmaps and skill requirements for every career'}
+              {liveRecommendations.length > 0
+                ? 'Your live AI career recommendations are ready.'
+                : recommendations 
+                  ? 'Your career matching dashboard, updated with AI recommendations from your resume' 
+                  : 'Browse industry roadmaps and skill requirements for every career'}
             </p>
           </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <button
+              onClick={handleGenerateLiveRecommendations}
+              disabled={isGeneratingLiveRecommendations}
+              className="btn-primary"
+              style={{ padding: '10px 18px', fontSize: '12px', minWidth: '200px' }}
+            >
+              {isGeneratingLiveRecommendations ? 'Generating AI Career Matches...' : 'Generate AI Career Match'}
+            </button>
+          </div>
         </div>
+
+        {/* ── AI Live Recommendation Progress ── */}
+        {isGeneratingLiveRecommendations && (
+          <div style={{ marginBottom: '24px', padding: '22px', background: 'rgba(20, 20, 20, 0.85)', border: '1px solid rgba(255, 158, 66, 0.2)', borderRadius: '14px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+              <div>
+                <p style={{ color: 'var(--accent)', fontSize: '12px', margin: 0, fontWeight: 700 }}>Live AI Recommendation Pipeline</p>
+                <p style={{ color: '#ffffff', fontSize: '13px', margin: '6px 0 0' }}>Delivering career matches in real time with Gemini and structured scoring.</p>
+              </div>
+              <span style={{ color: 'var(--accent)', fontSize: '12px', fontWeight: 700 }}>{liveRecommendationStep + 1}/{liveRecommendationSteps.length}</span>
+            </div>
+            <div style={{ display: 'grid', gap: '10px' }}>
+              {liveRecommendationSteps.map((step, idx) => (
+                <div key={step} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span style={{ width: '18px', height: '18px', borderRadius: '50%', background: idx <= liveRecommendationStep ? 'var(--accent)' : 'rgba(255,255,255,0.08)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', color: idx <= liveRecommendationStep ? '#0a0a0a' : '#999' }}>{idx + 1}</span>
+                  <span style={{ color: idx <= liveRecommendationStep ? '#ffffff' : 'var(--text-secondary)', fontSize: '12px' }}>{step}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {liveRecommendationError && (
+          <div style={{ marginBottom: '24px', padding: '18px', background: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.2)', color: '#fca5a5', borderRadius: '12px' }}>
+            {liveRecommendationError}
+          </div>
+        )}
+
+        {liveRecommendations.length > 0 && (
+          <div style={{ marginBottom: '28px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <div>
+                <span className="section-label" style={{ display: 'block', marginBottom: '4px' }}>AI RECOMMENDED CAREERS</span>
+                <h2 style={{ color: '#ffffff', fontSize: '20px', margin: 0, fontWeight: 700 }}>Top Live Matches</h2>
+              </div>
+              <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{liveRecommendations.length} recommendations generated</span>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '14px' }}>
+              {liveRecommendations.map((rec: any) => (
+                <div key={rec.career_id || rec.career_name} className="card" style={{ padding: '18px', background: 'rgba(18, 18, 18, 0.9)', border: '1px solid rgba(255, 158, 66, 0.12)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: '8px', marginBottom: '10px' }}>
+                    <strong style={{ color: '#ffffff', fontSize: '14px' }}>{rec.career_name}</strong>
+                    <span style={{ color: 'var(--accent)', fontWeight: 700 }}>{rec.match_percentage}%</span>
+                  </div>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '12px', lineHeight: 1.6, marginBottom: '10px' }}>{rec.reason}</p>
+                  {rec.missing_skills && rec.missing_skills.length > 0 && (
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                      {rec.missing_skills.slice(0, 3).map((skill: string) => (
+                        <span key={skill} style={{ fontSize: '11px', padding: '4px 8px', background: 'rgba(255, 158, 66, 0.1)', borderRadius: '999px', color: 'var(--accent)' }}>{skill}</span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* ── AI Career Matcher HUD & Insights ── */}
         {recommendations && (
@@ -256,24 +368,28 @@ export default function CategoriesPage() {
                 </div>
                 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginTop: '4px' }}>
-                  {topRecommendations.map((career: any, index: number) => (
-                    <div key={career.id} style={{
-                      background: 'var(--surface-alt)',
-                      border: '1px solid rgba(255, 158, 66, 0.1)',
-                      padding: '12px 16px',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '8px'
-                    }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ color: '#ffffff', fontWeight: 600, fontSize: '13px' }}>{index + 1}. {career.name}</span>
-                        <span style={{ color: 'var(--accent)', fontWeight: 700, fontSize: '12px' }}>{career.matchScore}% Match</span>
+                  {topRecommendations.map((career: any, index: number) => {
+                    const name = career.name || career.career_name || 'Career Match';
+                    const score = career.matchScore ?? career.match_percentage ?? 0;
+                    return (
+                      <div key={career.id || career.career_id || name} style={{
+                        background: 'var(--surface-alt)',
+                        border: '1px solid rgba(255, 158, 66, 0.1)',
+                        padding: '12px 16px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '8px'
+                      }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ color: '#ffffff', fontWeight: 600, fontSize: '13px' }}>{index + 1}. {name}</span>
+                          <span style={{ color: 'var(--accent)', fontWeight: 700, fontSize: '12px' }}>{score}% Match</span>
+                        </div>
+                        <div style={{ background: 'rgba(255, 158, 66, 0.1)', height: '6px', border: '1px solid rgba(255, 158, 66, 0.15)', overflow: 'hidden' }}>
+                          <div style={{ background: 'var(--accent)', height: '100%', width: `${score}%` }} />
+                        </div>
                       </div>
-                      <div style={{ background: 'rgba(255, 158, 66, 0.1)', height: '6px', border: '1px solid rgba(255, 158, 66, 0.15)', overflow: 'hidden' }}>
-                        <div style={{ background: 'var(--accent)', height: '100%', width: `${career.matchScore}%` }} />
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}

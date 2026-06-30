@@ -19,15 +19,19 @@ export function mongoIdToUuid(mongoId) {
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   if (uuidRegex.test(strId)) return strId;
   
-  if (strId.length === 24) {
-    const part1 = strId.substring(0, 8);
-    const part2 = strId.substring(8, 12);
-    const part3 = strId.substring(12, 16);
-    const part4 = strId.substring(16, 20);
-    const part5 = strId.substring(20, 24) + '00000000';
-    return `${part1}-${part2}-${part3}-${part4}-${part5}`;
+  // Convert 24-char MongoDB ObjectId to UUID format
+  if (strId.length === 24 && /^[0-9a-f]+$/i.test(strId)) {
+    return `${strId.substring(0, 8)}-${strId.substring(8, 12)}-${strId.substring(12, 16)}-${strId.substring(16, 20)}-${strId.substring(20, 24).padEnd(12, '0')}`;
   }
-  return strId;
+  
+  // Generate deterministic UUID from string hash for other formats
+  let hash = 0;
+  for (let i = 0; i < strId.length; i++) {
+    hash = ((hash << 5) - hash) + strId.charCodeAt(i);
+    hash |= 0;
+  }
+  const hex = Math.abs(hash).toString(16).padStart(8, '0');
+  return `${hex}-0000-0000-0000-000000000000`;
 }
 
 // ===== CATEGORIES =====
@@ -52,6 +56,23 @@ export async function createCategory(category) {
     .single();
   if (error) throw error;
   return data;
+}
+
+export async function getCareerByName(name) {
+  const { data, error } = await supabase
+    .from('careers')
+    .select('*')
+    .ilike('name', name)
+    .maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
+export async function findOrCreateCareerByName(name) {
+  const existing = await getCareerByName(name);
+  if (existing) return existing;
+  const { career } = await syncCareerCache(name);
+  return career;
 }
 
 // ===== SKILLS =====
@@ -266,30 +287,61 @@ export async function updateUserProfile(userId, profile) {
   const cleanUserId = mongoIdToUuid(userId);
   const cleanProfile = { ...profile };
   if (profile.user_id) cleanProfile.user_id = mongoIdToUuid(profile.user_id);
-  
+  cleanProfile.user_id = cleanUserId;
+
+  // Whitelist of columns that actually exist in user_profiles
+  const KNOWN_COLUMNS = [
+    'user_id', 'current_skills', 'experience_level',
+    'target_career', 'salary_goal', 'email_updates', 'market_alerts',
+    'weekly_digest', 'compact_mode',
+    'year', 'interests', 'strengths', 'weaknesses',
+    'study_hours_per_week', 'preferred_learning',
+    'education_background', 'major_stream', 'learning_style',
+    'resume_url', 'resume_raw_text', 'resume_embeddings', 'onboarding_completed',
+    'career_goal', 'years_experience', 'availability',
+    'resume_filename', 'target_role', 'salary_expectation',
+    // Columns added by migration 004 (may not exist yet)
+    'institution_name', 'graduation_year', 'wants_certifications',
+  ];
+
+  // Filter profile to only include known columns
+  const safeProfile = { user_id: cleanUserId };
+  for (const [key, val] of Object.entries(cleanProfile)) {
+    if (KNOWN_COLUMNS.includes(key) && key !== 'user_id') {
+      safeProfile[key] = val;
+    }
+  }
+
   try {
     const { data, error } = await supabase
       .from('user_profiles')
-      .update(cleanProfile)
-      .eq('user_id', cleanUserId)
+      .upsert(safeProfile, { onConflict: 'user_id' })
       .select()
       .single();
     if (error) throw error;
     return data;
   } catch (error) {
-    console.error('⚠️ Error updating user profile, trying compatibility mode...', error.message);
-    const compatProfile = {};
-    if (cleanProfile.current_skills !== undefined) compatProfile.current_skills = cleanProfile.current_skills;
-    if (cleanProfile.experience_level !== undefined) compatProfile.experience_level = cleanProfile.experience_level;
-    
-    const { data, error: compatError } = await supabase
-      .from('user_profiles')
-      .update(compatProfile)
-      .eq('user_id', cleanUserId)
-      .select()
-      .single();
-    if (compatError) throw compatError;
-    return { ...compatProfile, ...cleanProfile, user_id: cleanUserId };
+    console.error('⚠️ Error upserting user profile, trying minimal save...', error.message);
+
+    // Last resort: save only onboarding_completed flag
+    if (cleanProfile.onboarding_completed === true) {
+      try {
+        const { data: minData, error: minError } = await supabase
+          .from('user_profiles')
+          .upsert({ user_id: cleanUserId, onboarding_completed: true }, { onConflict: 'user_id' })
+          .select()
+          .single();
+        if (minError) {
+          console.error('❌ Minimal onboarding upsert failed:', minError.message);
+          throw minError;
+        }
+        return minData;
+      } catch (minErr) {
+        console.error('❌ Even minimal upsert failed:', minErr.message);
+        throw minErr;
+      }
+    }
+    throw error;
   }
 }
 
@@ -301,21 +353,45 @@ export async function upsertUserRecommendations(userId, payload) {
   const recommendedSkills = (payload.recommended_skills || []).map(id => mongoIdToUuid(id));
   const recommendedCourses = (payload.recommended_courses || []).map(id => mongoIdToUuid(id));
 
-  const { data, error } = await supabase
-    .from('user_recommendations')
-    .upsert({
-      user_id: cleanUserId,
-      matched_domains: payload.matched_domains || [],
-      suggested_career_paths: careerPaths,
-      recommended_skills: recommendedSkills,
-      recommended_courses: recommendedCourses,
-      certifications: payload.certifications || [],
-      growth_suggestions: payload.growth_suggestions || ''
-    }, { onConflict: 'user_id' })
-    .select()
-    .single();
-  if (error) throw error;
-  return data;
+  try {
+    const { data, error } = await supabase
+      .from('user_recommendations')
+      .upsert({
+        user_id: cleanUserId,
+        matched_domains: payload.matched_domains || [],
+        suggested_career_paths: careerPaths,
+        recommended_skills: recommendedSkills,
+        recommended_courses: recommendedCourses,
+        certifications: payload.certifications || [],
+        growth_suggestions: payload.growth_suggestions || ''
+      }, { onConflict: 'user_id' })
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('⚠️ upsertUserRecommendations failed:', error.message);
+    // Retry without certifications column (may not exist in older schemas)
+    try {
+      const { data, error: retryErr } = await supabase
+        .from('user_recommendations')
+        .upsert({
+          user_id: cleanUserId,
+          matched_domains: payload.matched_domains || [],
+          suggested_career_paths: careerPaths,
+          recommended_skills: recommendedSkills,
+          recommended_courses: recommendedCourses,
+          growth_suggestions: payload.growth_suggestions || ''
+        }, { onConflict: 'user_id' })
+        .select()
+        .single();
+      if (retryErr) throw retryErr;
+      return data;
+    } catch (retryError) {
+      console.error('⚠️ upsertUserRecommendations retry also failed:', retryError.message);
+      throw retryError;
+    }
+  }
 }
 
 export async function getUserRecommendations(userId) {
@@ -331,11 +407,15 @@ export async function getUserRecommendations(userId) {
 
 export async function getOnboardingStatus(userId) {
   const cleanUserId = mongoIdToUuid(userId);
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('user_profiles')
     .select('onboarding_completed')
     .eq('user_id', cleanUserId)
     .maybeSingle();
+  if (error) {
+    console.error('Error checking onboarding status:', error.message);
+    throw error;
+  }
   return !!(data?.onboarding_completed);
 }
 
@@ -608,22 +688,7 @@ export async function syncCareerCache(careerName) {
     return { career: careerRecord, skills: insertedSkills };
   } catch (error) {
     console.error('Error in syncCareerCache:', error.message);
-    // Fallback: return mock career data so app doesn't break
-    return {
-      career: {
-        name: careerName,
-        description: 'Occupational path overview.',
-        icon: '💼',
-        salary_range: '₹8L – ₹22L',
-        average_salary: 1200000,
-        growth_rate: '20%',
-        demand_level: 'High'
-      },
-      skills: [
-        { name: 'Technical Skills', category: 'Technical', difficulty_level: 'Medium' },
-        { name: 'Core Knowledge', category: 'Domain', difficulty_level: 'Medium' }
-      ]
-    };
+    return { career: null, skills: [] };
   }
 }
 
@@ -740,6 +805,48 @@ export async function getSavedCareers(userId) {
 
   if (error) throw error;
   return data?.saved_careers || [];
+}
+
+export async function saveCareerRecommendation(userId, careerId, matchPercentage, reason) {
+  const cleanUserId = mongoIdToUuid(userId);
+  const cleanCareerId = mongoIdToUuid(careerId);
+
+  const { data, error } = await supabase
+    .from('career_recommendations')
+    .upsert({
+      student_id: cleanUserId,
+      career_id: cleanCareerId,
+      match_percentage: matchPercentage,
+      reason
+    }, { onConflict: ['student_id', 'career_id'] })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+export async function deleteCareerRecommendations(userId) {
+  const cleanUserId = mongoIdToUuid(userId);
+  const { error } = await supabase
+    .from('career_recommendations')
+    .delete()
+    .eq('student_id', cleanUserId);
+
+  if (error) throw error;
+  return true;
+}
+
+export async function getCareerRecommendations(userId) {
+  const cleanUserId = mongoIdToUuid(userId);
+  const { data, error } = await supabase
+    .from('career_recommendations')
+    .select('*')
+    .eq('student_id', cleanUserId)
+    .order('match_percentage', { ascending: false });
+
+  if (error) throw error;
+  return data || [];
 }
 
 /**
@@ -1293,4 +1400,309 @@ export async function suggestSkills(query) {
     if (matches.length >= 15) break;
   }
   return matches;
+}
+
+// =========================================================================
+// SKILL RECOMMENDATIONS (Workflow C)
+// =========================================================================
+
+/**
+ * Save ordered skill recommendations for a student+career
+ * @param {string} studentId - UUID from user_profiles
+ * @param {string} careerId - UUID from careers
+ * @param {Array} recommendations - [{skill_id, recommended_level, reason, priority_order}]
+ */
+export async function saveSkillRecommendations(studentId, careerId, recommendations) {
+  if (!studentId || !careerId || !Array.isArray(recommendations)) {
+    throw new Error('studentId, careerId, and recommendations array are required');
+  }
+
+  const cleanStudentId = mongoIdToUuid(studentId);
+  const cleanCareerId = mongoIdToUuid(careerId);
+
+  // Delete existing recommendations for this student+career pair
+  await supabase.from('skill_recommendations')
+    .delete()
+    .eq('student_id', cleanStudentId)
+    .eq('career_id', cleanCareerId);
+
+  // Insert new recommendations
+  const rows = recommendations.map(r => ({
+    student_id: cleanStudentId,
+    career_id: cleanCareerId,
+    skill_id: r.skill_id,
+    recommended_level: r.recommended_level || 'Beginner',
+    reason: r.reason || '',
+    priority_order: r.priority_order || 1,
+    status: 'pending'
+  }));
+
+  const { data, error } = await supabase.from('skill_recommendations')
+    .insert(rows)
+    .select();
+
+  if (error) {
+    console.error('Error saving skill recommendations:', error.message);
+    throw error;
+  }
+  return data;
+}
+
+/**
+ * Get skill recommendations for a student+career, ordered by priority
+ * Returns enriched data with skill name/category from the skills table
+ */
+export async function getSkillRecommendations(studentId, careerId) {
+  let query = supabase.from('skill_recommendations')
+    .select('*')
+    .order('priority_order', { ascending: true });
+
+  if (studentId) query = query.eq('student_id', mongoIdToUuid(studentId));
+  if (careerId) query = query.eq('career_id', mongoIdToUuid(careerId));
+
+  const { data, error } = await query;
+  if (error) {
+    console.error('Error fetching skill recommendations:', error.message);
+    return [];
+  }
+
+  const rows = data || [];
+  if (rows.length === 0) return [];
+
+  // Enrich each row with skill details from the skills table
+  const skillIds = rows.map(r => r.skill_id).filter(Boolean);
+  let skillsMap = {};
+  if (skillIds.length > 0) {
+    const { data: skillsData } = await supabase
+      .from('skills')
+      .select('id, name, category, difficulty_level')
+      .in('id', skillIds);
+    if (skillsData) {
+      skillsMap = Object.fromEntries(skillsData.map(s => [s.id, s]));
+    }
+  }
+
+  return rows.map(r => {
+    const skill = skillsMap[r.skill_id] || {};
+    return {
+      ...r,
+      skill_name: skill.name || 'Unknown Skill',
+      skill_category: skill.category || 'General',
+      skill_difficulty: skill.difficulty_level || 'Medium',
+    };
+  });
+}
+
+/**
+ * Update skill recommendation status (pending, in_progress, completed)
+ * Returns enriched row with skill details
+ */
+export async function updateSkillRecommendationStatus(recId, status) {
+  const { data, error } = await supabase.from('skill_recommendations')
+    .update({ status, updated_at: new Date().toISOString() })
+    .eq('id', recId)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error updating skill recommendation status:', error.message);
+    throw error;
+  }
+  if (!data) return null;
+
+  // Enrich with skill name
+  if (data.skill_id) {
+    const { data: skill } = await supabase
+      .from('skills')
+      .select('name, category')
+      .eq('id', data.skill_id)
+      .maybeSingle();
+    if (skill) {
+      data.skill_name = skill.name;
+      data.skill_category = skill.category;
+    }
+  }
+  return data;
+}
+
+// =========================================================================
+// RESUME ANALYSIS
+// =========================================================================
+
+/**
+ * Save structured resume analysis from Gemini AI
+ */
+export async function saveResumeAnalysis(studentId, analysis) {
+  const cleanStudentId = mongoIdToUuid(studentId);
+  try {
+    const { data, error } = await supabase
+      .from('resume_analysis')
+      .upsert({
+        student_id: cleanStudentId,
+        extracted_skills: analysis.skills || [],
+        extracted_certifications: analysis.certifications || [],
+        extracted_education: analysis.education || '',
+        extracted_experience: analysis.experience || '',
+        career_scores: analysis.careerScores || {},
+        growth_suggestions: analysis.growth_suggestions || '',
+        raw_resume_text: analysis.raw_resume_text || ''
+      }, { onConflict: 'student_id' })
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    // Table may not exist yet — log but don't crash onboarding
+    console.warn('⚠️ saveResumeAnalysis skipped (table may not exist):', error.message);
+    return null;
+  }
+}
+
+/**
+ * Get saved resume analysis for a student
+ */
+export async function getResumeAnalysis(studentId) {
+  const cleanStudentId = mongoIdToUuid(studentId);
+  const { data, error } = await supabase
+    .from('resume_analysis')
+    .select('*')
+    .eq('student_id', cleanStudentId)
+    .maybeSingle();
+  if (error) {
+    console.error('Error fetching resume analysis:', error.message);
+    return null;
+  }
+  return data;
+}
+
+// =========================================================================
+// SHARED SKILL GAP COMPUTATION (used by both Courses + Skills modules)
+// =========================================================================
+
+/**
+ * Deterministic skill gap analysis: compares user skills vs career-required skills.
+ * Single source of truth — called by both Courses and Skills routes.
+ * Returns { career, careerSkills, userSkills, missingSkills, weakSkills, skillsToLearn }
+ */
+export async function computeSkillGap(userId, careerId) {
+  const cleanUserId = mongoIdToUuid(userId);
+  const cleanCareerId = mongoIdToUuid(careerId);
+
+  // 1. Fetch career
+  const { data: career } = await supabase
+    .from('careers')
+    .select('*')
+    .eq('id', cleanCareerId)
+    .maybeSingle();
+
+  if (!career) {
+    return { career: null, careerSkills: [], userSkills: [], missingSkills: [], weakSkills: [], skillsToLearn: [] };
+  }
+
+  // 2. Fetch career-required skills
+  let careerSkills = [];
+  const { data: rawCareerSkills } = await supabase
+    .from('skills')
+    .select('*')
+    .eq('career_id', cleanCareerId);
+  careerSkills = rawCareerSkills || [];
+
+  // If no skills found, try syncing from O*NET
+  if (careerSkills.length === 0 && career.name) {
+    const syncResult = await syncCareerCache(career.name);
+    careerSkills = syncResult.skills || [];
+    if (careerSkills.length === 0) {
+      const { data: retrySkills } = await supabase
+        .from('skills')
+        .select('*')
+        .eq('career_id', career.id);
+      careerSkills = retrySkills || [];
+    }
+  }
+
+  // 3. Fetch user skills
+  const userSkills = await getUserSkills(userId);
+  const knownSkillNames = new Set((userSkills || []).map(s => s.skill_name?.toLowerCase()));
+
+  // 4. Deterministic gap: missing + weak
+  const missingSkills = careerSkills.filter(s =>
+    !knownSkillNames.has(s.name?.toLowerCase())
+  );
+  const weakSkills = careerSkills.filter(s => {
+    const userSkill = (userSkills || []).find(us => us.skill_name?.toLowerCase() === s.name?.toLowerCase());
+    return userSkill && userSkill.proficiency === 'Beginner';
+  });
+  const skillsToLearn = [...missingSkills, ...weakSkills];
+
+  return {
+    career,
+    careerSkills,
+    userSkills,
+    missingSkills,
+    weakSkills,
+    skillsToLearn
+  };
+}
+
+// =========================================================================
+// RECOMMENDED COURSES (Workflow B)
+// =========================================================================
+
+/**
+ * Save recommended courses for a student
+ * @param {string} studentId - UUID from user_profiles
+ * @param {Array} courses - [{course_id, skill_id, reason, skill_gap, priority_order}]
+ */
+export async function saveRecommendedCourses(studentId, courses) {
+  if (!studentId || !Array.isArray(courses)) {
+    throw new Error('studentId and courses array are required');
+  }
+
+  const cleanStudentId = mongoIdToUuid(studentId);
+
+  // Delete existing recommended courses for this student
+  await supabase.from('recommended_courses')
+    .delete()
+    .eq('student_id', cleanStudentId);
+
+  // Insert new recommendations
+  const rows = courses.map(c => ({
+    student_id: cleanStudentId,
+    course_id: c.course_id,
+    skill_id: c.skill_id || null,
+    reason: c.reason || '',
+    skill_gap: c.skill_gap || '',
+    priority_order: c.priority_order || 1
+  }));
+
+  const { data, error } = await supabase.from('recommended_courses')
+    .insert(rows)
+    .select();
+
+  if (error) {
+    console.error('Error saving recommended courses:', error.message);
+    throw error;
+  }
+  return data;
+}
+
+/**
+ * Get recommended courses for a student, enriched with course details
+ */
+export async function getRecommendedCoursesForStudent(studentId) {
+  const cleanStudentId = mongoIdToUuid(studentId);
+  const { data, error } = await supabase.from('recommended_courses')
+    .select(`
+      *,
+      courses:course_id (id, title, description, provider, platform, url, difficulty, price, rating, duration_weeks, category, language, instructor, thumbnail_url, tags, prerequisites, learning_outcomes),
+      skills:skill_id (id, name, category)
+    `)
+    .eq('student_id', cleanStudentId)
+    .order('priority_order', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching recommended courses:', error.message);
+    return [];
+  }
+  return data || [];
 }

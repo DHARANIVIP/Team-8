@@ -14,18 +14,18 @@ import authRouter from './routes/auth.js';
 import profileRouter from './routes/profile.js';
 import roadmapsRouter from './routes/roadmaps.js';
 import onboardingRouter from './routes/onboarding.js';
+import careerRouter from './routes/career.js';
 import { seedRoadmaps } from './seedRoadmaps.js';
 
 // Connect to MongoDB
 connectDB();
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = parseInt(process.env.PORT, 10) || 3001;
 
 // Middleware
 app.use(cors({
   origin: [
-    'https://team-8-95a3.vercel.app',
     'http://localhost:3000',
     'http://localhost:3001',
   ],
@@ -82,12 +82,17 @@ app.use('/api/roadmaps', roadmapsRouter);
  */
 app.use('/api/onboarding', onboardingRouter);
 
+/**
+ * Career Guidance endpoints (AI-powered)
+ */
+app.use('/api/career', careerRouter);
+
 // Health check
 app.get('/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
-app.listen(PORT, async () => {
+const server = app.listen(PORT, async () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
   console.log(`📊 Health check: http://localhost:${PORT}/health`);
   
@@ -98,6 +103,30 @@ app.listen(PORT, async () => {
     console.error('❌ Error seeding roadmaps on startup:', seedErr.message);
   }
   
+  // Auto-create new tables if missing (skill_recommendations, recommended_courses)
+  try {
+    const { createClient } = await import('@supabase/supabase-js');
+    const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+    
+    // Check and create skill_recommendations table
+    const { error: srErr } = await supabase.from('skill_recommendations').select('id').limit(1);
+    if (srErr && srErr.message && srErr.message.includes('does not exist')) {
+      console.log('⚠️ skill_recommendations table missing — run database_update.sql in Supabase SQL Editor');
+    } else {
+      console.log('✅ Supabase skill_recommendations table verified!');
+    }
+    
+    // Check and create recommended_courses table
+    const { error: rcErr } = await supabase.from('recommended_courses').select('id').limit(1);
+    if (rcErr && rcErr.message && rcErr.message.includes('does not exist')) {
+      console.log('⚠️ recommended_courses table missing — run database_update.sql in Supabase SQL Editor');
+    } else {
+      console.log('✅ Supabase recommended_courses table verified!');
+    }
+  } catch (err) {
+    console.error('❌ Error checking new tables on startup:', err.message);
+  }
+
   // Verify Supabase columns presence on start
   try {
     const { createClient } = await import('@supabase/supabase-js');

@@ -1,3 +1,5 @@
+import { parseResponse } from '@/lib/services/fetch-utils';
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') || '';
 
 export function getToken(): string | null {
@@ -23,10 +25,7 @@ export async function signup(name: string, email: string, password: string) {
       body: JSON.stringify({ name, email, password }),
     });
 
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.error || 'Failed to sign up');
-    }
+    const data = await parseResponse(response);
     return data;
   } catch (error) {
     console.error('Signup error:', error);
@@ -42,10 +41,7 @@ export async function signin(email: string, password: string) {
       body: JSON.stringify({ email, password }),
     });
 
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.error || 'Failed to sign in');
-    }
+    const data = await parseResponse(response);
 
     // Persist session locally
     localStorage.setItem('token', data.token);
@@ -65,10 +61,7 @@ export async function forgetPassword(email: string) {
       body: JSON.stringify({ email }),
     });
 
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.error || 'Failed to process forget password request');
-    }
+    const data = await parseResponse(response);
     return data;
   } catch (error) {
     console.error('Forget password error:', error);
@@ -84,10 +77,7 @@ export async function resetPassword(token: string, newPassword: string) {
       body: JSON.stringify({ token, newPassword }),
     });
 
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.error || 'Failed to reset password');
-    }
+    const data = await parseResponse(response);
     return data;
   } catch (error) {
     console.error('Reset password error:', error);
@@ -109,10 +99,7 @@ export async function updateAccount(fields: { name?: string; email?: string; pas
       body: JSON.stringify(fields),
     });
 
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.error || 'Failed to update account');
-    }
+    const data = await parseResponse(response);
     
     // Update local storage user details if changed
     if (data.user) {

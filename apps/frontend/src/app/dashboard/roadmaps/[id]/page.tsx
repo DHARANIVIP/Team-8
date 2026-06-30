@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import DashboardNavbar from '@/components/DashboardNavbar';
+import { parseResponse } from '@/lib/services/fetch-utils';
 
 interface ResourceItem {
   id: string;
@@ -53,8 +54,7 @@ export default function RoadmapDetailPage() {
       setLoading(true);
       setError(null);
       const res = await fetch(`${API_URL}/api/roadmaps/${id}`);
-      if (!res.ok) throw new Error('Failed to retrieve roadmap details');
-      const data = await res.json();
+      const data = await parseResponse(res);
       setRoadmap(data);
       
       // Select first node by default

@@ -6,7 +6,7 @@ import { signout } from '@/lib/services/auth-service';
 
 const navLinks = [
   { href: '/dashboard',            label: 'Dashboard' },
-  { href: '/dashboard/categories', label: 'Careers' },
+  { href: '/dashboard/career',     label: 'AI Career' },
   { href: '/dashboard/skills',     label: 'Skills' },
   { href: '/dashboard/courses',    label: 'Courses' },
   { href: '/dashboard/compare',    label: 'Compare' },

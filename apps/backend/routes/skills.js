@@ -15,8 +15,14 @@ import {
   getSkillsAdvisor,
   suggestSkills,
   updateUserProfile,
+  getUserProfile,
+  saveSkillRecommendations,
+  getSkillRecommendations,
+  updateSkillRecommendationStatus,
+  computeSkillGap,
   mongoIdToUuid
 } from '../services/supabaseService.js';
+import { generateSkillRecommendationOrder } from '../services/geminiCareerService.js';
 import { protect } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -358,6 +364,146 @@ router.post('/matrix', async (req, res) => {
   } catch (error) {
     console.error('Error calculating skill matrix:', error.message);
     res.status(500).json({ error: 'Failed to calculate skill matrix', details: error.message });
+  }
+});
+
+/**
+ * GET /api/skills/recommendation
+ * Workflow C: Generate ordered skill learning roadmap for a student+career
+ * Deterministic gap analysis in backend, AI for ranking/explanation only
+ */
+router.get('/recommendation', protect, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { careerId } = req.query;
+
+    if (!careerId) {
+      return res.status(400).json({ error: 'careerId query parameter is required' });
+    }
+
+    // Normalize careerId to UUID format for DB lookups
+    const cleanCareerId = mongoIdToUuid(careerId);
+
+    // 1. Fetch student profile
+    const profile = await getUserProfile(userId);
+    if (!profile) {
+      return res.status(404).json({ error: 'Student profile not found. Complete onboarding first.' });
+    }
+
+    // 2. Use shared deterministic skill gap computation
+    const gapResult = await computeSkillGap(userId, cleanCareerId);
+    if (!gapResult.career) {
+      return res.status(404).json({ error: 'Career not found' });
+    }
+
+    const { career, careerSkills, userSkills, missingSkills, weakSkills, skillsToLearn } = gapResult;
+
+    if (skillsToLearn.length === 0) {
+      return res.json({
+        career: career.name,
+        message: 'You already have all the skills for this career!',
+        recommendations: [],
+        gapSummary: { missing: 0, weak: 0, total: careerSkills.length }
+      });
+    }
+
+    // 5. Check if we have cached recommendations (unless force=true)
+    const forceRefresh = req.query.force === 'true';
+    if (!forceRefresh) {
+      const cached = await getSkillRecommendations(userId, cleanCareerId);
+      if (cached && cached.length > 0) {
+        return res.json({
+          career: career.name,
+          recommendations: cached,
+          gapSummary: { missing: missingSkills.length, weak: weakSkills.length, total: careerSkills.length },
+          cached: true
+        });
+      }
+    }
+
+    // 6. Call AI to rank/order skills by learning sequence
+    console.log(`🤖 Generating skill recommendation order for ${career.name}...`);
+    const orderedRecommendations = await generateSkillRecommendationOrder(
+      profile,
+      career.name,
+      skillsToLearn,
+      userSkills || []
+    );
+
+    // 7. Save to skill_recommendations table and return saved data (with status + enriched fields)
+    let savedRecs;
+    try {
+      await saveSkillRecommendations(userId, cleanCareerId, orderedRecommendations);
+      savedRecs = await getSkillRecommendations(userId, cleanCareerId);
+    } catch (saveErr) {
+      console.warn('⚠️ Failed to save skill recommendations:', saveErr.message);
+      savedRecs = orderedRecommendations.map(r => ({ ...r, status: 'pending' }));
+    }
+
+    // 8. Return ordered skill roadmap
+    res.json({
+      career: career.name,
+      recommendations: savedRecs || orderedRecommendations.map(r => ({ ...r, status: 'pending' })),
+      gapSummary: { missing: missingSkills.length, weak: weakSkills.length, total: careerSkills.length },
+      cached: false
+    });
+  } catch (error) {
+    console.error('❌ Skill recommendation failed:', error.message);
+    res.status(500).json({ error: 'Failed to generate skill recommendations', details: error.message });
+  }
+});
+
+/**
+ * PUT /api/skills/recommendation/:id/status
+ * Update skill recommendation status (mark as in_progress or completed)
+ */
+router.put('/recommendation/:id/status', protect, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    if (!['pending', 'in_progress', 'completed'].includes(status)) {
+      return res.status(400).json({ error: 'Status must be pending, in_progress, or completed' });
+    }
+
+    const updated = await updateSkillRecommendationStatus(id, status);
+        
+    // If completed, also update user_skills with the skill name from enriched data
+    if (status === 'completed' && updated) {
+      try {
+        await updateUserSkillProgress(
+          req.user.userId,
+          updated.skill_name || 'Unknown Skill',
+          'Intermediate',
+          80,
+          'course_completion'
+        );
+      } catch (skillErr) {
+        console.warn(`⚠️ Could not update user skill on completion:`, skillErr.message);
+      }
+    }
+
+    res.json(updated);
+  } catch (error) {
+    console.error('❌ Update skill recommendation status failed:', error.message);
+    res.status(500).json({ error: 'Failed to update status', details: error.message });
+  }
+});
+
+/**
+ * GET /api/skills/recommendation/list
+ * Get saved skill recommendations for the current user
+ */
+router.get('/recommendation/list', protect, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { careerId } = req.query;
+    
+    const recommendations = await getSkillRecommendations(userId, careerId || null);
+    res.json({ recommendations });
+  } catch (error) {
+    console.error('❌ Get skill recommendations failed:', error.message);
+    res.status(500).json({ error: 'Failed to fetch skill recommendations', details: error.message });
   }
 });
 

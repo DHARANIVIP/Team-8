@@ -94,3 +94,34 @@ export interface CareerOption {
   id: string;
   name: string;
 }
+
+// Skill Recommendation types
+export type SkillRecStatus = 'pending' | 'in_progress' | 'completed';
+
+export interface SkillRecommendation {
+  id: string;
+  student_id: string;
+  career_id: string;
+  skill_id: string;
+  skill_name: string;
+  skill_category: string;
+  skill_difficulty: string;
+  recommended_level: string;
+  reason: string;
+  priority_order: number;
+  status: SkillRecStatus;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SkillRecommendationResponse {
+  career: string;
+  recommendations: SkillRecommendation[];
+  gapSummary: {
+    missing: number;
+    weak: number;
+    total: number;
+  };
+  cached: boolean;
+  message?: string;
+}

@@ -1,5 +1,6 @@
 import { getApiUrl } from '@/lib/api-url';
 import { getToken } from './auth-service';
+import { parseResponse, parseJsonOrText } from '@/lib/services/fetch-utils';
 import type {
   CareerReadiness,
   GapAnalysisResponse,
@@ -8,6 +9,9 @@ import type {
   SkillsAdvisorResponse,
   SkillsOverview,
   UserSkill,
+  SkillRecommendationResponse,
+  SkillRecommendation,
+  SkillRecStatus,
 } from '@/lib/types/skills';
 
 function authHeaders(): HeadersInit {
@@ -134,22 +138,19 @@ async function buildAdvisorFallback(careerId?: string): Promise<SkillsAdvisorRes
 
 export async function getSkills() {
   const response = await fetch(apiPath('/api/skills'));
-  if (!response.ok) throw new Error('Failed to fetch skills');
-  return await response.json();
+  return await parseResponse(response);
 }
 
 export async function getSkillsByCareer(careerId: string) {
   const response = await fetch(apiPath(`/api/skills?careerId=${careerId}`));
-  if (!response.ok) throw new Error('Failed to fetch skills');
-  return await response.json();
+  return await parseResponse(response);
 }
 
 export async function getUserSkills(): Promise<UserSkill[]> {
   const response = await fetch(apiPath('/api/skills/profile'), {
     headers: authHeaders(),
   });
-  if (!response.ok) throw new Error('Failed to fetch user skills profile');
-  return await response.json();
+  return await parseResponse(response);
 }
 
 export async function updateUserSkillProgress(
@@ -162,8 +163,7 @@ export async function updateUserSkillProgress(
     headers: { 'Content-Type': 'application/json', ...authHeaders() },
     body: JSON.stringify({ skillName, proficiency, progressPercentage }),
   });
-  if (!response.ok) throw new Error('Failed to update skill progress');
-  return await response.json();
+  return await parseResponse(response);
 }
 
 export async function deleteUserSkill(skillName: string) {
@@ -171,16 +171,14 @@ export async function deleteUserSkill(skillName: string) {
     apiPath(`/api/skills/profile/${encodeURIComponent(skillName)}`),
     { method: 'DELETE', headers: authHeaders() }
   );
-  if (!response.ok) throw new Error('Failed to delete skill');
-  return await response.json();
+  return await parseResponse(response);
 }
 
 export async function getSkillGapAnalysis(careerId: string): Promise<GapAnalysisResponse> {
   const response = await fetch(apiPath(`/api/skills/gap/${careerId}`), {
     headers: authHeaders(),
   });
-  if (!response.ok) throw new Error('Failed to fetch skill gap analysis');
-  return await response.json();
+  return await parseResponse(response);
 }
 
 export async function getSkillsOverview(careerId?: string): Promise<SkillsOverview> {
@@ -189,12 +187,12 @@ export async function getSkillsOverview(careerId?: string): Promise<SkillsOvervi
     const response = await fetch(apiPath(`/api/skills/overview${qs}`), {
       headers: authHeaders(),
     });
-    if (response.ok) return await response.json();
+    if (response.ok) return await parseResponse(response);
     if (response.status === 404) {
       return buildOverviewFallback(careerId);
     }
-    const data = await response.json().catch(() => ({}));
-    throw new Error(data.details || data.error || `Failed to fetch skills overview (${response.status})`);
+    const data = await parseJsonOrText(response);
+    throw new Error(typeof data === 'string' ? data : data?.details || data?.error || `Failed to fetch skills overview (${response.status})`);
   } catch (err) {
     if (err instanceof Error && !err.message.includes('Not authenticated')) {
       console.warn('Skills overview fallback:', err.message);
@@ -210,12 +208,12 @@ export async function getSkillsAdvisor(careerId?: string): Promise<SkillsAdvisor
     const response = await fetch(apiPath(`/api/skills/advisor${qs}`), {
       headers: authHeaders(),
     });
-    if (response.ok) return await response.json();
+    if (response.ok) return await parseResponse(response);
     if (response.status === 404) {
       return buildAdvisorFallback(careerId);
     }
-    const data = await response.json().catch(() => ({}));
-    throw new Error(data.details || data.error || `Failed to fetch skills advisor (${response.status})`);
+    const data = await parseJsonOrText(response);
+    throw new Error(typeof data === 'string' ? data : data?.details || data?.error || `Failed to fetch skills advisor (${response.status})`);
   } catch (err) {
     if (err instanceof Error && !err.message.includes('Not authenticated')) {
       console.warn('Skills advisor fallback:', err.message);
@@ -230,14 +228,11 @@ export async function getCareerReadiness(): Promise<CareerReadiness[]> {
     const response = await fetch(apiPath('/api/skills/readiness'), {
       headers: authHeaders(),
     });
-    if (response.ok) {
-      const data = await response.json();
-      return data.careers || [];
-    }
     if (response.status === 404) {
       return [];
     }
-    throw new Error('Failed to fetch career readiness');
+    const data = await parseResponse(response);
+    return data.careers || [];
   } catch (err) {
     if (err instanceof Error && !err.message.includes('Not authenticated')) {
       console.warn('Career readiness unavailable:', err.message);
@@ -254,7 +249,7 @@ export async function suggestSkills(query: string): Promise<SkillSuggestion[]> {
       { headers: authHeaders() }
     );
     if (response.ok) {
-      const data = await response.json();
+      const data = await parseResponse(response);
       return data.suggestions || [];
     }
     if (response.status === 404) {
@@ -285,10 +280,10 @@ export async function triggerAISkillsAnalysis() {
     headers: authHeaders(),
   });
   if (!response.ok) {
-    const data = await response.json().catch(() => ({}));
-    throw new Error(data.error || 'Failed to start AI skills analysis');
+    const data = await parseJsonOrText(response);
+    throw new Error(typeof data === 'string' ? data : data?.error || 'Failed to start AI skills analysis');
   }
-  return await response.json();
+  return await parseResponse(response);
 }
 
 export async function createSkill(skill: Record<string, unknown>) {
@@ -297,8 +292,7 @@ export async function createSkill(skill: Record<string, unknown>) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(skill),
   });
-  if (!response.ok) throw new Error('Failed to create skill');
-  return await response.json();
+  return await parseResponse(response);
 }
 
 export async function calculateSkillMatrix(career_id_1: string, career_id_2: string) {
@@ -307,6 +301,36 @@ export async function calculateSkillMatrix(career_id_1: string, career_id_2: str
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ career_id_1, career_id_2 }),
   });
-  if (!response.ok) throw new Error('Failed to calculate matrix');
-  return await response.json();
+  return await parseResponse(response);
+}
+
+// Skill Recommendation API calls
+
+export async function getSkillRecommendations(careerId: string, force = false): Promise<SkillRecommendationResponse> {
+  const qs = `?careerId=${careerId}${force ? '&force=true' : ''}`;
+  const response = await fetch(apiPath(`/api/skills/recommendation${qs}`), {
+    headers: authHeaders(),
+  });
+  return await parseResponse(response);
+}
+
+export async function getSavedSkillRecommendations(careerId?: string): Promise<SkillRecommendation[]> {
+  const qs = careerId ? `?careerId=${careerId}` : '';
+  const response = await fetch(apiPath(`/api/skills/recommendation/list${qs}`), {
+    headers: authHeaders(),
+  });
+  const data = await parseResponse(response);
+  return data.recommendations || [];
+}
+
+export async function updateSkillRecommendationStatus(
+  recId: string,
+  status: SkillRecStatus
+): Promise<SkillRecommendation> {
+  const response = await fetch(apiPath(`/api/skills/recommendation/${recId}/status`), {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify({ status }),
+  });
+  return await parseResponse(response);
 }
