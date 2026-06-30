@@ -45,6 +45,36 @@ export default function OnboardingPage() {
     }
   }, [router]);
 
+  // Check if user already completed onboarding (API is the source of truth)
+  useEffect(() => {
+    async function checkOnboardingStatus() {
+      try {
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API_URL}/api/onboarding/status`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (data.completed) {
+          // Sync localStorage before redirecting
+          try {
+            const userStr = localStorage.getItem('user');
+            if (userStr) {
+              const userObj = JSON.parse(userStr);
+              userObj.onboardingCompleted = true;
+              localStorage.setItem('user', JSON.stringify(userObj));
+            }
+          } catch (e) {}
+          router.push('/dashboard');
+        }
+      } catch (err) {
+        console.error('Failed to check onboarding status:', err);
+        // On error, stay on onboarding page — don't redirect
+      }
+    }
+    checkOnboardingStatus();
+  }, [router]);
+
   // Stepped Fields Lists
   const educationOptions = ['High School', 'Undergrad', 'Postgrad', 'Bootcamp/Self-taught'];
   const experienceOptions = ['Beginner', 'Intermediate', 'Advanced'];

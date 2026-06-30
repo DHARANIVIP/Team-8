@@ -1,5 +1,7 @@
 import express from 'express';
 import { getOrGenerateRoadmap } from '../services/roadmapSyncService.js';
+import { getSkillRecommendations, getRecommendedCoursesForStudent, getUserProfile, getSkillsByCareer, getCategoryById, getCoursesBySkill } from '../services/supabaseService.js';
+import { protect } from '../middleware/auth.js';
 import { createClient } from '@supabase/supabase-js';
 
 const router = express.Router();
@@ -61,6 +63,105 @@ router.get('/', async (req, res) => {
   } catch (err) {
     console.warn('⚠️ Supabase roadmaps fetch failed. Returning standard listing catalog.', err.message);
     res.json(STANDARD_PATHS);
+  }
+});
+
+/**
+ * GET /api/roadmaps/personal/:careerId
+ * Personalized learning roadmap combining skill recommendations + courses
+ * MUST be before /:idOrSlug to avoid route conflict
+ */
+router.get('/personal/:careerId', protect, async (req, res) => {
+  try {
+    const { careerId } = req.params;
+    const userId = req.user.userId;
+
+    const profile = await getUserProfile(userId);
+    if (!profile) {
+      return res.status(404).json({ error: 'Profile not found. Complete onboarding first.' });
+    }
+
+    const career = await getCategoryById(careerId);
+    if (!career) {
+      return res.status(404).json({ error: 'Career not found' });
+    }
+
+    const skillRecs = await getSkillRecommendations(userId, careerId);
+    const courseRecs = await getRecommendedCoursesForStudent(userId);
+
+    const steps = [];
+    for (const skillRec of skillRecs) {
+      const skillCourses = courseRecs.filter(cr => 
+        cr.skills?.id === skillRec.skill_id || cr.skill_id === skillRec.skill_id
+      );
+      
+      let dbCourses = [];
+      if (skillCourses.length === 0 && skillRec.skill_id) {
+        try { dbCourses = await getCoursesBySkill(skillRec.skill_id); } catch (e) { /* ignore */ }
+      }
+
+      steps.push({
+        order: skillRec.priority_order,
+        skill: skillRec.skills?.name || 'Unknown Skill',
+        skillId: skillRec.skill_id,
+        category: skillRec.skills?.category || '',
+        difficulty: skillRec.skills?.difficulty_level || skillRec.recommended_level,
+        status: skillRec.status,
+        reason: skillRec.reason,
+        courses: skillCourses.length > 0 
+          ? skillCourses.map(cr => ({
+              id: cr.courses?.id, title: cr.courses?.title, provider: cr.courses?.provider,
+              url: cr.courses?.url, difficulty: cr.courses?.difficulty, duration_weeks: cr.courses?.duration_weeks
+            }))
+          : (dbCourses || []).slice(0, 3).map(c => ({
+              id: c.id, title: c.title, provider: c.provider, url: c.url,
+              difficulty: c.difficulty, duration_weeks: c.duration_weeks
+            }))
+      });
+    }
+
+    const totalSteps = steps.length;
+    const completedSteps = steps.filter(s => s.status === 'completed').length;
+
+    res.json({
+      career: career.name, careerId: career.id, steps, totalSteps, completedSteps,
+      progressPercentage: totalSteps > 0 ? Math.round((completedSteps / totalSteps) * 100) : 0,
+      estimatedWeeks: totalSteps * 4
+    });
+  } catch (error) {
+    console.error('❌ Personal roadmap failed:', error.message);
+    res.status(500).json({ error: 'Failed to generate personalized roadmap', details: error.message });
+  }
+});
+
+/**
+ * GET /api/roadmaps/source/roadmap.sh
+ * Returns only the roadmaps sourced from roadmap.sh
+ */
+router.get('/source/roadmap.sh', async (req, res) => {
+  try {
+    const { data: dbRoadmaps, error } = await supabase
+      .from('roadmaps')
+      .select('*')
+      .eq('source', 'roadmap.sh');
+
+    if (error || !dbRoadmaps || dbRoadmaps.length === 0) {
+      // Fallback: return standard frontend/backend paths
+      const fallback = STANDARD_PATHS.filter(p => p.source === 'roadmap.sh');
+      return res.json(fallback);
+    }
+    
+    // Merge standard path descriptions
+    const blended = dbRoadmaps.map(db => {
+      const match = STANDARD_PATHS.find(p => p.name.toLowerCase() === db.name.toLowerCase());
+      return match ? { ...match, ...db } : db;
+    });
+    
+    res.json(blended);
+  } catch (err) {
+    console.error('Error fetching roadmap.sh sources:', err.message);
+    const fallback = STANDARD_PATHS.filter(p => p.source === 'roadmap.sh');
+    res.json(fallback);
   }
 });
 
@@ -137,37 +238,6 @@ router.post('/sync', async (req, res) => {
     res.json({ message: 'Sync process completed', results });
   } catch (error) {
     res.status(500).json({ error: 'Sync trigger failed', details: error.message });
-  }
-});
-
-/**
- * GET /api/roadmaps/source/roadmap.sh
- * Returns only the roadmaps sourced from roadmap.sh
- */
-router.get('/source/roadmap.sh', async (req, res) => {
-  try {
-    const { data: dbRoadmaps, error } = await supabase
-      .from('roadmaps')
-      .select('*')
-      .eq('source', 'roadmap.sh');
-
-    if (error || !dbRoadmaps || dbRoadmaps.length === 0) {
-      // Fallback: return standard frontend/backend paths
-      const fallback = STANDARD_PATHS.filter(p => p.source === 'roadmap.sh');
-      return res.json(fallback);
-    }
-    
-    // Merge standard path descriptions
-    const blended = dbRoadmaps.map(db => {
-      const match = STANDARD_PATHS.find(p => p.name.toLowerCase() === db.name.toLowerCase());
-      return match ? { ...match, ...db } : db;
-    });
-    
-    res.json(blended);
-  } catch (err) {
-    console.error('Error fetching roadmap.sh sources:', err.message);
-    const fallback = STANDARD_PATHS.filter(p => p.source === 'roadmap.sh');
-    res.json(fallback);
   }
 });
 

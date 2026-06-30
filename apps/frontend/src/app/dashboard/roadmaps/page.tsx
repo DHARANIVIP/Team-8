@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import DashboardNavbar from '@/components/DashboardNavbar';
+import { parseResponse } from '@/lib/services/fetch-utils';
 
 interface RoadmapItem {
   id: string;
@@ -30,8 +31,7 @@ export default function RoadmapsPage() {
       setLoading(true);
       setError(null);
       const res = await fetch(`${API_URL}/api/roadmaps`);
-      if (!res.ok) throw new Error('Failed to load roadmap index');
-      const data = await res.json();
+      const data = await parseResponse(res);
       setRoadmaps(data);
     } catch (err: any) {
       setError(err.message || 'Unable to connect to backend server.');
@@ -47,7 +47,7 @@ export default function RoadmapsPage() {
       const res = await fetch(`${API_URL}/api/roadmaps/sync`, {
         method: 'POST',
       });
-      if (!res.ok) throw new Error('Sync request failed');
+      await parseResponse(res);
       await fetchRoadmaps();
     } catch (err: any) {
       setError('Sync failed: ' + (err.message || 'unknown network error'));

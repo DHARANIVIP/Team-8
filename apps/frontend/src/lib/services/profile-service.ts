@@ -1,4 +1,5 @@
 import { getToken } from './auth-service';
+import { parseResponse } from '@/lib/services/fetch-utils';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') || '';
 
@@ -13,10 +14,7 @@ export async function getProfile() {
       },
     });
 
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.error || 'Failed to fetch profile');
-    }
+    const data = await parseResponse(response);
     return data;
   } catch (error) {
     console.error('getProfile error:', error);
@@ -47,10 +45,7 @@ export async function updateProfile(fields: {
       body: JSON.stringify(fields),
     });
 
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.error || 'Failed to update profile');
-    }
+    const data = await parseResponse(response);
     return data;
   } catch (error) {
     console.error('updateProfile error:', error);

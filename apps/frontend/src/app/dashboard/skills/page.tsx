@@ -1,326 +1,449 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import DashboardNavbar from '@/components/DashboardNavbar';
-import { isAuthenticated } from '@/lib/services/auth-service';
-import { getProfile } from '@/lib/services/profile-service';
-import { getCategories } from '@/lib/services/career-service';
-import {
-  getUserSkills,
-  getSkillGapAnalysis,
-  getSkillsOverview,
-  getSkillsAdvisor,
-  getCareerReadiness,
-  triggerAISkillsAnalysis,
-} from '@/lib/services/skill-service';
-import type {
-  CareerReadiness,
-  GapAnalysisResponse,
-  SkillsAdvisorResponse,
-  SkillsOverview,
-  SkillsTab,
-  UserSkill,
-} from '@/lib/types/skills';
-import {
-  SkillsKpiStrip,
-  SkillsTabNav,
-  AddSkillModal,
-  SkillsSidebar,
-  OverviewTab,
-  ProfileTab,
-  GapAnalysisTab,
-  SkillMatrixTab,
-  CareerFitTab,
-} from '@/features/skills';
+import { getSkillRecommendations, updateSkillRecommendationStatus } from '@/lib/services/skill-service';
+import type { SkillRecommendation, SkillRecStatus, SkillRecommendationResponse } from '@/lib/types/skills';
 
+// ── Types ──────────────────────────────────────────────────────────────────────
+interface CareerOption {
+  id: string;
+  name: string;
+  matchPercentage?: number;
+}
+
+// ── Helpers ────────────────────────────────────────────────────────────────────
+const DIFF_COLORS: Record<string, { bg: string; bd: string; tx: string }> = {
+  Easy: { bg: 'rgba(16,185,129,0.1)', bd: 'rgba(16,185,129,0.3)', tx: '#10b981' },
+  Medium: { bg: 'rgba(245,158,11,0.1)', bd: 'rgba(245,158,11,0.3)', tx: '#f59e0b' },
+  Hard: { bg: 'rgba(239,68,68,0.1)', bd: 'rgba(239,68,68,0.3)', tx: '#ef4444' },
+};
+
+function getTopCareer(careers: CareerOption[]): CareerOption | null {
+  if (!careers?.length) return null;
+  return careers.reduce((top, c) => ((c.matchPercentage ?? 0) > (top.matchPercentage ?? 0) ? c : top), careers[0]);
+}
+
+// ── Main Component ─────────────────────────────────────────────────────────────
 export default function SkillsPage() {
   const router = useRouter();
 
-  const [activeTab, setActiveTab] = useState<SkillsTab>('overview');
-  const [initialLoading, setInitialLoading] = useState(true);
-  const [gapLoading, setGapLoading] = useState(false);
-  const [fitLoading, setFitLoading] = useState(false);
-  const [advisorLoading, setAdvisorLoading] = useState(false);
-  const [aiAnalyzing, setAiAnalyzing] = useState(false);
+  const [availableCareers, setAvailableCareers] = useState<CareerOption[]>([]);
+  const recommendationsRequestRef = useRef(false);
+  const [selectedCareer, setSelectedCareer] = useState<CareerOption | null>(null);
+  const [recommendations, setRecommendations] = useState<SkillRecommendation[]>([]);
+  const [careerName, setCareerName] = useState('');
+  const [gapSummary, setGapSummary] = useState<{ missing: number; weak: number; total: number } | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [generating, setGenerating] = useState(false);
   const [error, setError] = useState('');
-  const [showAddModal, setShowAddModal] = useState(false);
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
 
-  const [careersList, setCareersList] = useState<{ id: string; name: string }[]>([]);
-  const [selectedCareerId, setSelectedCareerId] = useState('');
-  const [mySkills, setMySkills] = useState<UserSkill[]>([]);
-  const [overview, setOverview] = useState<SkillsOverview | null>(null);
-  const [gap, setGap] = useState<GapAnalysisResponse | null>(null);
-  const [advisor, setAdvisor] = useState<SkillsAdvisorResponse | null>(null);
-  const [careerReadiness, setCareerReadiness] = useState<CareerReadiness[]>([]);
-
-  const loadSkills = useCallback(async () => {
-    const skills = await getUserSkills();
-    setMySkills(skills);
-    return skills;
-  }, []);
-
-  const loadGap = useCallback(async (careerId: string) => {
-    if (!careerId) return;
-    setGapLoading(true);
+  // ── Load recommendations ─────────────────────────────────────────────────────
+  const loadRecommendations = useCallback(async (careerId: string, force = false) => {
+    if (recommendationsRequestRef.current) return;
+    recommendationsRequestRef.current = true;
     try {
-      const data = await getSkillGapAnalysis(careerId);
-      setGap(data);
-    } catch (err) {
-      console.error('Gap load failed:', err);
+      setGenerating(true);
+      setError('');
+      const data = await getSkillRecommendations(careerId, force);
+      setRecommendations(data.recommendations || []);
+      setCareerName(data.career || '');
+      setGapSummary(data.gapSummary || null);
+    } catch (err: any) {
+      console.error('Error loading skill recommendations:', err);
+      setError(err.message || 'Failed to load skill recommendations');
+      setRecommendations([]);
     } finally {
-      setGapLoading(false);
+      recommendationsRequestRef.current = false;
+      setGenerating(false);
     }
   }, []);
-
-  const loadOverviewAndAdvisor = useCallback(async (careerId: string) => {
-    setAdvisorLoading(true);
-    try {
-      const [overviewResult, advisorResult] = await Promise.allSettled([
-        getSkillsOverview(careerId || undefined),
-        getSkillsAdvisor(careerId || undefined),
-      ]);
-
-      if (overviewResult.status === 'fulfilled') {
-        setOverview(overviewResult.value);
-      } else {
-        console.error('Overview load failed:', overviewResult.reason);
-      }
-
-      if (advisorResult.status === 'fulfilled') {
-        setAdvisor(advisorResult.value);
-      } else {
-        console.error('Advisor load failed:', advisorResult.reason);
-      }
-
-      if (overviewResult.status === 'rejected' && advisorResult.status === 'rejected') {
-        console.warn('Overview and advisor unavailable, page will use partial data');
-      }
-    } catch (err) {
-      console.error('Overview/advisor load failed:', err);
-    } finally {
-      setAdvisorLoading(false);
-    }
-  }, []);
-
-  const refreshAll = useCallback(async (careerId: string) => {
-    await loadSkills();
-    await Promise.all([
-      loadGap(careerId),
-      loadOverviewAndAdvisor(careerId),
-    ]);
-  }, [loadSkills, loadGap, loadOverviewAndAdvisor]);
 
   useEffect(() => {
-    if (!isAuthenticated()) {
-      router.push('/login');
-      return;
-    }
-
     async function init() {
       try {
-        setInitialLoading(true);
-        setError('');
+        setLoading(true);
+        const token = localStorage.getItem('token');
+        if (!token) { router.push('/login'); return; }
 
-        const profile = await getProfile();
-        if (!profile.onboarding_completed) {
-          router.push('/onboarding');
+        const analysisRes = await fetch('/api/career/analysis', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!analysisRes.ok) {
+          if (analysisRes.status === 401) { localStorage.removeItem('token'); router.push('/login'); return; }
+          setError('Failed to load career data.');
+          setLoading(false);
           return;
         }
 
-        const categoriesResponse = await getCategories();
-        const list = categoriesResponse.categories || [];
-        setCareersList(list);
+        const analysisData = await analysisRes.json();
+        const savedCareers = analysisData?.recommendations?.saved_careers || [];
 
-        let careerId = '';
-        if (list.length > 0) {
-          const matched = list.find(
-            (c: { name: string }) =>
-              c.name.toLowerCase() === (profile.target_career || '').toLowerCase()
-          );
-          careerId = matched?.id || list[0].id;
-          setSelectedCareerId(careerId);
+        if (savedCareers.length === 0) {
+          setError('No career recommendations found. Please visit AI Career Guidance first.');
+          setLoading(false);
+          return;
         }
 
-        await loadSkills();
-        if (careerId) {
-          await Promise.all([
-            loadGap(careerId),
-            loadOverviewAndAdvisor(careerId),
-          ]);
+        const careerOptions: CareerOption[] = savedCareers.map((c: any) => ({
+          id: c.careerId || c.career_id || c.id,
+          name: c.careerName || c.career_name || c.name || 'Unknown Career',
+          matchPercentage: c.matchPercentage || c.match_percentage || 0,
+        }));
+
+        setAvailableCareers(careerOptions);
+        const topCareer = getTopCareer(careerOptions);
+        if (topCareer) {
+          setSelectedCareer(topCareer);
+          await loadRecommendations(topCareer.id);
+        } else {
+          setError('No career selected.');
         }
-      } catch (err: unknown) {
-        setError(err instanceof Error ? err.message : 'Failed to load skills data');
+      } catch (err: any) {
+        console.error('Init error:', err);
+        setError(err.message || 'Failed to initialize');
       } finally {
-        setInitialLoading(false);
+        setLoading(false);
       }
     }
-
     init();
-  }, [router, loadSkills, loadGap, loadOverviewAndAdvisor]);
+  }, [router, loadRecommendations]);
 
-  useEffect(() => {
-    if (!selectedCareerId || initialLoading) return;
-    loadGap(selectedCareerId);
-    loadOverviewAndAdvisor(selectedCareerId);
-  }, [selectedCareerId, initialLoading, loadGap, loadOverviewAndAdvisor]);
-
-  useEffect(() => {
-    if (activeTab !== 'fit' || careerReadiness.length > 0) return;
-
-    async function loadFit() {
-      setFitLoading(true);
-      try {
-        const scores = await getCareerReadiness();
-        setCareerReadiness(scores);
-      } catch (err) {
-        console.error('Career fit load failed:', err);
-      } finally {
-        setFitLoading(false);
-      }
-    }
-
-    loadFit();
-  }, [activeTab, careerReadiness.length]);
-
-  const handleAnalyze = async () => {
+  // ── Sequential learning: advance to next skill ──────────────────────────────
+  const handleLearned = async (recId: string) => {
     try {
-      setAiAnalyzing(true);
-      setError('');
-      await triggerAISkillsAnalysis();
-      await refreshAll(selectedCareerId);
-      if (activeTab === 'fit') {
-        const scores = await getCareerReadiness();
-        setCareerReadiness(scores);
+      setUpdatingId(recId);
+      // Mark current skill as completed
+      const updated = await updateSkillRecommendationStatus(recId, 'completed');
+      if (updated) {
+        setRecommendations(prev =>
+          prev.map(r => r.id === recId ? { ...r, status: 'completed' as SkillRecStatus, skill_name: updated.skill_name || r.skill_name } : r)
+        );
+        // Auto-start the next pending skill
+        const nextPending = recommendations.find(r => (r.id !== recId) && (r.status || 'pending') === 'pending');
+        if (nextPending) {
+          await updateSkillRecommendationStatus(nextPending.id, 'in_progress');
+          setRecommendations(prev =>
+            prev.map(r => r.id === nextPending.id ? { ...r, status: 'in_progress' as SkillRecStatus } : r)
+          );
+        }
       }
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'AI analysis failed');
+    } catch (err: any) {
+      console.error('Error updating status:', err);
     } finally {
-      setAiAnalyzing(false);
+      setUpdatingId(null);
     }
   };
 
-  const handleRefresh = () => refreshAll(selectedCareerId);
+  const handleStartFirst = async (recId: string) => {
+    try {
+      setUpdatingId(recId);
+      const updated = await updateSkillRecommendationStatus(recId, 'in_progress');
+      if (updated) {
+        setRecommendations(prev =>
+          prev.map(r => r.id === recId ? { ...r, status: 'in_progress' as SkillRecStatus } : r)
+        );
+      }
+    } catch (err: any) {
+      console.error('Error:', err);
+    } finally {
+      setUpdatingId(null);
+    }
+  };
 
+  const handleCareerChange = async (careerId: string) => {
+    const career = availableCareers.find(c => c.id === careerId);
+    if (!career) return;
+    setSelectedCareer(career);
+    await loadRecommendations(careerId);
+  };
+
+  const handleRefresh = async () => {
+    if (selectedCareer) await loadRecommendations(selectedCareer.id, true);
+  };
+
+  // ── Computed ─────────────────────────────────────────────────────────────────
+  const completedCount = recommendations.filter(r => (r.status || 'pending') === 'completed').length;
+  const totalCount = recommendations.length;
+  const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+  const allCompleted = totalCount > 0 && completedCount === totalCount;
+  const currentSkill = recommendations.find(r => (r.status || 'pending') === 'in_progress');
+  const nextSkill = recommendations.find(r => (r.status || 'pending') === 'pending');
+
+  // ── Render ───────────────────────────────────────────────────────────────────
   return (
-    <div style={{ background: '#0a0a0a', minHeight: '100vh', color: '#ffffff' }}>
+    <div style={{ background: 'var(--bg)', minHeight: '100vh', color: 'var(--text-primary)' }}>
       <DashboardNavbar />
 
-      <main className="page-container animate-slide-up" style={{ padding: '24px 0', maxWidth: '1100px', margin: '0 auto' }}>
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            paddingBottom: '20px',
-            borderBottom: '1px solid rgba(255, 158, 66, 0.15)',
-            marginBottom: '24px',
-            flexWrap: 'wrap',
-            gap: '16px',
-          }}
-        >
-          <div>
-            <span className="section-label" style={{ display: 'block', marginBottom: '2px' }}>SKILL INTELLIGENCE</span>
-            <h1 style={{ color: '#ffffff', fontWeight: 700, fontSize: '24px', margin: 0, letterSpacing: '0.5px', fontFamily: 'Outfit, sans-serif' }}>
-              Skills Hub
+      <main style={{ maxWidth: '1100px', margin: '0 auto', padding: '40px 24px' }}>
+        {/* Header */}
+        <div style={{ marginBottom: '36px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '6px' }}>
+            <h1 style={{ fontSize: '30px', fontWeight: 800, margin: 0, fontFamily: 'Outfit, sans-serif' }}>
+              Skill Roadmap
             </h1>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '13px', margin: '4px 0 0' }}>
-              Track proficiencies, analyze gaps, and plan your learning path with real career data.
-            </p>
+            {selectedCareer && (
+              <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 500, padding: '3px 10px', background: 'var(--accent-glow)', borderRadius: '4px', border: '1px solid var(--border)' }}>
+                {careerName}
+              </span>
+            )}
           </div>
-
-          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-            <button
-              type="button"
-              className="btn-ghost"
-              onClick={() => setShowAddModal(true)}
-              style={{ fontSize: '12px', padding: '10px 16px' }}
-            >
-              + Add Skill
-            </button>
-            <button
-              type="button"
-              onClick={handleAnalyze}
-              disabled={aiAnalyzing}
-              className="btn-primary"
-              style={{ fontSize: '12px', padding: '10px 20px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}
-            >
-              {aiAnalyzing ? (
-                <>
-                  <span className="spinner" style={{ width: '12px', height: '12px', border: '2px solid #000', borderTop: '2px solid transparent' }} />
-                  Analyzing...
-                </>
-              ) : (
-                <>🤖 Analyze via AI</>
-              )}
-            </button>
-          </div>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '14px', margin: 0 }}>
+            Your personalized learning path — master each skill to complete your roadmap
+          </p>
         </div>
 
-        {error && (
-          <div style={{ padding: '16px', background: 'rgba(239,68,68,0.06)', border: '1px solid #ef4444', color: '#ef4444', fontSize: '13px', borderRadius: '4px', marginBottom: '20px' }}>
-            {error}
+        {/* Loading */}
+        {loading && (
+          <div style={{ textAlign: 'center', padding: '80px 20px' }}>
+            <div className="spinner" style={{ marginBottom: '24px', borderColor: 'var(--accent) transparent transparent transparent' }} />
+            <p style={{ color: 'var(--text-secondary)' }}>Loading your skill roadmap...</p>
           </div>
         )}
 
-        {initialLoading ? (
-          <div style={{ height: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <div className="spinner" />
+        {/* Error / empty state */}
+        {!loading && (error || (!selectedCareer && recommendations.length === 0)) && (
+          <div style={{ textAlign: 'center', padding: '80px 20px' }}>
+            <div style={{ fontSize: '48px', marginBottom: '16px' }}>🎯</div>
+            <h2 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '8px' }}>{error ? 'Action Required' : 'No Recommendations Yet'}</h2>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '13px', maxWidth: '400px', margin: '0 auto 24px' }}>
+              {error || 'Complete your profile and generate career recommendations first.'}
+            </p>
+            {!error && (
+              <button onClick={() => router.push('/dashboard/career')} className="btn-primary" style={{ fontSize: '13px', padding: '10px 24px' }}>
+                Go to AI Career Guidance
+              </button>
+            )}
           </div>
-        ) : (
+        )}
+
+        {/* Main content */}
+        {!loading && !error && selectedCareer && (
           <>
-            <SkillsKpiStrip overview={overview} />
+            {/* Career selector */}
+            {availableCareers.length > 1 && (
+              <div style={{ marginBottom: '24px' }}>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Target Career</label>
+                <select
+                  value={selectedCareer.id}
+                  onChange={(e) => handleCareerChange(e.target.value)}
+                  style={{ width: '320px', padding: '10px 14px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text-primary)', fontSize: '14px', outline: 'none' }}
+                >
+                  {availableCareers.map(c => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </select>
+              </div>
+            )}
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 300px', gap: '24px', alignItems: 'start' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', minWidth: 0 }}>
-                <SkillsTabNav activeTab={activeTab} onTabChange={setActiveTab} skillCount={mySkills.length} />
-
-                {activeTab === 'overview' && (
-                  <OverviewTab
-                    overview={overview}
-                    gap={gap}
-                    advisor={advisor}
-                    onGoToGap={() => setActiveTab('gap')}
-                    onAnalyze={handleAnalyze}
-                    aiAnalyzing={aiAnalyzing}
-                  />
-                )}
-                {activeTab === 'profile' && (
-                  <ProfileTab skills={mySkills} onRefresh={handleRefresh} />
-                )}
-                {activeTab === 'gap' && (
-                  <GapAnalysisTab
-                    careers={careersList}
-                    selectedCareerId={selectedCareerId}
-                    onCareerChange={setSelectedCareerId}
-                    gap={gap}
-                    loading={gapLoading}
-                    onRefresh={handleRefresh}
-                  />
-                )}
-                {activeTab === 'matrix' && <SkillMatrixTab skills={mySkills} />}
-                {activeTab === 'fit' && (
-                  <CareerFitTab
-                    readiness={careerReadiness}
-                    loading={fitLoading}
-                    onSelectCareer={setSelectedCareerId}
-                    onGoToGap={setActiveTab}
-                  />
+            {/* Progress bar */}
+            <div className="card" style={{ padding: '24px 28px', marginBottom: '24px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                <div>
+                  <h2 style={{ fontSize: '16px', fontWeight: 700, margin: 0 }}>Learning Progress</h2>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '13px', margin: '4px 0 0' }}>
+                    {completedCount} of {totalCount} skills mastered ({progressPercent}%)
+                  </p>
+                </div>
+                {gapSummary && (
+                  <div style={{ display: 'flex', gap: '24px' }}>
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ fontSize: '22px', fontWeight: 800, color: '#ef4444' }}>{gapSummary.missing}</div>
+                      <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Missing</div>
+                    </div>
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ fontSize: '22px', fontWeight: 800, color: '#f59e0b' }}>{gapSummary.weak}</div>
+                      <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Weak</div>
+                    </div>
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ fontSize: '22px', fontWeight: 800, color: '#10b981' }}>{completedCount}</div>
+                      <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Mastered</div>
+                    </div>
+                  </div>
                 )}
               </div>
-
-              <SkillsSidebar gap={gap} advisor={advisor} advisorLoading={advisorLoading} />
+              <div style={{ height: '8px', background: 'rgba(255,158,66,0.08)', borderRadius: '4px', overflow: 'hidden' }}>
+                <div style={{ width: `${progressPercent}%`, height: '100%', background: 'var(--accent)', borderRadius: '4px', transition: 'width 0.5s ease' }} />
+              </div>
             </div>
+
+            {/* All completed banner */}
+            {allCompleted && (
+              <div style={{
+                padding: '28px', background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.3)',
+                borderRadius: '8px', textAlign: 'center', marginBottom: '24px',
+              }}>
+                <div style={{ fontSize: '36px', marginBottom: '8px' }}>🏆</div>
+                <h3 style={{ fontSize: '18px', fontWeight: 700, color: '#10b981', margin: '0 0 6px' }}>Roadmap Complete!</h3>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '13px', margin: 0 }}>
+                  You've mastered all {totalCount} skills for {careerName}. Great job!
+                </p>
+              </div>
+            )}
+
+            {/* Current skill focus */}
+            {(currentSkill || nextSkill) && !allCompleted && (
+              <div style={{
+                padding: '24px', background: 'var(--accent-glow)', border: '1px solid var(--border)',
+                borderRadius: '8px', marginBottom: '24px',
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+                  <span style={{ color: 'var(--accent)', fontSize: '16px' }}>{currentSkill ? '◐' : '→'}</span>
+                  <h3 style={{ color: 'var(--accent)', fontWeight: 700, fontSize: '14px', margin: 0 }}>
+                    {currentSkill ? 'Currently Learning' : 'Next to Learn'}
+                  </h3>
+                </div>
+                <p style={{ fontSize: '18px', fontWeight: 700, margin: '0 0 4px' }}>
+                  {(currentSkill || nextSkill)?.skill_name}
+                </p>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '13px', margin: '0 0 10px' }}>
+                  {(currentSkill || nextSkill)?.reason}
+                </p>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  {(() => {
+                    const d = DIFF_COLORS[(currentSkill || nextSkill)?.skill_difficulty || 'Medium'] || DIFF_COLORS.Medium;
+                    return (
+                      <>
+                        <span style={{ padding: '3px 8px', background: d.bg, border: `1px solid ${d.bd}`, borderRadius: '4px', fontSize: '11px', color: d.tx, fontWeight: 600 }}>
+                          {(currentSkill || nextSkill)?.skill_difficulty}
+                        </span>
+                        <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{(currentSkill || nextSkill)?.skill_category}</span>
+                      </>
+                    );
+                  })()}
+                </div>
+              </div>
+            )}
+
+            {/* Generating */}
+            {generating && recommendations.length === 0 && (
+              <div style={{ textAlign: 'center', padding: '64px 20px' }}>
+                <div className="spinner" style={{ marginBottom: '16px', borderColor: 'var(--accent) transparent transparent transparent' }} />
+                <p style={{ color: 'var(--text-secondary)' }}>Analyzing your skills and generating roadmap...</p>
+              </div>
+            )}
+
+            {/* Skill roadmap list */}
+            {recommendations.length > 0 && (
+              <div className="card" style={{ padding: '24px 28px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                  <h2 style={{ fontSize: '16px', fontWeight: 700, margin: 0 }}>Learning Path</h2>
+                  <button onClick={handleRefresh} disabled={generating} className="btn-outline" style={{ fontSize: '12px', padding: '6px 14px' }}>
+                    {generating ? 'Refreshing...' : '↻ Refresh'}
+                  </button>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {recommendations.map((rec, index) => {
+                    const status = (rec.status || 'pending') as SkillRecStatus;
+                    const isCompleted = status === 'completed';
+                    const isCurrent = status === 'in_progress';
+                    const isPending = status === 'pending';
+                    const isNext = isPending && !recommendations.slice(0, index).some(r => (r.status || 'pending') === 'pending');
+                    const isUpdating = updatingId === rec.id;
+                    const d = DIFF_COLORS[rec.skill_difficulty || 'Medium'] || DIFF_COLORS.Medium;
+
+                    return (
+                      <div key={rec.id} style={{
+                        padding: '18px 20px',
+                        background: isCompleted ? 'rgba(16,185,129,0.04)' : isCurrent ? 'var(--accent-glow)' : 'var(--surface-alt)',
+                        border: `1px solid ${isCompleted ? 'rgba(16,185,129,0.25)' : isCurrent ? 'var(--accent)' : 'var(--border)'}`,
+                        borderRadius: '6px',
+                        opacity: isCompleted ? 0.75 : 1,
+                        transition: 'all 0.2s ease',
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '14px' }}>
+                          {/* Priority number */}
+                          <div style={{
+                            flexShrink: 0, width: '32px', height: '32px', borderRadius: '50%',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontSize: '13px', fontWeight: 700,
+                            background: isCompleted ? 'rgba(16,185,129,0.15)' : 'rgba(255,158,66,0.08)',
+                            color: isCompleted ? '#10b981' : 'var(--text-muted)',
+                          }}>
+                            {isCompleted ? '✓' : rec.priority_order}
+                          </div>
+
+                          {/* Content */}
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                              <h3 style={{
+                                fontSize: '15px', fontWeight: 600, margin: 0,
+                                color: isCompleted ? 'var(--text-muted)' : 'var(--text-primary)',
+                                textDecoration: isCompleted ? 'line-through' : 'none',
+                              }}>
+                                {rec.skill_name}
+                              </h3>
+                              <span style={{ padding: '2px 8px', background: d.bg, border: `1px solid ${d.bd}`, borderRadius: '4px', fontSize: '10px', color: d.tx, fontWeight: 600 }}>
+                                {rec.skill_difficulty}
+                              </span>
+                              <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{rec.skill_category}</span>
+                            </div>
+
+                            {rec.reason && (
+                              <p style={{ color: 'var(--text-secondary)', fontSize: '12px', margin: '4px 0 0', lineHeight: '1.5' }}>{rec.reason}</p>
+                            )}
+
+                            <div style={{ display: 'flex', gap: '12px', marginTop: '6px', fontSize: '11px', color: 'var(--text-muted)' }}>
+                              <span>Level: {rec.recommended_level}</span>
+                              <span>•</span>
+                              <span style={{ color: isCompleted ? '#10b981' : isCurrent ? 'var(--accent)' : 'var(--text-muted)' }}>
+                                {isCompleted ? '● Mastered' : isCurrent ? '◐ In Progress' : '○ To Learn'}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Action — sequential: only current/next skill is actionable */}
+                          <div style={{ flexShrink: 0 }}>
+                            {isCurrent && (
+                              <button
+                                onClick={() => handleLearned(rec.id)}
+                                disabled={isUpdating}
+                                className="btn-primary"
+                                style={{ fontSize: '12px', padding: '8px 18px', fontWeight: 600 }}
+                              >
+                                {isUpdating ? '...' : "I've Learned This"}
+                              </button>
+                            )}
+                            {isNext && !currentSkill && (
+                              <button
+                                onClick={() => handleStartFirst(rec.id)}
+                                disabled={isUpdating}
+                                className="btn-outline"
+                                style={{ fontSize: '12px', padding: '8px 18px', fontWeight: 600, borderColor: 'var(--accent)', color: 'var(--accent)' }}
+                              >
+                                {isUpdating ? '...' : 'Start Learning'}
+                              </button>
+                            )}
+                            {isCompleted && (
+                              <span style={{ fontSize: '12px', color: '#10b981', fontWeight: 600 }}>✓ Done</span>
+                            )}
+                            {isPending && !isNext && (
+                              <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Locked</span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* No recommendations */}
+            {!generating && recommendations.length === 0 && selectedCareer && (
+              <div style={{ textAlign: 'center', padding: '64px 20px' }}>
+                <p style={{ color: 'var(--text-secondary)' }}>No skill recommendations yet for {careerName}.</p>
+                <button onClick={handleRefresh} className="btn-primary" style={{ marginTop: '16px', fontSize: '13px', padding: '10px 24px' }}>
+                  Generate Skill Roadmap
+                </button>
+              </div>
+            )}
           </>
         )}
       </main>
-
-      <AddSkillModal
-        open={showAddModal}
-        onClose={() => setShowAddModal(false)}
-        onAdded={handleRefresh}
-        existingNames={mySkills.map(s => s.skill_name)}
-      />
     </div>
   );
 }

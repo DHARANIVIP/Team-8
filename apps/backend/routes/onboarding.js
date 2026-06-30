@@ -11,20 +11,18 @@ import {
   getAllSkills, 
   getAllCourses,
   getUserRecommendations,
-  getOnboardingStatus
+  getOnboardingStatus,
+  saveResumeAnalysis,
+  getResumeAnalysis
 } from '../services/supabaseService.js';
-import { 
-  getResumeEmbeddings, 
-  classifyResumeText, 
-  generateResumeInsights 
-} from '../services/huggingfaceService.js';
+import { getGeminiAI, markKeyExhausted, isRateLimitError, parseRetryDelay, getGeminiUnavailableMessage } from '../services/geminiKeyManager.js';
+import { generateResumeInsights } from '../services/huggingfaceService.js';
 
 const router = express.Router();
 
 const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:5000';
 
-// In-memory fallback cache in case Supabase schema upgrades aren't run or tables fail
-const recommendationsCache = new Map();
+
 
 // Multer memory storage configuration for PDF uploads
 const upload = multer({
@@ -64,12 +62,20 @@ const getIndustryForCareerName = (careerName) => {
 router.post('/submit', protect, upload.single('resume'), async (req, res) => {
   try {
     const userId = req.user.userId;
-    const { education, major, learningStyle, interests, skills: formSkills } = req.body;
+    const { 
+      education, major, learningStyle, interests, skills: formSkills,
+      targetRole, salaryExpectation, careerGoal, institutionName, 
+      graduationYear, wantsCertifications, yearsExperience, availability 
+    } = req.body;
 
     // Enforce that a PDF resume is mandatory
     if (!req.file) {
       return res.status(400).json({ error: 'A PDF resume is required for AI-based career classification.' });
     }
+
+    // Parse study_hours_per_week from availability string
+    const availabilityMap = { '< 5 hours/week': 3, '5-10 hours/week': 7, '10-20 hours/week': 15, '20+ hours/week': 25 };
+    const studyHoursPerWeek = availabilityMap[availability] || 10;
     
     // Parse JSON arrays safely
     let parsedLearningStyle = [];
@@ -102,70 +108,136 @@ router.post('/submit', protect, upload.single('resume'), async (req, res) => {
       allSkills = (await getAllSkills()) || [];
       allCourses = (await getAllCourses()) || [];
     } catch (dbErr) {
-      console.warn('⚠️ Failed to fetch baseline data from Supabase, using local defaults:', dbErr.message);
-      allCareers = [
-        { id: 'b3a985d8-c923-42bf-be0d-6e828d11634b', name: 'Software Engineer', description: 'Develop and maintain software applications and websites.', growth_rate: '28%', salary_range: '₹8L – ₹25L' },
-        { id: 'd5084920-5c69-42b7-bdc1-4874e0d9b4bf', name: 'Data Scientist', description: 'Analyze complex data and build Machine Learning models.', growth_rate: '36%', salary_range: '₹10L – ₹30L' },
-        { id: 'a1288c80-60b6-4b8c-85a2-3f8c8d8b1bfb', name: 'UX Designer', description: 'Create intuitive and user-friendly digital designs.', growth_rate: '22%', salary_range: '₹6L – ₹18L' }
-      ];
-      allSkills = [
-        { id: 'c7078e8e-d9c1-4b13-911e-0899f8d1634b', career_id: 'b3a985d8-c923-42bf-be0d-6e828d11634b', name: 'JavaScript' },
-        { id: 'a9386d4d-cc8b-4a5f-be03-7cf8e02ab3bf', career_id: 'b3a985d8-c923-42bf-be0d-6e828d11634b', name: 'React' },
-        { id: 'b0849d92-23c7-493d-bd88-6927e0293dbf', career_id: 'b3a985d8-c923-42bf-be0d-6e828d11634b', name: 'Node.js' },
-        { id: 'd1193d20-80c1-4f80-bdc2-7cb8e293dbef', career_id: 'd5084920-5c69-42b7-bdc1-4874e0d9b4bf', name: 'Python' },
-        { id: 'e3984d93-3d02-402f-bc22-8dcb9283dbdf', career_id: 'd5084920-5c69-42b7-bdc1-4874e0d9b4bf', name: 'Machine Learning' }
-      ];
-      allCourses = [
-        { id: 'course-js-1', skill_id: 'c7078e8e-d9c1-4b13-911e-0899f8d1634b', name: 'JavaScript: The Advanced Concepts', provider: 'Udemy' },
-        { id: 'course-py-1', skill_id: 'd1193d20-80c1-4f80-bdc2-7cb8e293dbef', name: 'Python for Everybody Specialization', provider: 'Coursera' }
-      ];
+      console.error('❌ Failed to fetch baseline data from Supabase:', dbErr.message);
+      return res.status(500).json({ error: 'Failed to fetch career data from database. Please ensure migrations have been run.' });
+    }
+
+    if (!allCareers.length) {
+      return res.status(404).json({ error: 'No careers found in database. Please seed the database first.' });
     }
 
     // 2. Parse PDF resume text directly in Node.js
-    console.log('🤖 Parsing PDF resume text directly in Node.js using PDFParse class...');
+    console.log('🤖 Parsing PDF resume text...');
     let resumeText = '';
-    let parser = null;
     try {
-      parser = new PDFParse({ data: req.file.buffer });
-      const pdfData = await parser.getText();
-      resumeText = pdfData.text || '';
+      const parser = new PDFParse(new Uint8Array(req.file.buffer));
+      await parser.load();
+      const textResult = await parser.getText();
+      // pdf-parse v2.x returns { pages: [{ text: "..." }, ...] }
+      if (textResult && Array.isArray(textResult.pages)) {
+        resumeText = textResult.pages.map(p => p.text || '').join('\n');
+      } else if (typeof textResult === 'string') {
+        resumeText = textResult;
+      }
+      parser.destroy();
       if (!resumeText.trim()) {
         throw new Error('No text content found in the PDF.');
       }
     } catch (pdfErr) {
       console.error('❌ PDF extraction failed:', pdfErr.message);
-      return res.status(400).json({ error: 'Failed to extract text from PDF resume. Ensure the PDF is not empty or scanned image-only.' });
-    } finally {
-      if (parser) {
-        try {
-          await parser.destroy();
-        } catch (destroyErr) {
-          console.warn('⚠️ PDFParse destroy failed:', destroyErr.message);
-        }
-      }
+      return res.status(400).json({ error: 'Failed to extract text from PDF resume. Ensure the PDF is not empty or scanned image-only.', details: pdfErr.message });
     }
 
-    // 3. Convert extracted text into vector embeddings
-    console.log('🤖 Generating resume embeddings via Hugging Face all-mpnet-base-v2...');
-    let embeddings = [];
-    try {
-      embeddings = await getResumeEmbeddings(resumeText);
-    } catch (embedErr) {
-      console.warn('⚠️ Resume embedding generation failed. Using zero-vector fallback:', embedErr.message);
-      embeddings = new Array(768).fill(0.0);
-    }
-
-    // 4. Classify Career Domains using Zero-Shot classification
-    console.log('🤖 Performing zero-shot career classification via Hugging Face BART Large MNLI...');
+    // 3. Use Gemini API for resume analysis and career matching
+    console.log('🤖 Analyzing resume with Gemini AI...');
+    let insights = { skills: [], certifications: [], growth_suggestions: '', education: '', strengths: [] };
     let careerScores = {};
+
     try {
-      careerScores = await classifyResumeText(resumeText, allCareers);
-    } catch (classErr) {
-      console.warn('⚠️ Zero-shot career classification failed. Using uniform fallback scores:', classErr.message);
-      allCareers.forEach(c => {
-        careerScores[c.name] = 50;
-      });
+      const ai = getGeminiAI();
+      if (ai) {
+        const maxKeyAttempts = 5;
+        let geminiSuccess = false;
+
+        for (let keyAttempt = 0; keyAttempt < maxKeyAttempts && !geminiSuccess; keyAttempt++) {
+          const currentAI = keyAttempt === 0 ? ai : getGeminiAI();
+          if (!currentAI) break;
+          const model = currentAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+
+          const prompt = `
+          Analyze this resume and provide structured insights. Return ONLY valid JSON.
+          
+          Resume Text:
+          ${resumeText.substring(0, 3000)}
+          
+          Available Career Domains: ${allCareers.map(c => c.name).join(', ')}
+          
+          Return a JSON object with this exact structure:
+          {
+            "skills": ["skill1", "skill2", ...],
+            "certifications": ["cert1", ...],
+            "education": "detected education level",
+            "strengths": ["strength1", "strength2", ...],
+            "growth_suggestions": "2-3 sentences about strengths and recommendations",
+            "careerScores": {
+              "Career Name 1": 85,
+              "Career Name 2": 72
+            }
+          }
+        `;
+
+          try {
+            const result = await model.generateContent(prompt);
+            const response = await result.response;
+            const text = response.text();
+            
+            // Parse JSON from response
+            const jsonMatch = text.match(/```(?:json)?\n([\s\S]*?)\n```/) || text.match(/(\{[\s\S]*\})/);
+            const jsonStr = jsonMatch ? jsonMatch[1] : text;
+            const geminiResponse = JSON.parse(jsonStr);
+            
+            insights = {
+              skills: geminiResponse.skills || [],
+              certifications: geminiResponse.certifications || [],
+              growth_suggestions: geminiResponse.growth_suggestions || '',
+              education: geminiResponse.education || education || 'Undergrad',
+              strengths: geminiResponse.strengths || []
+            };
+            careerScores = geminiResponse.careerScores || {};
+            
+            console.log('✅ Gemini analysis complete');
+            geminiSuccess = true;
+          } catch (geminiAttemptErr) {
+            if (isRateLimitError(geminiAttemptErr)) {
+              markKeyExhausted(null, parseRetryDelay(geminiAttemptErr));
+              console.log(`🔄 Onboarding Gemini 429 — rotating to next key (attempt ${keyAttempt + 1}/${maxKeyAttempts})...`);
+              continue;
+            }
+            throw geminiAttemptErr; // non-429 error, propagate
+          }
+        }
+
+        if (!geminiSuccess) {
+          console.warn(getGeminiUnavailableMessage());
+          const hfInsights = await generateResumeInsights(resumeText, targetRole || careerGoal || 'Software Engineer');
+          insights = {
+            skills: hfInsights.skills || [],
+            certifications: hfInsights.certifications || [],
+            growth_suggestions: hfInsights.growth_suggestions || hfInsights.growthPlan || '',
+            education: education || 'Undergrad',
+            strengths: hfInsights.strengths || []
+          };
+        }
+      } else {
+        const hfInsights = await generateResumeInsights(resumeText, targetRole || careerGoal || 'Software Engineer');
+        insights = {
+          skills: hfInsights.skills || [],
+          certifications: hfInsights.certifications || [],
+          growth_suggestions: hfInsights.growth_suggestions || hfInsights.growthPlan || '',
+          education: education || 'Undergrad',
+          strengths: hfInsights.strengths || []
+        };
+      }
+    } catch (geminiErr) {
+      console.error('❌ Gemini analysis failed:', geminiErr.message);
+      return res.status(500).json({ error: 'AI resume analysis failed. Please try again.', details: geminiErr.message });
     }
+
+    // Merge manual skills from form with LLM-extracted skills
+    const finalSkillsList = Array.from(new Set([
+      ...parsedFormSkills,
+      ...(insights?.skills || [])
+    ]));
 
     // Sort to find the highest-scoring matching career
     const careerMatches = allCareers.map(c => {
@@ -181,27 +253,6 @@ router.post('/submit', protect, upload.single('resume'), async (req, res) => {
 
     const sortedCareers = [...careerMatches].sort((a, b) => b.score - a.score);
     const topCareer = sortedCareers[0] || { name: 'Software Engineer', id: allCareers[0]?.id };
-
-    // 5. Generate structured insights via Hugging Face Llama 3 8B
-    console.log(`🤖 Generating structured insights via Hugging Face Llama 3 for target career: "${topCareer.name}"...`);
-    let insights = { skills: [], certifications: [], growth_suggestions: '', education: '' };
-    try {
-      insights = await generateResumeInsights(resumeText, topCareer.name);
-    } catch (insightsErr) {
-      console.warn('⚠️ Resume insights generation failed. Using default insights:', insightsErr.message);
-      insights = {
-        skills: parsedFormSkills,
-        certifications: [],
-        growth_suggestions: 'Successfully analyzed profile. Keep learning and updating your skills.',
-        education: education || 'Undergrad'
-      };
-    }
-
-    // Merge manual skills from form with LLM-extracted skills
-    const finalSkillsList = Array.from(new Set([
-      ...parsedFormSkills,
-      ...(insights?.skills || [])
-    ]));
 
     // Group matching scores by industry
     const industryMap = {};
@@ -229,7 +280,8 @@ router.post('/submit', protect, upload.single('resume'), async (req, res) => {
     const gapSkillIds = gapSkills.map(gs => gs.id);
     const suggestedCourses = allCourses.filter(course => course && gapSkillIds.includes(course.skill_id));
 
-    // 5. Update user profile in Supabase
+    // 5. Update user profile in Supabase (persist ALL onboarding data)
+    let profileSaved = false;
     try {
       await updateUserProfile(userId, {
         education_background: insights.education || education || 'Undergrad',
@@ -237,15 +289,52 @@ router.post('/submit', protect, upload.single('resume'), async (req, res) => {
         learning_style: parsedLearningStyle,
         onboarding_completed: true,
         current_skills: finalSkillsList,
-        target_career: topCareer.name,
-        resume_embeddings: embeddings, // Save 768-dim vector embeddings
-        resume_raw_text: resumeText, // Save raw text for on-demand AI deep-dives
-        career_goal: req.body.careerGoal || req.body.career_goal || '',
-        years_experience: req.body.yearsExperience || req.body.years_experience || 'Beginner',
-        availability: req.body.availability || ''
+        interests: parsedInterests,
+        strengths: insights.strengths || [],
+        target_career: targetRole || topCareer.name,
+        salary_goal: salaryExpectation || '₹15L+',
+        career_goal: careerGoal || '',
+        institution_name: institutionName || '',
+        graduation_year: graduationYear || '',
+        wants_certifications: wantsCertifications === true,
+        resume_raw_text: resumeText,
+        years_experience: yearsExperience || 'Beginner',
+        availability: availability || '',
+        study_hours_per_week: studyHoursPerWeek
       });
+      profileSaved = true;
     } catch (profileErr) {
       console.warn('⚠️ Supabase profile update failed during onboarding:', profileErr.message);
+    }
+
+    // 5a. CRITICAL: Ensure onboarding_completed flag is set even if full profile update failed
+    if (!profileSaved) {
+      try {
+        await updateUserProfile(userId, { onboarding_completed: true });
+        console.log('✅ onboarding_completed flag saved via fallback');
+      } catch (flagErr) {
+        console.error('❌ CRITICAL: Failed to save onboarding_completed flag:', flagErr.message);
+        // Return error — onboarding cannot be considered complete without this flag
+        return res.status(500).json({ 
+          error: 'Failed to save onboarding status. Please ensure database migrations are up to date.',
+          details: flagErr.message 
+        });
+      }
+    }
+
+    // 5b. Save resume analysis to dedicated table
+    try {
+      await saveResumeAnalysis(userId, {
+        skills: insights.skills || [],
+        certifications: insights.certifications || [],
+        education: insights.education || '',
+        strengths: insights.strengths || [],
+        careerScores,
+        growth_suggestions: insights.growth_suggestions || '',
+        raw_resume_text: resumeText
+      });
+    } catch (raErr) {
+      console.warn('⚠️ Failed to save resume analysis:', raErr.message);
     }
 
     // 6. Save AI recommendations in recommendations table
@@ -257,14 +346,11 @@ router.post('/submit', protect, upload.single('resume'), async (req, res) => {
       certifications: insights.certifications || [],
       growth_suggestions: insights.growth_suggestions || ''
     };
-    
-    // Cache inside memory
-    recommendationsCache.set(userId, recPayload);
 
     try {
       await upsertUserRecommendations(userId, recPayload);
     } catch (recErr) {
-      console.warn('⚠️ Supabase recommendations upsert failed. Saved to in-memory fallback:', recErr.message);
+      console.warn('⚠️ Supabase recommendations upsert failed:', recErr.message);
     }
 
     res.json({
@@ -291,47 +377,7 @@ router.get('/recommendations', protect, async (req, res) => {
     try {
       recommendations = await getUserRecommendations(userId);
     } catch (dbErr) {
-      console.warn('⚠️ Failed to fetch recommendations from Supabase, checking memory cache:', dbErr.message);
-    }
-    
-    if (!recommendations) {
-      recommendations = recommendationsCache.get(userId);
-    }
-    
-    // ── Fallback: synthesize from user_profiles when no recommendations row exists ──
-    if (!recommendations) {
-      try {
-        const profile = await getUserProfile(userId);
-        if (profile && profile.onboarding_completed) {
-          console.log('ℹ️ No user_recommendations record found; synthesizing from user_profiles for user:', userId);
-
-          // Fetch all careers to find the target career id
-          let allCareers = [];
-          try { allCareers = (await getAllCategories()) || []; } catch (_) {}
-
-          const targetCareer = allCareers.find(c =>
-            c.name.toLowerCase() === (profile.target_career || '').toLowerCase()
-          );
-
-          // Build matched domains from target career industry
-          const targetIndustry = targetCareer ? getIndustryForCareerName(targetCareer.name) : 'Technology';
-          const matchedDomains = [
-            { name: targetIndustry, score: 75 },
-            { name: 'Technology', score: 60 }
-          ].filter((d, i, arr) => arr.findIndex(x => x.name === d.name) === i);
-
-          recommendations = {
-            matched_domains: matchedDomains,
-            suggested_career_paths: targetCareer ? [targetCareer.id] : [],
-            recommended_skills: [],
-            recommended_courses: [],
-            certifications: [],
-            growth_suggestions: `Your profile is set up for ${profile.target_career || 'your target career'}. Keep building your skills and exploring recommended courses.`
-          };
-        }
-      } catch (profileErr) {
-        console.warn('⚠️ Failed to read user_profiles for fallback recommendations:', profileErr.message);
-      }
+      console.warn('⚠️ Failed to fetch recommendations from Supabase:', dbErr.message);
     }
 
     if (!recommendations) {
@@ -347,23 +393,8 @@ router.get('/recommendations', protect, async (req, res) => {
       allSkills = (await getAllSkills()) || [];
       allCourses = (await getAllCourses()) || [];
     } catch (dbErr) {
-      console.warn('⚠️ Failed to fetch detail baseline data from Supabase, using defaults:', dbErr.message);
-      allCareers = [
-        { id: 'b3a985d8-c923-42bf-be0d-6e828d11634b', name: 'Software Engineer', description: 'Develop and maintain software applications and websites.', growth_rate: '28%', salary_range: '₹8L – ₹25L' },
-        { id: 'd5084920-5c69-42b7-bdc1-4874e0d9b4bf', name: 'Data Scientist', description: 'Analyze complex data and build Machine Learning models.', growth_rate: '36%', salary_range: '₹10L – ₹30L' },
-        { id: 'a1288c80-60b6-4b8c-85a2-3f8c8d8b1bfb', name: 'UX Designer', description: 'Create intuitive and user-friendly digital designs.', growth_rate: '22%', salary_range: '₹6L – ₹18L' }
-      ];
-      allSkills = [
-        { id: 'c7078e8e-d9c1-4b13-911e-0899f8d1634b', career_id: 'b3a985d8-c923-42bf-be0d-6e828d11634b', name: 'JavaScript' },
-        { id: 'a9386d4d-cc8b-4a5f-be03-7cf8e02ab3bf', career_id: 'b3a985d8-c923-42bf-be0d-6e828d11634b', name: 'React' },
-        { id: 'b0849d92-23c7-493d-bd88-6927e0293dbf', career_id: 'b3a985d8-c923-42bf-be0d-6e828d11634b', name: 'Node.js' },
-        { id: 'd1193d20-80c1-4f80-bdc2-7cb8e293dbef', career_id: 'd5084920-5c69-42b7-bdc1-4874e0d9b4bf', name: 'Python' },
-        { id: 'e3984d93-3d02-402f-bc22-8dcb9283dbdf', career_id: 'd5084920-5c69-42b7-bdc1-4874e0d9b4bf', name: 'Machine Learning' }
-      ];
-      allCourses = [
-        { id: 'course-js-1', skill_id: 'c7078e8e-d9c1-4b13-911e-0899f8d1634b', name: 'JavaScript: The Advanced Concepts', provider: 'Udemy' },
-        { id: 'course-py-1', skill_id: 'd1193d20-80c1-4f80-bdc2-7cb8e293dbef', name: 'Python for Everybody Specialization', provider: 'Coursera' }
-      ];
+      console.error('❌ Failed to fetch baseline data:', dbErr.message);
+      return res.status(500).json({ error: 'Failed to fetch career data.' });
     }
 
     // Map career path details
@@ -421,8 +452,9 @@ router.get('/status', protect, async (req, res) => {
     const status = await getOnboardingStatus(userId);
     res.json({ completed: status });
   } catch (err) {
-    console.warn('⚠️ Failed to check onboarding status:', err.message);
-    res.json({ completed: false });
+    console.error('❌ Failed to check onboarding status:', err.message);
+    // Return 500 instead of { completed: false } to prevent false redirects to onboarding
+    res.status(500).json({ error: 'Failed to check onboarding status', details: err.message });
   }
 });
 

@@ -1,46 +1,52 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
-
-let genAI = null;
-if (process.env.GEMINI_API_KEY) {
-  genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-}
+import { getGeminiAI, markKeyExhausted, isRateLimitError, parseRetryDelay } from './geminiKeyManager.js';
 
 /**
  * Standardize prompt querying for structured JSON data.
+ * Supports multiple GEMINI_API_KEY rotation on 429 rate limits.
  */
 async function generateJSON(prompt, systemInstruction) {
-  if (!genAI) {
+  const ai = getGeminiAI();
+  if (!ai) {
     throw new Error('GEMINI_API_KEY is not configured on the server.');
   }
 
   const modelsToTry = [
-    'gemini-1.5-flash-latest',
-    'gemini-1.5-flash',
+    'gemini-2.5-flash',
     'gemini-2.0-flash',
-    'gemini-pro',
-    'gemini-1.0-pro'
+    'gemini-flash-latest',
   ];
   let lastError;
+  const maxKeyAttempts = 5;
 
-  for (const modelName of modelsToTry) {
-    try {
-      console.log(`🤖 Attempting Generative AI query using model: "${modelName}"...`);
-      const model = genAI.getGenerativeModel({
-        model: modelName,
-        systemInstruction: systemInstruction,
-        generationConfig: { responseMimeType: 'application/json' },
-      });
+  for (let keyAttempt = 0; keyAttempt < maxKeyAttempts; keyAttempt++) {
+    const currentAI = keyAttempt === 0 ? ai : getGeminiAI();
+    if (!currentAI) break;
 
-      const result = await model.generateContent(prompt);
-      const text = result.response.text();
-      return JSON.parse(text);
-    } catch (error) {
-      console.warn(`⚠️ Model "${modelName}" failed. Error:`, error.message || error);
-      lastError = error;
+    for (const modelName of modelsToTry) {
+      try {
+        console.log(`🤖 Attempting Generative AI query using model: "${modelName}"...`);
+        const model = currentAI.getGenerativeModel({
+          model: modelName,
+          systemInstruction: systemInstruction,
+          generationConfig: { responseMimeType: 'application/json' },
+        });
+
+        const result = await model.generateContent(prompt);
+        const text = result.response.text();
+        return JSON.parse(text);
+      } catch (error) {
+        if (isRateLimitError(error)) {
+          markKeyExhausted(null, parseRetryDelay(error));
+          console.log(`🔄 Gemini 429 — rotating to next key (attempt ${keyAttempt + 1}/${maxKeyAttempts})...`);
+          break; // break model loop, try next key
+        }
+        console.warn(`⚠️ Model "${modelName}" failed. Error:`, error.message || error);
+        lastError = error;
+      }
     }
   }
 
-  throw lastError;
+  throw lastError || new Error('All Gemini API keys exhausted.');
 }
 
 /**

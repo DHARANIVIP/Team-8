@@ -1,5 +1,6 @@
 import express from 'express';
-import { getAllCategories, getCategoryById, createCategory, syncCareerCache, getPersonalizedCareerData, toggleSavedCareer, getCareerDeepDiveInsights } from '../services/supabaseService.js';
+import { getAllCategories, getCategoryById, createCategory, syncCareerCache, getPersonalizedCareerData, toggleSavedCareer, getCareerDeepDiveInsights, getUserProfile, findOrCreateCareerByName, saveCareerRecommendation } from '../services/supabaseService.js';
+import { generateCareerRecommendationsFromProfile } from '../services/openapiService.js';
 import { getIndustryNews } from '../services/industryService.js';
 import { protect } from '../middleware/auth.js';
 
@@ -80,6 +81,109 @@ router.post('/:id/toggle-save', protect, async (req, res) => {
   } catch (error) {
     console.error('❌ Toggle saved career failed:', error.message);
     res.status(500).json({ error: 'Failed to toggle bookmark status', details: error.message });
+  }
+});
+
+/**
+ * POST /api/categories/recommendation
+ * Generate live AI career recommendations for the authenticated user.
+ */
+router.post('/recommendation', protect, async (req, res) => {
+  try {
+    const userId = req.user?.userId || req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized user profile access' });
+    }
+
+    const profile = await getUserProfile(userId);
+    if (!profile) {
+      return res.status(404).json({ error: 'User profile not found' });
+    }
+
+    let careers = [];
+    try {
+      careers = await getAllCategories();
+    } catch (loadError) {
+      console.warn('⚠️ Failed to load careers from DB, using standard fallback list:', loadError.message || loadError);
+      careers = STANDARD_CAREERS.map((name) => ({ id: null, name, description: `${name} career path`, salary_range: '₹8L – ₹22L', growth_rate: '25%', demand_level: 'High' }));
+    }
+
+    if (!careers || careers.length === 0) {
+      careers = STANDARD_CAREERS.map((name) => ({ id: null, name, description: `${name} career path`, salary_range: '₹8L – ₹22L', growth_rate: '25%', demand_level: 'High' }));
+    }
+
+    let aiRecommendations = [];
+    try {
+      aiRecommendations = await generateCareerRecommendationsFromProfile(profile, careers);
+    } catch (aiError) {
+      console.error('⚠️ AI recommendation generation failed, using fallback:', aiError.message || aiError);
+      aiRecommendations = [];
+    }
+
+    if (!Array.isArray(aiRecommendations) || aiRecommendations.length === 0) {
+      console.warn('⚠️ AI did not return structured recommendations, using fallback career list.');
+      aiRecommendations = careers.slice(0, 3).map((career) => ({
+        career_name: career.name,
+        match_percentage: 70,
+        reason: `Fallback career recommendation for ${career.name} based on available career data.`,
+        recommended_skills: [],
+        missing_skills: []
+      }));
+    }
+
+    const normalizeName = (value) => {
+      if (!value) return '';
+      return value.toString().trim().toLowerCase().replace(/[^a-z0-9]+/g, '');
+    };
+
+    const savedRecommendations = [];
+    const topMatches = aiRecommendations
+      .map((rec) => {
+        const careerName = (rec.career_name || rec.name || '').trim();
+        const normalizedTarget = normalizeName(careerName);
+        const careerMatch = careers.find((c) => normalizeName(c.name) === normalizedTarget)
+          || careers.find((c) => normalizeName(c.name).includes(normalizedTarget))
+          || careers.find((c) => normalizedTarget.includes(normalizeName(c.name)));
+
+        return {
+          careerName: careerName || careerMatch?.name || 'Career Role',
+          career: careerMatch || null,
+          match_percentage: Number(rec.match_percentage || rec.matchPercentage || 65),
+          reason: rec.reason || rec.explanation || 'Strong match based on your onboarding profile.',
+          recommended_skills: Array.isArray(rec.recommended_skills) ? rec.recommended_skills : [],
+          missing_skills: Array.isArray(rec.missing_skills) ? rec.missing_skills : [],
+        };
+      })
+      .filter((rec) => !!rec.careerName)
+      .slice(0, 5);
+
+    for (const recommendation of topMatches) {
+      const careerName = recommendation.careerName;
+      let careersRecordId = recommendation.career?.id || null;
+      let careerRecordName = recommendation.career?.name || careerName;
+
+      if (recommendation.career && careersRecordId) {
+        try {
+          await saveCareerRecommendation(userId, careersRecordId, recommendation.match_percentage, recommendation.reason);
+        } catch (saveError) {
+          console.warn(`⚠️ Failed to persist career recommendation for ${careerName}:`, saveError.message || saveError);
+        }
+      }
+
+      savedRecommendations.push({
+        career_id: careersRecordId,
+        career_name: careerRecordName,
+        match_percentage: recommendation.match_percentage ?? 65,
+        reason: recommendation.reason || 'Recommended based on your learning profile.',
+        recommended_skills: recommendation.recommended_skills || [],
+        missing_skills: recommendation.missing_skills || [],
+      });
+    }
+
+    res.json({ recommendations: savedRecommendations });
+  } catch (error) {
+    console.error('❌ Career recommendation generation failed:', error.message || error);
+    res.status(500).json({ error: 'Failed to generate career recommendations', details: error.message || error });
   }
 });
 
