@@ -5,72 +5,7 @@ import Link from 'next/link';
 import { forgetPassword } from '@/lib/services/auth-service';
 
 function MatrixBackground() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    let intervalId: NodeJS.Timeout;
-    
-    const resizeCanvas = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    };
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
-
-    const charArr = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝ'.split('');
-    const fontSize = 14;
-    const columns = Math.floor(canvas.width / fontSize) + 1;
-    const drops: number[] = Array(columns).fill(1);
-
-    const draw = () => {
-      ctx.fillStyle = 'rgba(10, 10, 10, 0.1)';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      ctx.fillStyle = 'rgba(255, 158, 66, 0.15)'; // Mild orange matrix code rain
-      ctx.font = `${fontSize}px monospace`;
-
-      for (let i = 0; i < drops.length; i++) {
-        const text = charArr[Math.floor(Math.random() * charArr.length)];
-        const x = i * fontSize;
-        const y = drops[i] * fontSize;
-
-        ctx.fillText(text, x, y);
-
-        if (y > canvas.height && Math.random() > 0.975) {
-          drops[i] = 0;
-        }
-        drops[i]++;
-      }
-    };
-
-    intervalId = setInterval(draw, 33);
-
-    return () => {
-      clearInterval(intervalId);
-      window.removeEventListener('resize', resizeCanvas);
-    };
-  }, []);
-
-  return (
-    <canvas
-      ref={canvasRef}
-      style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        zIndex: 0,
-        pointerEvents: 'none',
-        opacity: 0.8,
-      }}
-    />
-  );
+  return null;
 }
 
 export default function ForgetPasswordPage() {
@@ -132,22 +67,22 @@ export default function ForgetPasswordPage() {
           pointerEvents: toastVisible ? 'auto' : 'none',
         }}>
           <div style={{
-            background: '#fefce8',
-            border: '2px solid var(--accent)',
-            borderRadius: '8px',
+            background: 'var(--color-bg-card)',
+            border: '1px solid var(--color-border-card)',
+            borderRadius: 'var(--radius-card)',
             padding: '16px 20px',
             minWidth: '300px',
             maxWidth: '380px',
-            boxShadow: '0 8px 32px rgba(255, 158, 66, 0.25), 0 4px 12px rgba(0,0,0,0.3)',
+            boxShadow: 'var(--shadow-card-hover)',
             display: 'flex',
             alignItems: 'flex-start',
             gap: '12px',
           }}>
             <div style={{ flex: 1 }}>
-              <p style={{ color: '#1a1a1a', fontWeight: 700, fontSize: '15px', marginBottom: '4px', fontFamily: 'Seoul Namsan, Seoul Hangang, Seoul, sans-serif' }}>
+              <p style={{ color: 'var(--color-text-primary)', fontWeight: 700, fontSize: '15px', marginBottom: '4px', fontFamily: 'Seoul Namsan, Seoul Hangang, Seoul, sans-serif' }}>
                 Reset link sent!
               </p>
-              <p style={{ color: '#4a4a4a', fontSize: '13px', fontFamily: 'Seoul Namsan, Seoul Hangang, Seoul, sans-serif' }}>
+              <p style={{ color: 'var(--color-text-secondary)', fontSize: '13px', fontFamily: 'Seoul Namsan, Seoul Hangang, Seoul, sans-serif' }}>
                 Check your email for the password reset link.
               </p>
             </div>
@@ -155,8 +90,8 @@ export default function ForgetPasswordPage() {
               onClick={dismissToast}
               style={{
                 background: 'transparent',
-                border: '1px solid #d4d4d4',
-                color: '#666',
+                border: '1px solid var(--color-border-medium)',
+                color: 'var(--color-text-muted)',
                 width: '24px',
                 height: '24px',
                 display: 'flex',
@@ -165,7 +100,7 @@ export default function ForgetPasswordPage() {
                 cursor: 'pointer',
                 fontSize: '13px',
                 fontWeight: 700,
-                borderRadius: '4px',
+                borderRadius: '6px',
                 flexShrink: 0,
                 padding: 0,
               }}
@@ -191,21 +126,20 @@ export default function ForgetPasswordPage() {
       <MatrixBackground />
 
       <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
-        <div className="auth-card animate-fade-in" style={{ borderRadius: '0px', border: '1px solid rgba(255, 158, 66, 0.15)', background: 'var(--surface)' }}>
+        <div className="auth-card animate-fade-in" style={{ borderRadius: 'var(--radius-card)', border: '1px solid var(--color-border-card)', background: 'var(--color-bg-card)' }}>
           <h1 style={{
-            color: '#ffffff',
+            color: 'var(--color-text-primary)',
             fontSize: '20px',
             fontWeight: 800,
             marginBottom: '10px',
             textAlign: 'center',
-            letterSpacing: '0.5px',
-            textShadow: '0 0 8px rgba(255, 158, 66, 0.25)'
+            letterSpacing: '0.5px'
           }}>
             Reset password
           </h1>
 
           <p style={{
-            color: 'var(--text-secondary)',
+            color: 'var(--color-text-secondary)',
             fontSize: '13px',
             textAlign: 'center',
             lineHeight: '1.5',
@@ -216,10 +150,10 @@ export default function ForgetPasswordPage() {
 
           {error && (
             <div style={{
-              background: 'rgba(239, 68, 68, 0.08)',
-              border: '1px solid rgba(239, 68, 68, 0.3)',
-              borderRadius: '0px',
-              color: '#ef4444',
+              background: '#FEE2E2',
+              border: '1px solid rgba(220, 38, 38, 0.25)',
+              borderRadius: '8px',
+              color: '#DC2626',
               padding: '12px',
               fontSize: '13px',
               marginBottom: '16px',
@@ -231,10 +165,10 @@ export default function ForgetPasswordPage() {
 
           {message && (
             <div style={{
-              background: 'rgba(255, 158, 66, 0.08)',
-              border: '1px solid rgba(255, 158, 66, 0.3)',
-              borderRadius: '0px',
-              color: 'var(--accent)',
+              background: '#DCFCE7',
+              border: '1px solid rgba(22, 163, 74, 0.25)',
+              borderRadius: '8px',
+              color: '#16A34A',
               padding: '12px',
               fontSize: '13px',
               marginBottom: '16px',
@@ -243,12 +177,12 @@ export default function ForgetPasswordPage() {
             }}>
               <p style={{ margin: '0 0 8px 0' }}>{message}</p>
               {resetToken && (
-                <div style={{ borderTop: '1px solid rgba(255, 158, 66, 0.15)', paddingTop: '8px', marginTop: '8px' }}>
-                  <p style={{ color: 'var(--text-muted)', fontSize: '11px', margin: '4px 0' }}>Development Mode Reset Link:</p>
+                <div style={{ borderTop: '1px solid rgba(22, 163, 74, 0.15)', paddingTop: '8px', marginTop: '8px' }}>
+                  <p style={{ color: 'var(--color-text-muted)', fontSize: '11px', margin: '4px 0' }}>Development Mode Reset Link:</p>
                   <Link
                     href={`/reset-password?token=${resetToken}`}
                     style={{
-                      color: 'var(--accent)',
+                      color: 'var(--color-primary)',
                       textDecoration: 'underline',
                       fontWeight: 'bold',
                       fontSize: '12px',
@@ -281,9 +215,9 @@ export default function ForgetPasswordPage() {
                   required
                   style={{
                     paddingLeft: '40px',
-                    borderRadius: '0px',
-                    border: '1px solid rgba(255, 158, 66, 0.3)',
-                    background: 'rgba(10, 10, 10, 0.7)'
+                    borderRadius: '8px',
+                    border: '1px solid var(--color-input-border)',
+                    background: 'var(--color-input-bg)'
                   }}
                 />
               </div>
@@ -302,7 +236,7 @@ export default function ForgetPasswordPage() {
                 textTransform: 'uppercase',
                 letterSpacing: '0.05em',
                 padding: '12px',
-                borderRadius: '0px',
+                borderRadius: '8px',
                 border: 'none',
                 cursor: loading ? 'not-allowed' : 'pointer',
                 marginBottom: '20px'
@@ -313,7 +247,7 @@ export default function ForgetPasswordPage() {
           </form>
 
           <div style={{ textAlign: 'center' }}>
-            <Link href="/login" style={{ color: 'var(--accent)', fontSize: '13px', textDecoration: 'none', fontWeight: 600 }}>
+            <Link href="/login" style={{ color: 'var(--color-primary)', fontSize: '13px', textDecoration: 'none', fontWeight: 600 }}>
               Back to sign in
             </Link>
           </div>

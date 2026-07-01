@@ -6,72 +6,7 @@ import { useRouter } from 'next/navigation';
 import { resetPassword } from '@/lib/services/auth-service';
 
 function MatrixBackground() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    let intervalId: NodeJS.Timeout;
-    
-    const resizeCanvas = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    };
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
-
-    const charArr = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝ'.split('');
-    const fontSize = 14;
-    const columns = Math.floor(canvas.width / fontSize) + 1;
-    const drops: number[] = Array(columns).fill(1);
-
-    const draw = () => {
-      ctx.fillStyle = 'rgba(10, 10, 10, 0.1)';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      ctx.fillStyle = 'rgba(255, 158, 66, 0.15)'; // Mild orange matrix code rain
-      ctx.font = `${fontSize}px monospace`;
-
-      for (let i = 0; i < drops.length; i++) {
-        const text = charArr[Math.floor(Math.random() * charArr.length)];
-        const x = i * fontSize;
-        const y = drops[i] * fontSize;
-
-        ctx.fillText(text, x, y);
-
-        if (y > canvas.height && Math.random() > 0.975) {
-          drops[i] = 0;
-        }
-        drops[i]++;
-      }
-    };
-
-    intervalId = setInterval(draw, 33);
-
-    return () => {
-      clearInterval(intervalId);
-      window.removeEventListener('resize', resizeCanvas);
-    };
-  }, []);
-
-  return (
-    <canvas
-      ref={canvasRef}
-      style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        zIndex: 0,
-        pointerEvents: 'none',
-        opacity: 0.8,
-      }}
-    />
-  );
+  return null;
 }
 
 export default function ResetPasswordPage() {
@@ -147,22 +82,22 @@ export default function ResetPasswordPage() {
           pointerEvents: toastVisible ? 'auto' : 'none',
         }}>
           <div style={{
-            background: '#fefce8',
-            border: '2px solid var(--accent)',
-            borderRadius: '8px',
+            background: 'var(--color-bg-card)',
+            border: '1px solid var(--color-border-card)',
+            borderRadius: 'var(--radius-card)',
             padding: '16px 20px',
             minWidth: '300px',
             maxWidth: '380px',
-            boxShadow: '0 8px 32px rgba(255, 158, 66, 0.25), 0 4px 12px rgba(0,0,0,0.3)',
+            boxShadow: 'var(--shadow-card-hover)',
             display: 'flex',
             alignItems: 'flex-start',
             gap: '12px',
           }}>
             <div style={{ flex: 1 }}>
-              <p style={{ color: '#1a1a1a', fontWeight: 700, fontSize: '15px', marginBottom: '4px', fontFamily: 'Seoul Namsan, Seoul Hangang, Seoul, sans-serif' }}>
+              <p style={{ color: 'var(--color-text-primary)', fontWeight: 700, fontSize: '15px', marginBottom: '4px', fontFamily: 'Seoul Namsan, Seoul Hangang, Seoul, sans-serif' }}>
                 Password reset successfully!
               </p>
-              <p style={{ color: '#4a4a4a', fontSize: '13px', fontFamily: 'Seoul Namsan, Seoul Hangang, Seoul, sans-serif' }}>
+              <p style={{ color: 'var(--color-text-secondary)', fontSize: '13px', fontFamily: 'Seoul Namsan, Seoul Hangang, Seoul, sans-serif' }}>
                 Redirecting you to sign in...
               </p>
             </div>
@@ -170,8 +105,8 @@ export default function ResetPasswordPage() {
               onClick={dismissToast}
               style={{
                 background: 'transparent',
-                border: '1px solid #d4d4d4',
-                color: '#666',
+                border: '1px solid var(--color-border-medium)',
+                color: 'var(--color-text-muted)',
                 width: '24px',
                 height: '24px',
                 display: 'flex',
@@ -180,7 +115,7 @@ export default function ResetPasswordPage() {
                 cursor: 'pointer',
                 fontSize: '13px',
                 fontWeight: 700,
-                borderRadius: '4px',
+                borderRadius: '6px',
                 flexShrink: 0,
                 padding: 0,
               }}
@@ -206,21 +141,20 @@ export default function ResetPasswordPage() {
       <MatrixBackground />
 
       <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
-        <div className="auth-card animate-fade-in" style={{ borderRadius: '0px', border: '1px solid rgba(255, 158, 66, 0.15)', background: 'var(--surface)' }}>
+        <div className="auth-card animate-fade-in" style={{ borderRadius: 'var(--radius-card)', border: '1px solid var(--color-border-card)', background: 'var(--color-bg-card)' }}>
           <h1 style={{
-            color: '#ffffff',
+            color: 'var(--color-text-primary)',
             fontSize: '20px',
             fontWeight: 800,
             marginBottom: '10px',
             textAlign: 'center',
-            letterSpacing: '0.5px',
-            textShadow: '0 0 8px rgba(255, 158, 66, 0.25)'
+            letterSpacing: '0.5px'
           }}>
             New password
           </h1>
 
           <p style={{
-            color: 'var(--text-secondary)',
+            color: 'var(--color-text-secondary)',
             fontSize: '13px',
             textAlign: 'center',
             lineHeight: '1.5',
@@ -231,10 +165,10 @@ export default function ResetPasswordPage() {
 
           {error && (
             <div style={{
-              background: 'rgba(239, 68, 68, 0.08)',
-              border: '1px solid rgba(239, 68, 68, 0.3)',
-              borderRadius: '0px',
-              color: '#ef4444',
+              background: '#FEE2E2',
+              border: '1px solid rgba(220, 38, 38, 0.25)',
+              borderRadius: '8px',
+              color: '#DC2626',
               padding: '12px',
               fontSize: '13px',
               marginBottom: '16px',
@@ -263,9 +197,9 @@ export default function ResetPasswordPage() {
                   required
                   style={{
                     paddingLeft: '40px',
-                    borderRadius: '0px',
-                    border: '1px solid rgba(255, 158, 66, 0.3)',
-                    background: 'rgba(10, 10, 10, 0.7)'
+                    borderRadius: '8px',
+                    border: '1px solid var(--color-input-border)',
+                    background: 'var(--color-input-bg)'
                   }}
                 />
               </div>
@@ -289,9 +223,9 @@ export default function ResetPasswordPage() {
                   required
                   style={{
                     paddingLeft: '40px',
-                    borderRadius: '0px',
-                    border: '1px solid rgba(255, 158, 66, 0.3)',
-                    background: 'rgba(10, 10, 10, 0.7)'
+                    borderRadius: '8px',
+                    border: '1px solid var(--color-input-border)',
+                    background: 'var(--color-input-bg)'
                   }}
                 />
               </div>
@@ -310,7 +244,7 @@ export default function ResetPasswordPage() {
                 textTransform: 'uppercase',
                 letterSpacing: '0.05em',
                 padding: '12px',
-                borderRadius: '0px',
+                borderRadius: '8px',
                 border: 'none',
                 cursor: loading ? 'not-allowed' : 'pointer',
                 marginBottom: '20px'
@@ -321,7 +255,7 @@ export default function ResetPasswordPage() {
           </form>
 
           <div style={{ textAlign: 'center' }}>
-            <Link href="/login" style={{ color: 'var(--accent)', fontSize: '13px', textDecoration: 'none', fontWeight: 600 }}>
+            <Link href="/login" style={{ color: 'var(--color-primary)', fontSize: '13px', textDecoration: 'none', fontWeight: 600 }}>
               Back to sign in
             </Link>
           </div>

@@ -83,45 +83,45 @@ function buildCareerPrompt(userProfile, allCareers) {
     demand_level: c.demand_level
   }));
 
-  return `You are an expert career guidance counselor. Analyze this student's COMPLETE profile — not just their degree — and match them against available careers. A student may have studied in one field but want to build a career in another. Consider their interests, goals, skills, resume, and experience holistically. Return ONLY valid JSON.
+  return `You are an expert career guidance counselor. Analyze this student's COMPLETE profile — not just their degree — and recommend the most suitable industry-standard career paths (top 3-5 roles) that match their background, skills, and goals.
 
-Student Profile:
-- Current Skills: ${JSON.stringify(userProfile.current_skills || [])}
-- Education: ${userProfile.education_background || 'Not specified'}
-- Major: ${userProfile.major_stream || 'Not specified'}
-- Target Career: ${userProfile.target_career || 'Not specified'}
-- Career Goal: ${userProfile.career_goal || 'Not specified'}
-- Experience Level: ${userProfile.years_experience || 'Not specified'}
-- Interests: ${JSON.stringify(userProfile.interests || [])}
-- Strengths: ${JSON.stringify(userProfile.strengths || [])}
-- Learning Style: ${JSON.stringify(userProfile.learning_style || [])}
-- Resume Summary: ${(userProfile.resume_raw_text || '').substring(0, 800)}
+  You are NOT constrained to the pre-existing list of careers below. If the student has a background in another field (e.g. Mechanical Engineering, Finance, Biotech, etc.), suggest the most accurate roles for that field (e.g. "Mechanical Engineer", "CAD Designer", "Robotics Engineer") rather than forcing them into technology/software paths.
 
-Available Careers:
-${JSON.stringify(careersSummary, null, 2)}
+  Student Profile:
+  - Current Skills: ${JSON.stringify(userProfile.current_skills || [])}
+  - Education: ${userProfile.education_background || 'Not specified'}
+  - Major: ${userProfile.major_stream || 'Not specified'}
+  - Target Career: ${userProfile.target_career || 'Not specified'}
+  - Career Goal: ${userProfile.career_goal || 'Not specified'}
+  - Experience Level: ${userProfile.years_experience || 'Not specified'}
+  - Interests: ${JSON.stringify(userProfile.interests || [])}
+  - Strengths: ${JSON.stringify(userProfile.strengths || [])}
+  - Learning Style: ${JSON.stringify(userProfile.learning_style || [])}
+  - Resume Summary: ${(userProfile.resume_raw_text || '').substring(0, 800)}
 
-Return a JSON array of the top 3-5 career recommendations sorted by best match. Each recommendation must have this exact structure:
-[
-  {
-    "careerId": "career-uuid-from-available-list",
-    "careerName": "Career Name",
-    "matchPercentage": 85,
-    "reason": "2-3 sentence explanation why this role matches the student's complete profile (skills, interests, goals, resume)",
-    "strengths": ["skill1", "skill2"],
-    "missingSkills": ["skill3", "skill4"],
-    "salaryRange": "Rs X - Rs Y",
-    "demandLevel": "Low|Medium|High|Very High",
-    "growthRate": "X%"
-  }
-]
+  Existing Careers (for reference only):
+  ${JSON.stringify(careersSummary, null, 2)}
 
-Ensure:
-- matchPercentage is between 0-100
-- careerId matches one from the available careers list
-- strengths are skills the user already has
-- missingSkills are skills they need to develop
-- Recommendations are based on the FULL profile, not just education
-- Return ONLY the JSON array, no markdown or explanation`;
+  Return a JSON array of the top 3-5 career recommendations sorted by best match. Each recommendation must have this exact structure:
+  [
+    {
+      "careerName": "Career Name (e.g. 'Mechanical Engineer', 'Software Engineer')",
+      "matchPercentage": 85,
+      "reason": "2-3 sentence explanation why this role matches the student's complete profile (skills, interests, goals, resume)",
+      "strengths": ["skill1", "skill2"],
+      "missingSkills": ["skill3", "skill4"],
+      "salaryRange": "Rs X - Rs Y",
+      "demandLevel": "Low|Medium|High|Very High",
+      "growthRate": "X%"
+    }
+  ]
+
+  Ensure:
+  - matchPercentage is between 0-100
+  - strengths are skills the user already has
+  - missingSkills are skills they need to develop
+  - Recommendations are based on the FULL profile, not just education
+  - Return ONLY the JSON array, no markdown or explanation`;
 }
 
 /**

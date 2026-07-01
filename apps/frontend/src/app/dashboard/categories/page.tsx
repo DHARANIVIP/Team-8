@@ -243,17 +243,17 @@ export default function CategoriesPage() {
   };
 
   return (
-    <div style={{ background:'#0a0a0a', minHeight:'100vh' }}>
+    <div style={{ background:'var(--color-bg-main)', minHeight:'100vh' }}>
       <DashboardNavbar />
       <main className="page-container animate-slide-up" style={{ padding:'24px 0', maxWidth: '1100px', margin: '0 auto' }}>
         {/* ── Header ── */}
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          paddingBottom: '20px', borderBottom: '1px solid rgba(255, 158, 66, 0.15)', marginBottom: '24px'
+          paddingBottom: '20px', borderBottom: '1px solid var(--color-border-light)', marginBottom: '24px'
         }}>
           <div>
             <span className="section-label" style={{ display: 'block', marginBottom: '2px' }}>CAREER CATEGORIES</span>
-            <h1 style={{ color: '#ffffff', fontWeight: 700, fontSize: '24px', margin: 0, letterSpacing: '0.5px', fontFamily: 'Outfit, sans-serif' }}>Explore Career Paths</h1>
+            <h1 style={{ color: 'var(--color-text-primary)', fontWeight: 700, fontSize: '24px', margin: 0, letterSpacing: '0.5px', fontFamily: 'Outfit, sans-serif' }}>Explore Career Paths</h1>
             <p style={{ color: 'var(--text-secondary)', fontSize: '13px', margin: '4px 0 0' }}>
               {liveRecommendations.length > 0
                 ? 'Your live AI career recommendations are ready.'
@@ -276,19 +276,19 @@ export default function CategoriesPage() {
 
         {/* ── AI Live Recommendation Progress ── */}
         {isGeneratingLiveRecommendations && (
-          <div style={{ marginBottom: '24px', padding: '22px', background: 'rgba(20, 20, 20, 0.85)', border: '1px solid rgba(255, 158, 66, 0.2)', borderRadius: '14px' }}>
+          <div style={{ marginBottom: '24px', padding: '22px', background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border-medium)', borderRadius: '12px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
               <div>
-                <p style={{ color: 'var(--accent)', fontSize: '12px', margin: 0, fontWeight: 700 }}>Live AI Recommendation Pipeline</p>
-                <p style={{ color: '#ffffff', fontSize: '13px', margin: '6px 0 0' }}>Delivering career matches in real time with Gemini and structured scoring.</p>
+                <p style={{ color: 'var(--color-primary)', fontSize: '12px', margin: 0, fontWeight: 700 }}>Live AI Recommendation Pipeline</p>
+                <p style={{ color: 'var(--color-text-primary)', fontSize: '13px', margin: '6px 0 0' }}>Delivering career matches in real time with Gemini and structured scoring.</p>
               </div>
-              <span style={{ color: 'var(--accent)', fontSize: '12px', fontWeight: 700 }}>{liveRecommendationStep + 1}/{liveRecommendationSteps.length}</span>
+              <span style={{ color: 'var(--color-primary)', fontSize: '12px', fontWeight: 700 }}>{liveRecommendationStep + 1}/{liveRecommendationSteps.length}</span>
             </div>
             <div style={{ display: 'grid', gap: '10px' }}>
               {liveRecommendationSteps.map((step, idx) => (
                 <div key={step} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <span style={{ width: '18px', height: '18px', borderRadius: '50%', background: idx <= liveRecommendationStep ? 'var(--accent)' : 'rgba(255,255,255,0.08)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', color: idx <= liveRecommendationStep ? '#0a0a0a' : '#999' }}>{idx + 1}</span>
-                  <span style={{ color: idx <= liveRecommendationStep ? '#ffffff' : 'var(--text-secondary)', fontSize: '12px' }}>{step}</span>
+                  <span style={{ width: '18px', height: '18px', borderRadius: '50%', background: idx <= liveRecommendationStep ? 'var(--color-primary)' : 'var(--color-border-light)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', color: idx <= liveRecommendationStep ? 'var(--color-bg-main)' : 'var(--color-text-muted)' }}>{idx + 1}</span>
+                  <span style={{ color: idx <= liveRecommendationStep ? 'var(--color-text-primary)' : 'var(--color-text-secondary)', fontSize: '12px' }}>{step}</span>
                 </div>
               ))}
             </div>
@@ -296,7 +296,7 @@ export default function CategoriesPage() {
         )}
 
         {liveRecommendationError && (
-          <div style={{ marginBottom: '24px', padding: '18px', background: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.2)', color: '#fca5a5', borderRadius: '12px' }}>
+          <div style={{ marginBottom: '24px', padding: '18px', background: '#FEE2E2', border: '1px solid rgba(220, 38, 38, 0.25)', color: '#DC2626', borderRadius: '12px' }}>
             {liveRecommendationError}
           </div>
         )}
@@ -306,22 +306,22 @@ export default function CategoriesPage() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
               <div>
                 <span className="section-label" style={{ display: 'block', marginBottom: '4px' }}>AI RECOMMENDED CAREERS</span>
-                <h2 style={{ color: '#ffffff', fontSize: '20px', margin: 0, fontWeight: 700 }}>Top Live Matches</h2>
+                <h2 style={{ color: 'var(--color-text-primary)', fontSize: '20px', margin: 0, fontWeight: 700 }}>Top Live Matches</h2>
               </div>
-              <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{liveRecommendations.length} recommendations generated</span>
+              <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>{liveRecommendations.length} recommendations generated</span>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '14px' }}>
               {liveRecommendations.map((rec: any) => (
-                <div key={rec.career_id || rec.career_name} className="card" style={{ padding: '18px', background: 'rgba(18, 18, 18, 0.9)', border: '1px solid rgba(255, 158, 66, 0.12)' }}>
+                <div key={rec.career_id || rec.career_name} className="card" style={{ padding: '18px', background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border-light)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: '8px', marginBottom: '10px' }}>
-                    <strong style={{ color: '#ffffff', fontSize: '14px' }}>{rec.career_name}</strong>
-                    <span style={{ color: 'var(--accent)', fontWeight: 700 }}>{rec.match_percentage}%</span>
+                    <strong style={{ color: 'var(--color-text-primary)', fontSize: '14px' }}>{rec.career_name}</strong>
+                    <span style={{ color: 'var(--color-primary)', fontWeight: 700 }}>{rec.match_percentage}%</span>
                   </div>
-                  <p style={{ color: 'var(--text-secondary)', fontSize: '12px', lineHeight: 1.6, marginBottom: '10px' }}>{rec.reason}</p>
+                  <p style={{ color: 'var(--color-text-secondary)', fontSize: '12px', lineHeight: 1.6, marginBottom: '10px' }}>{rec.reason}</p>
                   {rec.missing_skills && rec.missing_skills.length > 0 && (
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                       {rec.missing_skills.slice(0, 3).map((skill: string) => (
-                        <span key={skill} style={{ fontSize: '11px', padding: '4px 8px', background: 'rgba(255, 158, 66, 0.1)', borderRadius: '999px', color: 'var(--accent)' }}>{skill}</span>
+                        <span key={skill} style={{ fontSize: '11px', padding: '4px 8px', background: 'var(--color-primary-light)', borderRadius: '999px', color: 'var(--color-primary)' }}>{skill}</span>
                       ))}
                     </div>
                   )}
@@ -351,8 +351,8 @@ export default function CategoriesPage() {
             {topRecommendations.length > 0 && (
               <div className="card" style={{
                 padding: '24px',
-                background: 'rgba(18, 18, 18, 0.7)',
-                border: '1px solid var(--accent)',
+                background: 'var(--color-bg-card)',
+                border: '1px solid var(--color-border-card)',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '16px'
@@ -360,8 +360,8 @@ export default function CategoriesPage() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <span style={{ fontSize: '22px' }}>🤖</span>
                   <div>
-                    <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#ffffff', fontFamily: 'Outfit, sans-serif', margin: 0 }}>AI Career Matcher</h2>
-                    <p style={{ color: 'var(--text-secondary)', fontSize: '12px', margin: 0 }}>
+                    <h2 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--color-text-primary)', fontFamily: 'Outfit, sans-serif', margin: 0 }}>AI Career Matcher</h2>
+                    <p style={{ color: 'var(--color-text-secondary)', fontSize: '12px', margin: 0 }}>
                       Top career domain alignments from your resume:
                     </p>
                   </div>
@@ -373,19 +373,20 @@ export default function CategoriesPage() {
                     const score = career.matchScore ?? career.match_percentage ?? 0;
                     return (
                       <div key={career.id || career.career_id || name} style={{
-                        background: 'var(--surface-alt)',
-                        border: '1px solid rgba(255, 158, 66, 0.1)',
+                        background: 'var(--color-bg-secondary)',
+                        border: '1px solid var(--color-border-light)',
                         padding: '12px 16px',
                         display: 'flex',
                         flexDirection: 'column',
-                        gap: '8px'
+                        gap: '8px',
+                        borderRadius: '8px'
                       }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <span style={{ color: '#ffffff', fontWeight: 600, fontSize: '13px' }}>{index + 1}. {name}</span>
-                          <span style={{ color: 'var(--accent)', fontWeight: 700, fontSize: '12px' }}>{score}% Match</span>
+                          <span style={{ color: 'var(--color-text-primary)', fontWeight: 600, fontSize: '13px' }}>{index + 1}. {name}</span>
+                          <span style={{ color: 'var(--color-primary)', fontWeight: 700, fontSize: '12px' }}>{score}% Match</span>
                         </div>
-                        <div style={{ background: 'rgba(255, 158, 66, 0.1)', height: '6px', border: '1px solid rgba(255, 158, 66, 0.15)', overflow: 'hidden' }}>
-                          <div style={{ background: 'var(--accent)', height: '100%', width: `${score}%` }} />
+                        <div style={{ background: 'var(--color-primary-light)', height: '6px', border: '1px solid var(--color-border-light)', overflow: 'hidden' }}>
+                          <div style={{ background: 'var(--color-primary)', height: '100%', width: `${score}%` }} />
                         </div>
                       </div>
                     );
@@ -397,8 +398,8 @@ export default function CategoriesPage() {
             {/* AI Advisor Insights (Certifications & Growth Suggestions) */}
             <div className="card" style={{
               padding: '24px',
-              background: 'rgba(18, 18, 18, 0.7)',
-              border: '1px solid var(--accent)',
+              background: 'var(--color-bg-card)',
+              border: '1px solid var(--color-border-card)',
               display: 'flex',
               flexDirection: 'column',
               gap: '16px'
@@ -406,8 +407,8 @@ export default function CategoriesPage() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <span style={{ fontSize: '22px' }}>💡</span>
                 <div>
-                  <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#ffffff', fontFamily: 'Outfit, sans-serif', margin: 0 }}>AI Development Insights</h2>
-                  <p style={{ color: 'var(--text-secondary)', fontSize: '12px', margin: 0 }}>
+                  <h2 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--color-text-primary)', fontFamily: 'Outfit, sans-serif', margin: 0 }}>AI Development Insights</h2>
+                  <p style={{ color: 'var(--color-text-secondary)', fontSize: '12px', margin: 0 }}>
                     Personalized advice and targeted certifications:
                   </p>
                 </div>
@@ -415,7 +416,7 @@ export default function CategoriesPage() {
 
               {recommendations.growth_suggestions && (
                 <div>
-                  <p style={{ color: 'var(--text-primary)', fontSize: '12px', lineHeight: '1.5', margin: 0, fontStyle: 'italic' }}>
+                  <p style={{ color: 'var(--color-text-primary)', fontSize: '12px', lineHeight: '1.5', margin: 0, fontStyle: 'italic' }}>
                     "{recommendations.growth_suggestions}"
                   </p>
                 </div>
@@ -423,16 +424,17 @@ export default function CategoriesPage() {
 
               {recommendations.certifications && recommendations.certifications.length > 0 && (
                 <div>
-                  <p style={{ color: 'var(--text-muted)', fontSize: '10px', fontWeight: 700, marginBottom: '6px', letterSpacing: '0.05em' }}>RECOMMENDED CERTIFICATIONS</p>
+                  <p style={{ color: 'var(--color-text-muted)', fontSize: '10px', fontWeight: 700, marginBottom: '6px', letterSpacing: '0.05em' }}>RECOMMENDED CERTIFICATIONS</p>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                     {recommendations.certifications.map((cert: string) => (
                       <span key={cert} style={{
                         fontSize: '11px',
                         padding: '4px 10px',
-                        background: 'rgba(255, 158, 66, 0.1)',
-                        border: '1px solid rgba(255, 158, 66, 0.3)',
-                        color: 'var(--accent)',
-                        fontWeight: 600
+                        background: 'var(--color-primary-light)',
+                        border: '1px solid var(--color-border-light)',
+                        color: 'var(--color-primary)',
+                        fontWeight: 600,
+                        borderRadius: '4px'
                       }}>
                         {cert}
                       </span>
@@ -464,14 +466,14 @@ export default function CategoriesPage() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px' }}>
             {[1, 2, 3].map((n) => (
               <div key={n} className="card" style={{ height: '240px', opacity: 0.6, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>Loading specifications...</p>
+                <p style={{ color: 'var(--color-text-muted)', fontSize: '14px' }}>Loading specifications...</p>
               </div>
             ))}
           </div>
         )}
 
         {error && (
-          <div style={{ padding: '24px', background: 'rgba(239,68,68,0.06)', border: '1px solid #ef4444', color: '#ef4444', fontSize: '14px', textAlign: 'center', borderRadius: '6px' }}>
+          <div style={{ padding: '24px', background: '#FEE2E2', border: '1px solid rgba(220, 38, 38, 0.25)', color: '#DC2626', fontSize: '14px', textAlign: 'center', borderRadius: '8px' }}>
             {error}
           </div>
         )}
@@ -495,63 +497,64 @@ export default function CategoriesPage() {
                   {/* Title & Growth rate & Save */}
                   <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start' }}>
                     <div>
-                      <h3 style={{ color:'#ffffff', fontWeight:700, fontSize:'16px', marginBottom:'4px', fontFamily: 'Outfit, sans-serif', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <h3 style={{ color:'var(--color-text-primary)', fontWeight:700, fontSize:'16px', marginBottom:'4px', fontFamily: 'Outfit, sans-serif', display: 'flex', alignItems: 'center', gap: '8px' }}>
                         {c.icon || '💼'} {c.name}
                         <button 
                           onClick={(e) => { e.stopPropagation(); handleToggleBookmark(c.id); }}
                           style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, display: 'inline-flex', alignItems: 'center' }}
                           title={c.isSaved ? "Saved" : "Save Career"}
                         >
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill={c.isSaved ? "var(--accent)" : "none"} stroke={c.isSaved ? "var(--accent)" : "var(--text-muted)"} strokeWidth="2">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill={c.isSaved ? "var(--color-primary)" : "none"} stroke={c.isSaved ? "var(--color-primary)" : "var(--color-text-muted)"} strokeWidth="2">
                             <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
                           </svg>
                         </button>
                       </h3>
                       <span className="badge badge-muted" style={{ fontSize:'11px' }}>{industry}</span>
                     </div>
-                    <span style={{ color:'var(--accent)', fontWeight:700, fontSize:'12px', whiteSpace:'nowrap' }}>↑ {c.growth_rate || '25%'}</span>
+                    <span style={{ color:'var(--color-primary)', fontWeight:700, fontSize:'12px', whiteSpace:'nowrap' }}>↑ {c.growth_rate || '25%'}</span>
                   </div>
 
                   {/* Compatibility Score progress bar if recommendations loaded */}
                   {matchScore !== null && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', margin: '-4px 0 4px 0' }}>
-                      <span style={{ fontSize: '11px', color: 'var(--accent)', fontWeight: 700 }}>
+                      <span style={{ fontSize: '11px', color: 'var(--color-primary)', fontWeight: 700 }}>
                         Compatibility score: {matchScore}%
                       </span>
-                      <div style={{ background: 'rgba(255, 158, 66, 0.05)', height: '6px', border: '1px solid rgba(255, 158, 66, 0.1)', overflow: 'hidden' }}>
-                        <div style={{ background: 'var(--accent)', height: '100%', width: `${matchScore}%` }} />
+                      <div style={{ background: 'var(--color-primary-light)', height: '6px', border: '1px solid var(--color-border-light)', overflow: 'hidden', borderRadius: '4px' }}>
+                        <div style={{ background: 'var(--color-primary)', height: '100%', width: `${matchScore}%` }} />
                       </div>
                     </div>
                   )}
 
                   {/* Description */}
                   <div>
-                    <p style={{ color:'var(--text-secondary)', fontSize:'13px', lineHeight: 1.6 }}>{c.description}</p>
+                    <p style={{ color:'var(--color-text-secondary)', fontSize:'13px', lineHeight: 1.6 }}>{c.description}</p>
                   </div>
 
                   {/* AI Why Recommended explanation */}
                   {c.cachedInsights?.why_recommended && (
-                    <div style={{ background: 'rgba(255, 158, 66, 0.04)', borderLeft: '2px solid var(--accent)', padding: '8px 12px', fontSize: '11px', color: 'var(--text-secondary)', fontStyle: 'italic', marginTop: '-8px' }}>
+                    <div style={{ background: 'var(--color-primary-light)', borderLeft: '2px solid var(--color-primary)', padding: '8px 12px', fontSize: '11px', color: 'var(--color-text-secondary)', fontStyle: 'italic', marginTop: '-8px' }}>
                       💡 {c.cachedInsights.why_recommended}
                     </div>
                   )}
 
                   {/* Match Insights: user matching skills and gap skills */}
-                  <div style={{ borderTop: '1px solid rgba(255, 158, 66, 0.08)', paddingTop: '12px' }}>
-                    <p style={{ color: 'var(--text-muted)', fontSize: '10px', fontWeight: 700, marginBottom: '6px', letterSpacing: '0.05em' }}>MATCH INSIGHTS</p>
+                  <div style={{ borderTop: '1px solid var(--color-border-light)', paddingTop: '12px' }}>
+                    <p style={{ color: 'var(--color-text-muted)', fontSize: '10px', fontWeight: 700, marginBottom: '6px', letterSpacing: '0.05em' }}>MATCH INSIGHTS</p>
                     
                     {/* Skills we have */}
                     {matched.length > 0 && (
                       <div style={{ marginBottom: '8px' }}>
-                        <p style={{ color: 'var(--text-secondary)', fontSize: '11px', fontWeight: 600, marginBottom: '4px' }}>Skills you have:</p>
+                        <p style={{ color: 'var(--color-text-secondary)', fontSize: '11px', fontWeight: 600, marginBottom: '4px' }}>Skills you have:</p>
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
                           {matched.map(s => (
                             <span key={s} style={{
                               fontSize: '10px',
                               padding: '2px 8px',
-                              background: 'var(--accent)',
-                              color: '#0a0a0a',
-                              fontWeight: 700
+                              background: 'var(--color-primary)',
+                              color: 'var(--color-bg-main)',
+                              fontWeight: 700,
+                              borderRadius: '4px'
                             }}>
                               {s}
                             </span>
@@ -563,14 +566,15 @@ export default function CategoriesPage() {
                     {/* Skill gaps */}
                     {gaps.length > 0 && (
                       <div>
-                        <p style={{ color: 'var(--text-secondary)', fontSize: '11px', fontWeight: 600, marginBottom: '4px' }}>Skill gaps to acquire:</p>
+                        <p style={{ color: 'var(--color-text-secondary)', fontSize: '11px', fontWeight: 600, marginBottom: '4px' }}>Skill gaps to acquire:</p>
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
                           {gaps.map(s => (
                             <span key={s} style={{
                               fontSize: '10px',
                               padding: '2px 8px',
-                              border: '1px solid rgba(255, 158, 66, 0.4)',
-                              color: '#ffffff'
+                              border: '1px solid var(--color-border-medium)',
+                              color: 'var(--color-text-secondary)',
+                              borderRadius: '4px'
                             }}>
                               {s}
                             </span>
@@ -582,12 +586,12 @@ export default function CategoriesPage() {
 
                   {/* Suggested courses */}
                   {careerSuggestedCourses.length > 0 && (
-                    <div style={{ background: 'rgba(255, 158, 66, 0.03)', borderLeft: '2px solid var(--accent)', padding: '10px 12px' }}>
-                      <p style={{ color: 'var(--accent)', fontSize: '10px', fontWeight: 700, marginBottom: '4px', letterSpacing: '0.05em' }}>SUGGESTED COURSES</p>
+                    <div style={{ background: 'var(--color-primary-light)', borderLeft: '2px solid var(--color-primary)', padding: '10px 12px' }}>
+                      <p style={{ color: 'var(--color-primary)', fontSize: '10px', fontWeight: 700, marginBottom: '4px', letterSpacing: '0.05em' }}>SUGGESTED COURSES</p>
                       <ul style={{ listStyleType: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '4px' }}>
                         {careerSuggestedCourses.map((course: any) => (
-                          <li key={course.id} style={{ fontSize: '11px', color: '#ffffff' }}>
-                            • {course.name} <span style={{ color: 'var(--text-muted)' }}>({course.provider || 'Udemy'})</span>
+                          <li key={course.id} style={{ fontSize: '11px', color: 'var(--color-text-primary)' }}>
+                            • {course.name} <span style={{ color: 'var(--color-text-muted)' }}>({course.provider || 'Udemy'})</span>
                           </li>
                         ))}
                       </ul>
@@ -597,27 +601,27 @@ export default function CategoriesPage() {
                   {/* Top Employers */}
                   {c.top_companies && (
                     <div>
-                      <p style={{ color:'var(--text-muted)', fontSize:'10px', fontWeight: 700, marginBottom:'4px', letterSpacing: '0.05em' }}>TOP EMPLOYERS</p>
-                      <p style={{ color:'#cccccc', fontSize:'12px' }}>{c.top_companies}</p>
+                      <p style={{ color:'var(--color-text-muted)', fontSize:'10px', fontWeight: 700, marginBottom:'4px', letterSpacing: '0.05em' }}>TOP EMPLOYERS</p>
+                      <p style={{ color:'var(--color-text-secondary)', fontSize:'12px' }}>{c.top_companies}</p>
                     </div>
                   )}
 
                   {/* Roadmap progression steps */}
                   <div>
-                    <p style={{ color:'var(--text-muted)', fontSize:'10px', fontWeight: 700, marginBottom:'6px', letterSpacing: '0.05em' }}>ROADMAP SPECIFICATION</p>
+                    <p style={{ color:'var(--color-text-muted)', fontSize:'10px', fontWeight: 700, marginBottom:'6px', letterSpacing: '0.05em' }}>ROADMAP SPECIFICATION</p>
                     <div style={{ display:'flex', flexDirection:'column', gap:'6px' }}>
                       {roadmap.map((step, i) => (
                         <div key={i} style={{ display:'flex', alignItems:'flex-start', gap:'8px' }}>
-                          <span style={{ width:'18px', height:'18px', borderRadius:'50%', background: i === 0 ? 'var(--accent)' : 'var(--border-dark)', border: i === 0 ? 'none' : '1px solid var(--border-dark)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'9px', color: i === 0 ? '#0a0a0a' : 'var(--text-muted)', fontWeight: 700, flexShrink:0, marginTop: '2px' }}>{i + 1}</span>
-                          <span style={{ color: i === 0 ? '#ffffff' : 'var(--text-secondary)', fontSize:'12px', lineHeight: 1.4 }}>{step}</span>
+                          <span style={{ width:'18px', height:'18px', borderRadius:'50%', background: i === 0 ? 'var(--color-primary)' : 'var(--color-bg-secondary)', border: i === 0 ? 'none' : '1px solid var(--color-border-medium)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'9px', color: i === 0 ? 'var(--color-bg-main)' : 'var(--color-text-muted)', fontWeight: 700, flexShrink:0, marginTop: '2px', textAlign: 'center', lineHeight: '18px' }}>{i + 1}</span>
+                          <span style={{ color: i === 0 ? 'var(--color-text-primary)' : 'var(--color-text-secondary)', fontSize:'12px', lineHeight: 1.4 }}>{step}</span>
                         </div>
                       ))}
                     </div>
                   </div>
 
                   {/* Bottom Actions Row */}
-                  <div style={{ paddingTop:'16px', borderTop:'1px solid var(--border-dark)', display:'flex', justifyContent:'space-between', alignItems:'center', marginTop: 'auto', flexWrap: 'wrap', gap: '8px' }}>
-                    <span style={{ color:'var(--accent)', fontWeight:700, fontSize:'14px', fontFamily: 'Inter, sans-serif' }}>{c.salary_range || '₹8L – ₹22L'}</span>
+                  <div style={{ paddingTop:'16px', borderTop:'1px solid var(--color-border-light)', display:'flex', justifyContent:'space-between', alignItems:'center', marginTop: 'auto', flexWrap: 'wrap', gap: '8px' }}>
+                    <span style={{ color:'var(--color-primary)', fontWeight:700, fontSize:'14px', fontFamily: 'Inter, sans-serif' }}>{c.salary_range || '₹8L – ₹22L'}</span>
                     <div style={{ display: 'flex', gap: '6px' }}>
                       <button 
                         onClick={() => handleOpenDeepDive(c)}
@@ -625,8 +629,8 @@ export default function CategoriesPage() {
                         style={{ 
                           fontSize:'11px', 
                           padding:'6px 12px', 
-                          border: '1px solid var(--accent)', 
-                          color: 'var(--accent)',
+                          border: '1px solid var(--color-primary)', 
+                          color: 'var(--color-primary)',
                           cursor: 'pointer',
                           background: 'transparent'
                         }}
@@ -653,10 +657,9 @@ export default function CategoriesPage() {
           right: 0,
           width: '460px',
           height: '100vh',
-          background: 'rgba(10, 10, 10, 0.95)',
-          backdropFilter: 'blur(20px)',
-          borderLeft: '1px solid rgba(255, 158, 66, 0.2)',
-          boxShadow: '-8px 0 32px rgba(0,0,0,0.8)',
+          background: 'var(--color-bg-card)',
+          borderLeft: '1px solid var(--color-border-card)',
+          boxShadow: '-8px 0 32px rgba(0,0,0,0.1)',
           zIndex: 9999,
           padding: '32px',
           display: 'flex',
@@ -665,18 +668,18 @@ export default function CategoriesPage() {
           animation: 'slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
         }}>
           {/* Header */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', borderBottom: '1px solid rgba(255, 158, 66, 0.15)', paddingBottom: '16px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', borderBottom: '1px solid var(--color-border-light)', paddingBottom: '16px' }}>
             <div>
-              <span style={{ fontSize: '10px', color: 'var(--accent)', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+              <span style={{ fontSize: '10px', color: 'var(--color-primary)', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
                 AI Guidance deep-dive
               </span>
-              <h2 style={{ color: '#ffffff', fontSize: '20px', fontWeight: 700, margin: '2px 0 0', fontFamily: 'Outfit, sans-serif' }}>
+              <h2 style={{ color: 'var(--color-text-primary)', fontSize: '20px', fontWeight: 700, margin: '2px 0 0', fontFamily: 'Outfit, sans-serif' }}>
                 {activeInsightsCareer.name}
               </h2>
             </div>
             <button 
               onClick={() => setActiveInsightsCareer(null)}
-              style={{ background: 'transparent', border: '1px solid rgba(255, 255, 255, 0.15)', color: '#ffffff', width: '28px', height: '28px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px' }}
+              style={{ background: 'transparent', border: '1px solid var(--color-border-light)', color: 'var(--color-text-primary)', width: '28px', height: '28px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px' }}
             >
               ✕
             </button>
@@ -686,7 +689,7 @@ export default function CategoriesPage() {
           {loadingInsights && (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, gap: '16px' }}>
               <div className="spinner" />
-              <p style={{ color: 'var(--text-secondary)', fontSize: '13px', textAlign: 'center' }}>
+              <p style={{ color: 'var(--color-text-secondary)', fontSize: '13px', textAlign: 'center' }}>
                 Analyzing resume against {activeInsightsCareer.name} requirements...
               </p>
             </div>
@@ -698,10 +701,10 @@ export default function CategoriesPage() {
               
               {/* Why Recommended */}
               <div>
-                <h4 style={{ color: 'var(--accent)', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' }}>
+                <h4 style={{ color: 'var(--color-primary)', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' }}>
                   Why Recommended
                 </h4>
-                <p style={{ color: '#ffffff', fontSize: '13px', lineHeight: 1.6, margin: 0, fontStyle: 'italic', background: 'rgba(255, 158, 66, 0.03)', padding: '12px', borderLeft: '3px solid var(--accent)' }}>
+                <p style={{ color: 'var(--color-text-primary)', fontSize: '13px', lineHeight: 1.6, margin: 0, fontStyle: 'italic', background: 'var(--color-primary-light)', padding: '12px', borderLeft: '3px solid var(--color-primary)' }}>
                   "{insightsData.why_recommended}"
                 </p>
               </div>
@@ -714,7 +717,7 @@ export default function CategoriesPage() {
                   </h4>
                   <ul style={{ padding: 0, margin: 0, listStyleType: 'none', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     {insightsData.strengths?.map((str: string, i: number) => (
-                      <li key={i} style={{ color: '#ffffff', fontSize: '12px', display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
+                      <li key={i} style={{ color: 'var(--color-text-primary)', fontSize: '12px', display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
                         <span style={{ color: '#10b981' }}>✓</span> {str}
                       </li>
                     ))}
@@ -722,13 +725,13 @@ export default function CategoriesPage() {
                 </div>
 
                 <div>
-                  <h4 style={{ color: 'var(--accent)', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' }}>
+                  <h4 style={{ color: 'var(--color-primary)', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' }}>
                     Missing Skill Gaps
                   </h4>
                   <ul style={{ padding: 0, margin: 0, listStyleType: 'none', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     {insightsData.gaps?.map((gap: string, i: number) => (
-                      <li key={i} style={{ color: '#ffffff', fontSize: '12px', display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
-                        <span style={{ color: 'var(--accent)' }}>⚠</span> {gap}
+                      <li key={i} style={{ color: 'var(--color-text-primary)', fontSize: '12px', display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
+                        <span style={{ color: 'var(--color-primary)' }}>⚠</span> {gap}
                       </li>
                     ))}
                   </ul>
@@ -737,13 +740,13 @@ export default function CategoriesPage() {
 
               {/* Learning Priorities */}
               <div>
-                <h4 style={{ color: '#ffffff', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' }}>
+                <h4 style={{ color: 'var(--color-text-primary)', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' }}>
                   Learning Priorities
                 </h4>
                 <ul style={{ padding: 0, margin: 0, listStyleType: 'none', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {insightsData.learning_priorities?.map((pri: string, i: number) => (
-                    <li key={i} style={{ color: 'var(--text-secondary)', fontSize: '12px', display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
-                      <span style={{ background: 'rgba(255, 158, 66, 0.1)', color: 'var(--accent)', width: '18px', height: '18px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', fontWeight: 700, flexShrink: 0 }}>
+                    <li key={i} style={{ color: 'var(--color-text-secondary)', fontSize: '12px', display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                      <span style={{ background: 'var(--color-primary-light)', color: 'var(--color-primary)', width: '18px', height: '18px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', fontWeight: 700, flexShrink: 0, borderRadius: '4px' }}>
                         {i + 1}
                       </span>
                       <span>{pri}</span>
@@ -755,12 +758,12 @@ export default function CategoriesPage() {
               {/* Recommended Certifications */}
               {insightsData.certifications && insightsData.certifications.length > 0 && (
                 <div>
-                  <h4 style={{ color: 'var(--accent)', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' }}>
+                  <h4 style={{ color: 'var(--color-primary)', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' }}>
                     Demanded Certifications
                   </h4>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                     {insightsData.certifications.map((cert: string) => (
-                      <span key={cert} style={{ fontSize: '10px', padding: '4px 10px', background: 'rgba(255, 158, 66, 0.08)', border: '1px solid rgba(255, 158, 66, 0.25)', color: 'var(--accent)', fontWeight: 600 }}>
+                      <span key={cert} style={{ fontSize: '10px', padding: '4px 10px', background: 'var(--color-primary-light)', border: '1px solid var(--color-border-light)', color: 'var(--color-primary)', fontWeight: 600, borderRadius: '4px' }}>
                         {cert}
                       </span>
                     ))}
@@ -771,10 +774,10 @@ export default function CategoriesPage() {
               {/* Industry Trends */}
               {insightsData.industry_trends && (
                 <div>
-                  <h4 style={{ color: 'var(--text-muted)', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' }}>
+                  <h4 style={{ color: 'var(--color-text-muted)', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' }}>
                     Industry Trends
                   </h4>
-                  <p style={{ color: 'var(--text-secondary)', fontSize: '12px', lineHeight: 1.5, margin: 0 }}>
+                  <p style={{ color: 'var(--color-text-secondary)', fontSize: '12px', lineHeight: 1.5, margin: 0 }}>
                     {insightsData.industry_trends}
                   </p>
                 </div>
@@ -782,18 +785,18 @@ export default function CategoriesPage() {
 
               {/* Timeline Roadmap */}
               {insightsData.roadmap && insightsData.roadmap.length > 0 && (
-                <div style={{ borderTop: '1px solid rgba(255,158,66,0.15)', paddingTop: '16px', marginTop: '8px' }}>
-                  <h4 style={{ color: '#ffffff', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '12px' }}>
+                <div style={{ borderTop: '1px solid var(--color-border-light)', paddingTop: '16px', marginTop: '8px' }}>
+                  <h4 style={{ color: 'var(--color-text-primary)', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '12px' }}>
                     Personal Growth Roadmap
                   </h4>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', position: 'relative', paddingLeft: '16px', borderLeft: '1px solid rgba(255, 158, 66, 0.2)' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', position: 'relative', paddingLeft: '16px', borderLeft: '1px solid var(--color-border-medium)' }}>
                     {insightsData.roadmap.map((step: string, i: number) => (
                       <div key={i} style={{ position: 'relative' }}>
-                        <div style={{ position: 'absolute', left: '-21px', top: '3px', width: '9px', height: '9px', borderRadius: '50%', background: 'var(--accent)' }} />
-                        <p style={{ color: '#ffffff', fontSize: '12px', fontWeight: 600, margin: '0 0 2px 0' }}>
+                        <div style={{ position: 'absolute', left: '-21px', top: '3px', width: '9px', height: '9px', borderRadius: '50%', background: 'var(--color-primary)' }} />
+                        <p style={{ color: 'var(--color-text-primary)', fontSize: '12px', fontWeight: 600, margin: '0 0 2px 0' }}>
                           Phase {i + 1}
                         </p>
-                        <p style={{ color: 'var(--text-secondary)', fontSize: '12px', lineHeight: 1.4, margin: 0 }}>
+                        <p style={{ color: 'var(--color-text-secondary)', fontSize: '12px', lineHeight: 1.4, margin: 0 }}>
                           {step}
                         </p>
                       </div>

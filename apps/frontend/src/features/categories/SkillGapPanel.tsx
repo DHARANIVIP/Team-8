@@ -14,20 +14,20 @@ export default function SkillGapPanel({ careerName, matchedSkills = [], gapSkill
 
   return (
     <div style={{
-      background: 'rgba(18, 18, 18, 0.4)',
-      border: '1px solid rgba(255, 158, 66, 0.1)',
+      background: 'var(--color-bg-card)',
+      border: '1px solid var(--color-border-card)',
       padding: '20px',
-      borderRadius: '8px',
-      boxShadow: 'inset 0 0 12px rgba(255, 158, 66, 0.03)',
+      borderRadius: '12px',
+      boxShadow: 'inset 0 0 12px rgba(59, 130, 246, 0.01)',
       display: 'flex',
       flexDirection: 'column',
       gap: '16px'
     }}>
       <div>
-        <span style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+        <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
           SKILL GAP METRIC
         </span>
-        <h3 style={{ fontSize: '15px', color: '#ffffff', fontWeight: 700, margin: '2px 0 0', fontFamily: 'Outfit, sans-serif' }}>
+        <h3 style={{ fontSize: '15px', color: 'var(--color-text-primary)', fontWeight: 700, margin: '2px 0 0', fontFamily: 'Outfit, sans-serif' }}>
           Target: {careerName || 'Software Engineer'}
         </h3>
       </div>
@@ -35,14 +35,14 @@ export default function SkillGapPanel({ careerName, matchedSkills = [], gapSkill
       {/* Coverage Progress Bar */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ color: 'var(--text-secondary)', fontSize: '12px' }}>Skill Coverage</span>
-          <span style={{ color: coverage > 60 ? '#10b981' : 'var(--accent)', fontWeight: 700, fontSize: '12px' }}>
+          <span style={{ color: 'var(--color-text-secondary)', fontSize: '12px' }}>Skill Coverage</span>
+          <span style={{ color: coverage > 60 ? '#10b981' : 'var(--color-primary)', fontWeight: 700, fontSize: '12px' }}>
             {coverage}% Acquired
           </span>
         </div>
-        <div style={{ background: 'rgba(255, 158, 66, 0.05)', height: '8px', border: '1px solid rgba(255, 158, 66, 0.15)', overflow: 'hidden' }}>
+        <div style={{ background: 'var(--color-primary-light)', height: '8px', border: '1px solid var(--color-border-light)', overflow: 'hidden', borderRadius: '4px' }}>
           <div style={{ 
-            background: coverage > 60 ? '#10b981' : 'var(--accent)', 
+            background: coverage > 60 ? '#10b981' : 'var(--color-primary)', 
             height: '100%', 
             width: `${coverage}%`,
             transition: 'width 0.5s cubic-bezier(0.16, 1, 0.3, 1)'
@@ -51,7 +51,7 @@ export default function SkillGapPanel({ careerName, matchedSkills = [], gapSkill
       </div>
 
       {/* Detailed Skill Lists */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', borderTop: '1px solid rgba(255, 158, 66, 0.08)', paddingTop: '14px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', borderTop: '1px solid var(--color-border-light)', paddingTop: '14px' }}>
         {/* Acquired Skills */}
         <div>
           <p style={{ color: '#10b981', fontSize: '11px', fontWeight: 700, marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -66,20 +66,21 @@ export default function SkillGapPanel({ careerName, matchedSkills = [], gapSkill
                   background: 'rgba(16, 185, 129, 0.08)',
                   border: '1px solid rgba(16, 185, 129, 0.25)',
                   color: '#10b981',
-                  fontWeight: 600
+                  fontWeight: 600,
+                  borderRadius: '4px'
                 }}>
                   {skill}
                 </span>
               ))
             ) : (
-              <span style={{ color: 'var(--text-muted)', fontSize: '11px', fontStyle: 'italic' }}>None yet</span>
+              <span style={{ color: 'var(--color-text-muted)', fontSize: '11px', fontStyle: 'italic' }}>None yet</span>
             )}
           </div>
         </div>
 
         {/* Skill Gaps */}
         <div>
-          <p style={{ color: 'var(--accent)', fontSize: '11px', fontWeight: 700, marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <p style={{ color: 'var(--color-primary)', fontSize: '11px', fontWeight: 700, marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
             <span>⚠</span> Skill Gaps ({gapSkills.length})
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
@@ -88,10 +89,11 @@ export default function SkillGapPanel({ careerName, matchedSkills = [], gapSkill
                 <span key={skill} style={{
                   fontSize: '10px',
                   padding: '3px 8px',
-                  background: 'rgba(255, 158, 66, 0.08)',
-                  border: '1px solid rgba(255, 158, 66, 0.25)',
-                  color: 'var(--accent)',
-                  fontWeight: 600
+                  background: 'var(--color-primary-light)',
+                  border: '1px solid var(--color-border-light)',
+                  color: 'var(--color-primary)',
+                  fontWeight: 600,
+                  borderRadius: '4px'
                 }}>
                   {skill}
                 </span>

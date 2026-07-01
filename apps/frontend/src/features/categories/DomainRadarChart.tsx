@@ -72,13 +72,13 @@ export default function DomainRadarChart({ domains = [] }: DomainRadarChartProps
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
-      background: 'rgba(18, 18, 18, 0.4)',
-      border: '1px solid rgba(255, 158, 66, 0.1)',
+      background: 'var(--color-bg-card)',
+      border: '1px solid var(--color-border-card)',
       padding: '20px',
-      borderRadius: '8px',
-      boxShadow: 'inset 0 0 12px rgba(255, 158, 66, 0.03)'
+      borderRadius: '12px',
+      boxShadow: 'inset 0 0 12px rgba(59, 130, 246, 0.01)'
     }}>
-      <h3 style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '16px', fontFamily: 'Outfit, sans-serif', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+      <h3 style={{ fontSize: '13px', color: 'var(--color-text-secondary)', marginBottom: '16px', fontFamily: 'Outfit, sans-serif', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
         Domain Profile Map
       </h3>
       
@@ -97,7 +97,7 @@ export default function DomainRadarChart({ domains = [] }: DomainRadarChartProps
             key={idx}
             points={points}
             fill="none"
-            stroke="rgba(255, 158, 66, 0.08)"
+            stroke="var(--color-border-medium)"
             strokeWidth="1"
           />
         ))}
@@ -112,7 +112,7 @@ export default function DomainRadarChart({ domains = [] }: DomainRadarChartProps
               y1={center}
               x2={outerPoint.x}
               y2={outerPoint.y}
-              stroke="rgba(255, 158, 66, 0.08)"
+              stroke="var(--color-border-light)"
               strokeWidth="1"
             />
           );
@@ -121,8 +121,8 @@ export default function DomainRadarChart({ domains = [] }: DomainRadarChartProps
         {/* User Match Score Polygon Area */}
         <polygon
           points={scorePoints}
-          fill="rgba(255, 158, 66, 0.18)"
-          stroke="var(--accent)"
+          fill="rgba(59, 130, 246, 0.15)"
+          stroke="var(--color-primary)"
           strokeWidth="2"
           filter="url(#radar-glow)"
           style={{ transition: 'all 0.5s ease-in-out' }}
@@ -137,8 +137,8 @@ export default function DomainRadarChart({ domains = [] }: DomainRadarChartProps
               cx={x}
               cy={y}
               r="4"
-              fill="#0a0a0a"
-              stroke="var(--accent)"
+              fill="var(--color-bg-main)"
+              stroke="var(--color-primary)"
               strokeWidth="2"
               style={{ transition: 'all 0.5s ease-in-out' }}
             />
@@ -153,7 +153,7 @@ export default function DomainRadarChart({ domains = [] }: DomainRadarChartProps
               <text
                 x={coord.x}
                 y={coord.y}
-                fill="#ffffff"
+                fill="var(--color-text-primary)"
                 fontSize="10px"
                 fontWeight="700"
                 textAnchor={coord.textAnchor}
@@ -164,7 +164,7 @@ export default function DomainRadarChart({ domains = [] }: DomainRadarChartProps
               <text
                 x={coord.x}
                 y={coord.y + 11}
-                fill="var(--accent)"
+                fill="var(--color-primary)"
                 fontSize="9px"
                 fontWeight="bold"
                 textAnchor={coord.textAnchor}

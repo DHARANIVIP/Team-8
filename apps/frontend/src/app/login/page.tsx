@@ -20,72 +20,7 @@ function EyeIcon({ open }: { open: boolean }) {
 }
 
 function MatrixBackground() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    let intervalId: NodeJS.Timeout;
-    
-    const resizeCanvas = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    };
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
-
-    const charArr = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝ'.split('');
-    const fontSize = 14;
-    const columns = Math.floor(canvas.width / fontSize) + 1;
-    const drops: number[] = Array(columns).fill(1);
-
-    const draw = () => {
-      ctx.fillStyle = 'rgba(10, 10, 10, 0.1)';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      ctx.fillStyle = 'rgba(255, 158, 66, 0.15)'; // Mild orange matrix code rain
-      ctx.font = `${fontSize}px monospace`;
-
-      for (let i = 0; i < drops.length; i++) {
-        const text = charArr[Math.floor(Math.random() * charArr.length)];
-        const x = i * fontSize;
-        const y = drops[i] * fontSize;
-
-        ctx.fillText(text, x, y);
-
-        if (y > canvas.height && Math.random() > 0.975) {
-          drops[i] = 0;
-        }
-        drops[i]++;
-      }
-    };
-
-    intervalId = setInterval(draw, 33);
-
-    return () => {
-      clearInterval(intervalId);
-      window.removeEventListener('resize', resizeCanvas);
-    };
-  }, []);
-
-  return (
-    <canvas
-      ref={canvasRef}
-      style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        zIndex: 0,
-        pointerEvents: 'none',
-        opacity: 0.8,
-      }}
-    />
-  );
+  return null;
 }
 
 export default function LoginPage() {
@@ -201,22 +136,22 @@ export default function LoginPage() {
           pointerEvents: toastVisible ? 'auto' : 'none',
         }}>
           <div style={{
-            background: '#fefce8',
-            border: '2px solid var(--accent)',
-            borderRadius: '8px',
+            background: 'var(--color-bg-card)',
+            border: '1px solid var(--color-border-card)',
+            borderRadius: 'var(--radius-card)',
             padding: '16px 20px',
             minWidth: '300px',
             maxWidth: '380px',
-            boxShadow: '0 8px 32px rgba(255, 158, 66, 0.25), 0 4px 12px rgba(0,0,0,0.3)',
+            boxShadow: 'var(--shadow-card-hover)',
             display: 'flex',
             alignItems: 'flex-start',
             gap: '12px',
           }}>
             <div style={{ flex: 1 }}>
-              <p style={{ color: '#1a1a1a', fontWeight: 700, fontSize: '15px', marginBottom: '4px', fontFamily: 'Seoul Namsan, Seoul Hangang, Seoul, sans-serif' }}>
+              <p style={{ color: 'var(--color-text-primary)', fontWeight: 700, fontSize: '15px', marginBottom: '4px', fontFamily: 'Seoul Namsan, Seoul Hangang, Seoul, sans-serif' }}>
                 Welcome back!
               </p>
-              <p style={{ color: '#4a4a4a', fontSize: '13px', fontFamily: 'Seoul Namsan, Seoul Hangang, Seoul, sans-serif' }}>
+              <p style={{ color: 'var(--color-text-secondary)', fontSize: '13px', fontFamily: 'Seoul Namsan, Seoul Hangang, Seoul, sans-serif' }}>
                 You&apos;re now signed in.
               </p>
             </div>
@@ -224,8 +159,8 @@ export default function LoginPage() {
               onClick={dismissToast}
               style={{
                 background: 'transparent',
-                border: '1px solid #d4d4d4',
-                color: '#666',
+                border: '1px solid var(--color-border-medium)',
+                color: 'var(--color-text-muted)',
                 width: '24px',
                 height: '24px',
                 display: 'flex',
@@ -234,7 +169,7 @@ export default function LoginPage() {
                 cursor: 'pointer',
                 fontSize: '13px',
                 fontWeight: 700,
-                borderRadius: '4px',
+                borderRadius: '6px',
                 flexShrink: 0,
                 padding: 0,
               }}
@@ -260,17 +195,17 @@ export default function LoginPage() {
       <MatrixBackground />
 
       <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
-        <h1 style={{ color: '#ffffff', fontSize: '24px', fontWeight: 800, marginBottom: '18px', textAlign: 'center', textShadow: '0 0 8px rgba(255, 158, 66, 0.25)' }}>
+        <h1 style={{ color: 'var(--color-text-primary)', fontSize: '24px', fontWeight: 800, marginBottom: '18px', textAlign: 'center' }}>
           Welcome back
         </h1>
 
-        <form onSubmit={handleSubmit} className="auth-card animate-fade-in" style={{ borderRadius: '0px', border: '1px solid rgba(255, 158, 66, 0.15)', background: 'var(--surface)' }}>
+        <form onSubmit={handleSubmit} className="auth-card animate-fade-in" style={{ borderRadius: 'var(--radius-card)', border: '1px solid var(--color-border-card)', background: 'var(--color-bg-card)' }}>
           <div style={{ textAlign: 'center', marginBottom: '24px' }}>
             <Link href="/" style={{
-              border: '1px solid rgba(255, 158, 66, 0.3)',
-              background: 'rgba(255, 158, 66, 0.05)',
+              border: '1px solid var(--color-border-medium)',
+              background: 'var(--color-bg-secondary)',
               padding: '8px 18px',
-              color: 'var(--accent)',
+              color: 'var(--color-primary)',
               fontSize: '11px',
               fontWeight: 700,
               letterSpacing: '0.08em',
@@ -278,22 +213,22 @@ export default function LoginPage() {
               display: 'inline-block',
               textDecoration: 'none',
               cursor: 'pointer',
-              borderRadius: '0px'
+              borderRadius: '8px'
             }}>
               Back to Website
             </Link>
           </div>
 
-          <h2 style={{ textAlign: 'center', fontSize: '16px', fontWeight: 700, color: '#cccccc', marginBottom: '24px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          <h2 style={{ textAlign: 'center', fontSize: '16px', fontWeight: 700, color: 'var(--color-text-secondary)', marginBottom: '24px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
             Sign in
           </h2>
 
           {isSuccess && (
             <div style={{
-              background: 'rgba(255, 158, 66, 0.08)',
-              border: '1px solid rgba(255, 158, 66, 0.3)',
-              borderRadius: '0px',
-              color: 'var(--accent)',
+              background: '#DCFCE7',
+              border: '1px solid rgba(22, 163, 74, 0.25)',
+              borderRadius: '8px',
+              color: '#16A34A',
               padding: '12px',
               fontSize: '13px',
               marginBottom: '16px',
@@ -305,10 +240,10 @@ export default function LoginPage() {
 
           {error && (
             <div style={{
-              background: 'rgba(239, 68, 68, 0.08)',
-              border: '1px solid rgba(239, 68, 68, 0.3)',
-              borderRadius: '0px',
-              color: '#ef4444',
+              background: '#FEE2E2',
+              border: '1px solid rgba(220, 38, 38, 0.25)',
+              borderRadius: '8px',
+              color: '#DC2626',
               padding: '12px',
               fontSize: '13px',
               marginBottom: '16px',
@@ -320,7 +255,7 @@ export default function LoginPage() {
 
           {/* Email */}
           <div style={{ marginBottom: '18px' }}>
-            <label style={{ display: 'block', fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '6px', fontWeight: 500 }}>
+            <label style={{ display: 'block', fontSize: '13px', color: 'var(--color-text-secondary)', marginBottom: '6px', fontWeight: 500 }}>
               Email Address
             </label>
             <div className="input-wrapper">
@@ -339,9 +274,9 @@ export default function LoginPage() {
                 required
                 style={{
                   paddingLeft: '40px',
-                  borderRadius: '0px',
-                  border: '1px solid rgba(255, 158, 66, 0.3)',
-                  background: 'rgba(10, 10, 10, 0.7)'
+                  borderRadius: '8px',
+                  border: '1px solid var(--color-input-border)',
+                  background: 'var(--color-input-bg)'
                 }}
               />
             </div>
@@ -349,7 +284,7 @@ export default function LoginPage() {
 
           {/* Password */}
           <div style={{ marginBottom: '8px' }}>
-            <label style={{ display: 'block', fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '6px', fontWeight: 500 }}>
+            <label style={{ display: 'block', fontSize: '13px', color: 'var(--color-text-secondary)', marginBottom: '6px', fontWeight: 500 }}>
               Password
             </label>
             <div className="input-wrapper">
@@ -369,9 +304,9 @@ export default function LoginPage() {
                 style={{
                   paddingLeft: '40px',
                   paddingRight: '40px',
-                  borderRadius: '0px',
-                  border: '1px solid rgba(255, 158, 66, 0.3)',
-                  background: 'rgba(10, 10, 10, 0.7)'
+                  borderRadius: '8px',
+                  border: '1px solid var(--color-input-border)',
+                  background: 'var(--color-input-bg)'
                 }}
               />
               <span className="input-icon-right" onClick={() => setShowPw(!showPw)}>
@@ -381,7 +316,7 @@ export default function LoginPage() {
           </div>
 
           <div style={{ textAlign: 'right', marginBottom: '22px' }}>
-            <Link href="/forget-password" style={{ color: 'var(--accent)', fontSize: '13px', textDecoration: 'none' }}>
+            <Link href="/forget-password" style={{ color: 'var(--color-primary)', fontSize: '13px', textDecoration: 'none' }}>
               Forgot password?
             </Link>
           </div>
@@ -399,7 +334,7 @@ export default function LoginPage() {
               textTransform: 'uppercase',
               letterSpacing: '0.05em',
               padding: '12px',
-              borderRadius: '0px',
+              borderRadius: '8px',
               border: 'none',
               cursor: loading ? 'not-allowed' : 'pointer'
             }}
@@ -424,11 +359,11 @@ export default function LoginPage() {
                 fontSize: '13px',
                 width: '50%',
                 justifyContent: 'center',
-                border: '1px solid rgba(255, 158, 66, 0.3)',
-                background: 'rgba(10, 10, 10, 0.6)',
-                color: '#ffffff',
+                border: '1px solid var(--color-border-medium)',
+                background: 'var(--color-bg-card)',
+                color: 'var(--color-text-primary)',
                 fontWeight: 600,
-                borderRadius: '0px',
+                borderRadius: '8px',
                 cursor: 'pointer'
               }}
             >
@@ -452,11 +387,11 @@ export default function LoginPage() {
                 fontSize: '13px',
                 width: '50%',
                 justifyContent: 'center',
-                border: '1px solid rgba(255, 158, 66, 0.3)',
-                background: 'rgba(10, 10, 10, 0.6)',
-                color: '#ffffff',
+                border: '1px solid var(--color-border-medium)',
+                background: 'var(--color-bg-card)',
+                color: 'var(--color-text-primary)',
                 fontWeight: 600,
-                borderRadius: '0px',
+                borderRadius: '8px',
                 cursor: 'pointer'
               }}
             >
@@ -467,9 +402,9 @@ export default function LoginPage() {
             </button>
           </div>
 
-          <p style={{ textAlign: 'center', marginTop: '24px', fontSize: '13px', color: 'var(--text-secondary)' }}>
+          <p style={{ textAlign: 'center', marginTop: '24px', fontSize: '13px', color: 'var(--color-text-secondary)' }}>
             Don&apos;t have an account?{' '}
-            <Link href="/signup" style={{ color: 'var(--accent)', fontWeight: 600, textDecoration: 'none' }}>Sign up</Link>
+            <Link href="/signup" style={{ color: 'var(--color-primary)', fontWeight: 600, textDecoration: 'none' }}>Sign up</Link>
           </p>
         </form>
       </div>

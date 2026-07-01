@@ -13,7 +13,7 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
   ({ className, ...props }, ref) => (
     <div
       ref={ref}
-      className={`glass p-6 ${className || ''}`}
+      className={`card p-6 ${className || ''}`}
       {...props}
     />
   )

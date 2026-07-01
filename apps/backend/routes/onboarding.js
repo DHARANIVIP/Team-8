@@ -3,6 +3,7 @@ import multer from 'multer';
 import axios from 'axios';
 import { PDFParse } from 'pdf-parse';
 import { protect } from '../middleware/auth.js';
+import { writeFileSync } from 'fs';
 import { 
   updateUserProfile, 
   getUserProfile,
@@ -13,7 +14,9 @@ import {
   getUserRecommendations,
   getOnboardingStatus,
   saveResumeAnalysis,
-  getResumeAnalysis
+  getResumeAnalysis,
+  findOrCreateCareerByName,
+  syncCoursesCache
 } from '../services/supabaseService.js';
 import { getGeminiAI, markKeyExhausted, isRateLimitError, parseRetryDelay, getGeminiUnavailableMessage } from '../services/geminiKeyManager.js';
 import { generateResumeInsights } from '../services/huggingfaceService.js';
@@ -109,7 +112,13 @@ router.post('/submit', protect, upload.single('resume'), async (req, res) => {
       allCourses = (await getAllCourses()) || [];
     } catch (dbErr) {
       console.error('❌ Failed to fetch baseline data from Supabase:', dbErr.message);
-      return res.status(500).json({ error: 'Failed to fetch career data from database. Please ensure migrations have been run.' });
+      try {
+        writeFileSync('./error-log.txt', `Database Fetch Error: ${dbErr.message}\nStack: ${dbErr.stack}`);
+      } catch (fsErr) {}
+      return res.status(500).json({ 
+        error: 'Failed to fetch career data from database. Please ensure migrations have been run.',
+        details: dbErr.message
+      });
     }
 
     if (!allCareers.length) {
@@ -160,7 +169,9 @@ router.post('/submit', protect, upload.single('resume'), async (req, res) => {
           Resume Text:
           ${resumeText.substring(0, 3000)}
           
-          Available Career Domains: ${allCareers.map(c => c.name).join(', ')}
+          Available Career Domains (for reference only): ${allCareers.map(c => c.name).join(', ')}
+          
+          Recommend suitable industry-standard career paths (up to 3-5 roles) that match the candidate's actual background (e.g. if they are in Mechanical Engineering, recommend Mechanical Engineer, CAD Designer, Robotics Engineer, etc. rather than forcing software/tech roles) under the "careerScores" key.
           
           Return a JSON object with this exact structure:
           {
@@ -195,7 +206,7 @@ router.post('/submit', protect, upload.single('resume'), async (req, res) => {
             };
             careerScores = geminiResponse.careerScores || {};
             
-            console.log('✅ Gemini analysis complete');
+            console.log('✅ Gemini onboarding analysis complete');
             geminiSuccess = true;
           } catch (geminiAttemptErr) {
             if (isRateLimitError(geminiAttemptErr)) {
@@ -203,7 +214,9 @@ router.post('/submit', protect, upload.single('resume'), async (req, res) => {
               console.log(`🔄 Onboarding Gemini 429 — rotating to next key (attempt ${keyAttempt + 1}/${maxKeyAttempts})...`);
               continue;
             }
-            throw geminiAttemptErr; // non-429 error, propagate
+            console.error(`[Onboarding] Gemini attempt failed: ${geminiAttemptErr.message || geminiAttemptErr}`);
+            // Proceed to next key rotation or HuggingFace fallback instead of crashing
+            continue;
           }
         }
 
@@ -229,7 +242,7 @@ router.post('/submit', protect, upload.single('resume'), async (req, res) => {
         };
       }
     } catch (geminiErr) {
-      console.error('❌ Gemini analysis failed:', geminiErr.message);
+      console.error('❌ Gemini onboarding analysis failed:', geminiErr.message);
       return res.status(500).json({ error: 'AI resume analysis failed. Please try again.', details: geminiErr.message });
     }
 
@@ -239,17 +252,45 @@ router.post('/submit', protect, upload.single('resume'), async (req, res) => {
       ...(insights?.skills || [])
     ]));
 
-    // Sort to find the highest-scoring matching career
-    const careerMatches = allCareers.map(c => {
-      const careerName = c.name || '';
-      const score = careerScores[careerName] || 0;
-      return {
-        id: c.id,
-        name: careerName,
-        score: score,
-        industry: getIndustryForCareerName(careerName)
-      };
-    });
+    // Resolve or create each career dynamically in database
+    const careerMatches = [];
+    
+    // Resolve or create each career dynamically in database in parallel
+    try {
+      await Promise.all(
+        Object.entries(careerScores).map(async ([careerName, score]) => {
+          try {
+            console.log(`🔍 Resolving career path: "${careerName}" during onboarding...`);
+            const dbCareer = await findOrCreateCareerByName(careerName);
+            if (dbCareer) {
+              careerMatches.push({
+                id: dbCareer.id,
+                name: dbCareer.name,
+                score: score,
+                industry: getIndustryForCareerName(dbCareer.name)
+              });
+            }
+          } catch (syncErr) {
+            console.error(`Failed to find or create career "${careerName}":`, syncErr.message);
+          }
+        })
+      );
+    } catch (parallelErr) {
+      console.error('Failed to resolve careers in parallel:', parallelErr.message);
+    }
+
+    // Fallback mapping if no dynamic career matches were established
+    if (careerMatches.length === 0) {
+      allCareers.forEach(c => {
+        const score = careerScores[c.name] || 0;
+        careerMatches.push({
+          id: c.id,
+          name: c.name,
+          score: score,
+          industry: getIndustryForCareerName(c.name)
+        });
+      });
+    }
 
     const sortedCareers = [...careerMatches].sort((a, b) => b.score - a.score);
     const topCareer = sortedCareers[0] || { name: 'Software Engineer', id: allCareers[0]?.id };
@@ -269,16 +310,37 @@ router.post('/submit', protect, upload.single('resume'), async (req, res) => {
       return { name: ind, score: avg };
     }).sort((a, b) => b.score - a.score);
 
-    // 4. Calculate skill gaps & suggest courses (strict dataset mapping)
+    // 4. Calculate skill gaps & suggest courses (dynamic sync mapping)
     const topCareerIds = sortedCareers.slice(0, 3).map(tc => tc.id);
-    const targetSkills = allSkills.filter(s => s && topCareerIds.includes(s.career_id));
+    
+    // Fetch latest skills from DB (since new ones were inserted dynamically)
+    const freshSkills = (await getAllSkills()) || [];
+    const targetSkills = freshSkills.filter(s => s && topCareerIds.includes(s.career_id));
     
     const gapSkills = targetSkills.filter(ts => 
       ts && ts.name && !finalSkillsList.some(fs => fs && fs.toLowerCase() === ts.name.toLowerCase())
     );
 
+    // Sync courses dynamically in parallel for gap skills if none exist
+    try {
+      await Promise.all(
+        gapSkills.map(async (gs) => {
+          try {
+            console.log(`📚 Dynamically syncing courses for skill: "${gs.name}"...`);
+            await syncCoursesCache(gs.id, gs.name);
+          } catch (courseSyncErr) {
+            console.warn(`Failed to sync courses for skill "${gs.name}":`, courseSyncErr.message);
+          }
+        })
+      );
+    } catch (parallelErr) {
+      console.warn(`Failed to complete parallel courses sync:`, parallelErr.message);
+    }
+
+    // Fetch latest courses from DB (since new ones were synced dynamically)
+    const freshCourses = (await getAllCourses()) || [];
     const gapSkillIds = gapSkills.map(gs => gs.id);
-    const suggestedCourses = allCourses.filter(course => course && gapSkillIds.includes(course.skill_id));
+    const suggestedCourses = freshCourses.filter(course => course && gapSkillIds.includes(course.skill_id));
 
     // 5. Update user profile in Supabase (persist ALL onboarding data)
     let profileSaved = false;
@@ -361,6 +423,12 @@ router.post('/submit', protect, upload.single('resume'), async (req, res) => {
     });
   } catch (error) {
     console.error('❌ Onboarding submit failed:', error);
+    try {
+      writeFileSync('./error-log.txt', error.stack || String(error));
+      console.log('📝 Error stack written to error-log.txt');
+    } catch (fsErr) {
+      console.error('Failed to write error-log.txt:', fsErr);
+    }
     res.status(500).json({ error: 'Failed to process onboarding details', details: error.message });
   }
 });

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -19,9 +19,9 @@ function Section({ children }: { children: React.ReactNode }) {
 
 function SectionTitle({ icon, children }: { icon: React.ReactNode; children: React.ReactNode }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', paddingBottom: '12px', borderBottom: '1px solid var(--border-dark)' }}>
-      <span style={{ color: 'var(--accent)', fontSize: '20px', display: 'inline-flex' }}>{icon}</span>
-      <h2 style={{ color: '#ffffff', fontWeight: 700, fontSize: '18px', margin: 0, fontFamily: 'Outfit, sans-serif' }}>{children}</h2>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', paddingBottom: '12px', borderBottom: '1px solid var(--color-border-light)' }}>
+      <span style={{ color: 'var(--color-primary)', fontSize: '20px', display: 'inline-flex' }}>{icon}</span>
+      <h2 style={{ color: 'var(--color-text-primary)', fontWeight: 700, fontSize: '18px', margin: 0, fontFamily: 'Outfit, sans-serif' }}>{children}</h2>
     </div>
   );
 }
@@ -29,7 +29,7 @@ function SectionTitle({ icon, children }: { icon: React.ReactNode; children: Rea
 function FieldInput({ label, placeholder, value, type = 'text', readOnly, onChange }: { label?: string; placeholder: string; value?: string; type?: string; readOnly?: boolean; onChange?: (val: string) => void }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', flex: 1 }}>
-      {label && <label style={{ color: 'var(--text-secondary)', fontSize: '12px', fontWeight: 600 }}>{label}</label>}
+      {label && <label style={{ color: 'var(--color-text-secondary)', fontSize: '12px', fontWeight: 600 }}>{label}</label>}
       <input
         type={type}
         value={value ?? ''}
@@ -37,7 +37,7 @@ function FieldInput({ label, placeholder, value, type = 'text', readOnly, onChan
         onChange={(e) => onChange && onChange(e.target.value)}
         placeholder={placeholder}
         className="input-field"
-        style={{ color: readOnly ? 'var(--text-muted)' : 'var(--text-primary)', cursor: readOnly ? 'default' : 'text' }}
+        style={{ color: readOnly ? 'var(--color-text-muted)' : 'var(--color-text-primary)', cursor: readOnly ? 'default' : 'text' }}
       />
     </div>
   );
@@ -50,15 +50,15 @@ function CheckRow({ label, checked, onChange }: { label: string; checked?: boole
         onClick={() => onChange && onChange(!checked)}
         style={{
           width: '18px', height: '18px', borderRadius: '4px', flexShrink: 0,
-          border: `1px solid ${checked ? 'var(--accent)' : 'var(--border-dark)'}`,
-          background: checked ? 'var(--accent)' : 'transparent',
+          border: `1px solid ${checked ? 'var(--color-primary)' : 'var(--color-border-medium)'}`,
+          background: checked ? 'var(--color-primary)' : 'transparent',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           cursor: 'pointer', transition: 'all 0.2s',
         }}
       >
-        {checked && <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><polyline points="1.5 6 4.5 9 10.5 3" stroke="#0a0a0a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+        {checked && <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><polyline points="1.5 6 4.5 9 10.5 3" stroke="var(--color-bg-main)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
       </span>
-      <span style={{ color: 'var(--text-secondary)', fontSize: '13px', fontWeight: 500 }}>{label}</span>
+      <span style={{ color: 'var(--color-text-secondary)', fontSize: '13px', fontWeight: 500 }}>{label}</span>
     </label>
   );
 }
@@ -205,36 +205,36 @@ export default function SettingsPage() {
   }
 
   return (
-    <div style={{ background: '#0a0a0a', minHeight: '100vh' }}>
+    <div style={{ background: 'var(--color-bg-main)', minHeight: '100vh' }}>
       <DashboardNavbar />
       <main className="page-container animate-slide-up" style={{ maxWidth: '780px', padding: '24px 0', display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
-        {/* â”€â”€ Page header â”€â”€ */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '20px', borderBottom: '1px solid rgba(255,158,66,0.15)' }}>
-          <h1 style={{ color: '#ffffff', fontWeight: 700, fontSize: '24px', margin: 0, fontFamily: 'Outfit, sans-serif' }}>Settings</h1>
-          <Link href="/dashboard/profile" className="btn-outline" style={{ fontSize: '12px', padding: '6px 14px' }}>My Profile â†’</Link>
+        {/* ── Page header ── */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '20px', borderBottom: '1px solid var(--color-border-light)' }}>
+          <h1 style={{ color: 'var(--color-text-primary)', fontWeight: 700, fontSize: '24px', margin: 0, fontFamily: 'Outfit, sans-serif' }}>Settings</h1>
+          <Link href="/dashboard/profile" className="btn-outline" style={{ fontSize: '12px', padding: '6px 14px' }}>My Profile →</Link>
         </div>
 
         {globalError && (
-          <div style={{ padding: '14px', background: 'rgba(239,68,68,0.06)', border: '1px solid #ef4444', color: '#ef4444', fontSize: '13px', borderRadius: '6px', textAlign: 'center' }}>
+          <div style={{ padding: '14px', background: '#FEE2E2', border: '1px solid rgba(220, 38, 38, 0.25)', color: '#DC2626', fontSize: '13px', borderRadius: '6px', textAlign: 'center' }}>
             {globalError}
           </div>
         )}
 
         {globalSuccess && (
-          <div style={{ padding: '14px', background: 'rgba(80,200,120,0.06)', border: '1px solid #50c878', color: '#50c878', fontSize: '13px', borderRadius: '6px', textAlign: 'center' }}>
+          <div style={{ padding: '14px', background: '#D1FAE5', border: '1px solid rgba(16, 185, 129, 0.25)', color: '#047857', fontSize: '13px', borderRadius: '6px', textAlign: 'center' }}>
             {globalSuccess}
           </div>
         )}
 
         {loading ? (
           <div className="card" style={{ padding: '48px', textAlign: 'center' }}>
-            <div className="spinner" style={{ marginBottom: '16px' }} />
-            <p style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>Loading settings...</p>
+            <div className="spinner" style={{ marginBottom: '16px', borderColor: 'var(--color-primary) transparent transparent transparent' }} />
+            <p style={{ color: 'var(--color-text-secondary)', fontSize: '14px' }}>Loading settings...</p>
           </div>
         ) : (
           <>
-            {/* â•â• PROFILE â•â• */}
+            {/* ── PROFILE ── */}
             <Section>
               <SectionTitle icon={
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -248,43 +248,43 @@ export default function SettingsPage() {
               </div>
 
               <div>
-                <label style={{ color: 'var(--text-secondary)', fontSize: '12px', fontWeight: 600, display: 'block', marginBottom: '6px' }}>
-                  Skills <span style={{ color: 'var(--text-muted)', fontWeight: 500 }}>(comma separated)</span>
+                <label style={{ color: 'var(--color-text-secondary)', fontSize: '12px', fontWeight: 600, display: 'block', marginBottom: '6px' }}>
+                  Skills <span style={{ color: 'var(--color-text-muted)', fontWeight: 500 }}>(comma separated)</span>
                 </label>
                 <input value={skills} onChange={(e) => setSkills(e.target.value)} placeholder="e.g. Python, Machine Learning, SQL" className="input-field" />
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '14px' }}>
                 <div>
-                  <label style={{ color: 'var(--text-secondary)', fontSize: '12px', fontWeight: 600, display: 'block', marginBottom: '6px' }}>Target Career</label>
+                  <label style={{ color: 'var(--color-text-secondary)', fontSize: '12px', fontWeight: 600, display: 'block', marginBottom: '6px' }}>Target Career</label>
                   <select value={targetCareer} onChange={(e) => setTargetCareer(e.target.value)} className="input-field" style={{ cursor: 'pointer' }}>
                     {categories.length > 0 ? categories.map((c) => <option key={c.id} value={c.name}>{c.name}</option>) :
                       ['Software Engineer', 'Data Scientist', 'UX Designer', 'Cybersecurity Analyst', 'Product Manager', 'Cloud Architect'].map((c) => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label style={{ color: 'var(--text-secondary)', fontSize: '12px', fontWeight: 600, display: 'block', marginBottom: '6px' }}>Experience Level</label>
+                  <label style={{ color: 'var(--color-text-secondary)', fontSize: '12px', fontWeight: 600, display: 'block', marginBottom: '6px' }}>Experience Level</label>
                   <select value={experienceLevel} onChange={(e) => setExperienceLevel(e.target.value)} className="input-field" style={{ cursor: 'pointer' }}>
-                    {['Student', 'Fresher (0â€“1y)', 'Junior (1â€“3y)', 'Mid-level (3â€“5y)', 'Senior (5y+)'].map((c) => <option key={c} value={c}>{c}</option>)}
+                    {['Student', 'Fresher (0–1y)', 'Junior (1–3y)', 'Mid-level (3–5y)', 'Senior (5y+)'].map((c) => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
               </div>
 
               <div>
-                <label style={{ color: 'var(--text-secondary)', fontSize: '12px', fontWeight: 600, display: 'block', marginBottom: '6px' }}>Salary Goal</label>
+                <label style={{ color: 'var(--color-text-secondary)', fontSize: '12px', fontWeight: 600, display: 'block', marginBottom: '6px' }}>Salary Goal</label>
                 <select value={salaryGoal} onChange={(e) => setSalaryGoal(e.target.value)} className="input-field" style={{ cursor: 'pointer' }}>
-                  {['â‚¹5Lâ€“â‚¹10L', 'â‚¹10Lâ€“â‚¹15L', 'â‚¹15L+', 'â‚¹25L+', 'â‚¹40L+'].map((c) => <option key={c} value={c}>{c}</option>)}
+                  {['₹5L–₹10L', '₹10L–₹15L', '₹15L+', '₹25L+', '₹40L+'].map((c) => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
 
               <div>
                 <button onClick={saveProfileData} className="btn-primary" style={{ fontSize: '13px' }}>
-                  {profileSaved ? 'âœ“ Profile Saved!' : 'Save Profile'}
+                  {profileSaved ? '✓ Profile Saved!' : 'Save Profile'}
                 </button>
               </div>
             </Section>
 
-            {/* â•â• PREFERENCES â•â• */}
+            {/* ── PREFERENCES ── */}
             <Section>
               <SectionTitle icon={
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -302,10 +302,10 @@ export default function SettingsPage() {
               {/* Theme */}
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-secondary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
                   </svg>
-                  <span style={{ color: 'var(--text-secondary)', fontSize: '13px', fontWeight: 600 }}>Theme preference</span>
+                  <span style={{ color: 'var(--color-text-secondary)', fontSize: '13px', fontWeight: 600 }}>Theme preference</span>
                 </div>
                 <div style={{ display: 'flex', gap: '8px' }}>
                   {(['Dark', 'Light'] as const).map((t) => (
@@ -318,12 +318,12 @@ export default function SettingsPage() {
 
               <div>
                 <button onClick={savePrefData} className="btn-primary" style={{ fontSize: '13px' }}>
-                  {prefSaved ? 'âœ“ Preferences Saved!' : 'Save Preferences'}
+                  {prefSaved ? '✓ Preferences Saved!' : 'Save Preferences'}
                 </button>
               </div>
             </Section>
 
-            {/* â•â• SECURITY â•â• */}
+            {/* ── SECURITY ── */}
             <Section>
               <SectionTitle icon={
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -334,13 +334,13 @@ export default function SettingsPage() {
               {/* Change Email */}
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" strokeWidth="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
-                  <span style={{ color: 'var(--text-secondary)', fontSize: '12px', fontWeight: 600 }}>Change Email Address</span>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-secondary)" strokeWidth="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                  <span style={{ color: 'var(--color-text-secondary)', fontSize: '12px', fontWeight: 600 }}>Change Email Address</span>
                 </div>
                 <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                   <input value={newEmail} type="email" onChange={(e) => setNewEmail(e.target.value)} className="input-field" style={{ flex: 1, minWidth: '200px' }} />
                   <button onClick={handleEmailUpdate} className="btn-primary" style={{ fontSize: '12px', padding: '8px 18px' }}>
-                    {emailUpdated ? 'âœ“ Updated!' : 'Update'}
+                    {emailUpdated ? '✓ Updated!' : 'Update'}
                   </button>
                 </div>
               </div>
@@ -348,20 +348,20 @@ export default function SettingsPage() {
               {/* Change Password */}
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                  <span style={{ color: 'var(--text-secondary)', fontSize: '12px', fontWeight: 600 }}>Change Password</span>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-secondary)" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                  <span style={{ color: 'var(--color-text-secondary)', fontSize: '12px', fontWeight: 600 }}>Change Password</span>
                 </div>
                 <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
                   <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="New password" className="input-field" style={{ flex: 1, minWidth: '180px' }} />
                   <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Confirm new password" className="input-field" style={{ flex: 1, minWidth: '180px' }} />
                   <button onClick={handlePasswordUpdate} className="btn-primary" style={{ fontSize: '12px', padding: '8px 18px' }}>
-                    {passwordUpdated ? 'âœ“ Updated!' : 'Update'}
+                    {passwordUpdated ? '✓ Updated!' : 'Update'}
                   </button>
                 </div>
               </div>
             </Section>
 
-            {/* â•â• DATA & PRIVACY â•â• */}
+            {/* ── DATA & PRIVACY ── */}
             <Section>
               <SectionTitle icon={
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -370,24 +370,24 @@ export default function SettingsPage() {
               }>Data & Privacy</SectionTitle>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', background: 'var(--surface-alt)', borderRadius: '6px', border: '1px solid rgba(255,158,66,0.08)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', background: 'var(--color-bg-secondary)', borderRadius: '6px', border: '1px solid var(--color-border-light)' }}>
                   <div>
-                    <p style={{ color: '#ffffff', fontSize: '13px', fontWeight: 600, margin: 0, fontFamily: 'Outfit, sans-serif' }}>Export Your Data</p>
-                    <p style={{ color: 'var(--text-secondary)', fontSize: '11px', margin: '2px 0 0' }}>Download a copy of your profile, skills, and recommendations</p>
+                    <p style={{ color: 'var(--color-text-primary)', fontSize: '13px', fontWeight: 600, margin: 0, fontFamily: 'Outfit, sans-serif' }}>Export Your Data</p>
+                    <p style={{ color: 'var(--color-text-secondary)', fontSize: '11px', margin: '2px 0 0' }}>Download a copy of your profile, skills, and recommendations</p>
                   </div>
                   <button className="btn-outline" style={{ fontSize: '12px', padding: '6px 14px' }}>Export</button>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', background: 'var(--surface-alt)', borderRadius: '6px', border: '1px solid rgba(255,158,66,0.08)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', background: 'var(--color-bg-secondary)', borderRadius: '6px', border: '1px solid var(--color-border-light)' }}>
                   <div>
-                    <p style={{ color: '#ffffff', fontSize: '13px', fontWeight: 600, margin: 0, fontFamily: 'Outfit, sans-serif' }}>Clear Recommendation History</p>
-                    <p style={{ color: 'var(--text-secondary)', fontSize: '11px', margin: '2px 0 0' }}>Reset AI-generated career and skill recommendations</p>
+                    <p style={{ color: 'var(--color-text-primary)', fontSize: '13px', fontWeight: 600, margin: 0, fontFamily: 'Outfit, sans-serif' }}>Clear Recommendation History</p>
+                    <p style={{ color: 'var(--color-text-secondary)', fontSize: '11px', margin: '2px 0 0' }}>Reset AI-generated career and skill recommendations</p>
                   </div>
                   <button className="btn-outline" style={{ fontSize: '12px', padding: '6px 14px' }}>Clear</button>
                 </div>
               </div>
             </Section>
 
-            {/* â•â• SESSION & ACCOUNT â•â• */}
+            {/* ── SESSION & ACCOUNT ── */}
             <Section>
               <SectionTitle icon={
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -398,10 +398,10 @@ export default function SettingsPage() {
               {/* Session */}
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-secondary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
                   </svg>
-                  <span style={{ color: 'var(--text-secondary)', fontSize: '12px', fontWeight: 600 }}>Session Control</span>
+                  <span style={{ color: 'var(--color-text-secondary)', fontSize: '12px', fontWeight: 600 }}>Session Control</span>
                 </div>
                 <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                   <button onClick={() => { signout(); router.push('/login'); }} className="btn-outline" style={{ fontSize: '13px', padding: '7px 18px' }}>
@@ -416,21 +416,21 @@ export default function SettingsPage() {
               </div>
 
               {/* Danger Zone */}
-              <div style={{ padding: '18px 20px', background: 'rgba(239,68,68,0.04)', border: '1px solid rgba(239,68,68,0.18)', borderRadius: '8px' }}>
+              <div style={{ padding: '18px 20px', background: 'rgba(239, 68, 68, 0.03)', border: '1px solid rgba(239, 68, 68, 0.2)', borderRadius: '8px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-                  <span style={{ color: '#ef4444', fontSize: '14px', display: 'inline-flex' }}>âš </span>
+                  <span style={{ color: '#ef4444', fontSize: '14px', display: 'inline-flex' }}>⚠</span>
                   <span style={{ color: '#ef4444', fontWeight: 700, fontSize: '14px', fontFamily: 'Outfit, sans-serif' }}>Danger Zone</span>
                 </div>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '12px', marginBottom: '16px', lineHeight: 1.6 }}>
+                <p style={{ color: 'var(--color-text-secondary)', fontSize: '12px', marginBottom: '16px', lineHeight: 1.6 }}>
                   Permanently deletes your account, profile data, and all recommendations. This cannot be undone.
                 </p>
                 {!showDelete ? (
                   <button onClick={() => setShowDelete(true)} style={{
-                    background: 'rgba(239,68,68,0.12)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.4)',
+                    background: 'rgba(239, 68, 68, 0.12)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.4)',
                     borderRadius: '6px', padding: '8px 20px', fontWeight: 700, fontSize: '13px', cursor: 'pointer', transition: 'all 0.2s ease',
                   }}
-                    onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = 'rgba(239,68,68,0.22)')}
-                    onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = 'rgba(239,68,68,0.12)')}
+                    onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = 'rgba(239, 68, 68, 0.22)')}
+                    onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = 'rgba(239, 68, 68, 0.12)')}
                   >
                     Delete account
                   </button>

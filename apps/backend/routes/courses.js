@@ -1,5 +1,5 @@
 import express from 'express';
-import { getAllCourses, getCoursesBySkill, createCourse, getRecommendedCourses, getSkillById, syncCoursesCache, getUserProfile, saveRecommendedCourses, getRecommendedCoursesForStudent, getUserSkills, getSkillsByCareer, getCategoryById, getCareerRecommendations, getSkillRecommendations, computeSkillGap, mongoIdToUuid } from '../services/supabaseService.js';
+import { getAllCourses, getCoursesBySkill, createCourse, getRecommendedCourses, getSkillById, syncCoursesCache, getUserProfile, saveRecommendedCourses, getRecommendedCoursesForStudent, getUserSkills, getSkillsByCareer, getCategoryById, getCareerRecommendations, getSkillRecommendations, computeSkillGap, mongoIdToUuid, getUserRecommendations, findOrCreateCareerByName, getAllCategories } from '../services/supabaseService.js';
 import { generateCourseRecommendations } from '../services/geminiCareerService.js';
 import { protect } from '../middleware/auth.js';
 
@@ -160,6 +160,41 @@ router.get('/recommendation', protect, async (req, res) => {
       }
     } catch (err) {
       console.warn('⚠️ Could not fetch career recommendations:', err.message);
+    }
+
+    // Fallback 1: Check onboarding recommendations in user_recommendations table
+    if (!selectedCareer) {
+      try {
+        const userRecs = await getUserRecommendations(userId);
+        if (userRecs && userRecs.suggested_career_paths && userRecs.suggested_career_paths.length > 0) {
+          const firstCareerId = mongoIdToUuid(userRecs.suggested_career_paths[0]);
+          selectedCareer = await getCategoryById(firstCareerId);
+        }
+      } catch (err) {
+        console.warn('⚠️ Could not fetch from user_recommendations fallback:', err.message);
+      }
+    }
+
+    // Fallback 2: Check student profile target_career name
+    if (!selectedCareer && profile.target_career) {
+      try {
+        console.log(`🔍 Resolving career by target_career name: "${profile.target_career}"`);
+        selectedCareer = await findOrCreateCareerByName(profile.target_career);
+      } catch (err) {
+        console.warn('⚠️ Could not resolve target_career fallback by name:', err.message);
+      }
+    }
+
+    // Fallback 3: Get first available career category from DB
+    if (!selectedCareer) {
+      try {
+        const allCats = await getAllCategories();
+        if (allCats && allCats.length > 0) {
+          selectedCareer = allCats[0];
+        }
+      } catch (err) {
+        console.warn('⚠️ Could not fetch fallback categories:', err.message);
+      }
     }
 
     if (!selectedCareer) {

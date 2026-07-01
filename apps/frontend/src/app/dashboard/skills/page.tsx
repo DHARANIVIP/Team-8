@@ -176,7 +176,7 @@ export default function SkillsPage() {
   const allCompleted = totalCount > 0 && completedCount === totalCount;
 
   return (
-    <div style={{ background: '#0a0a0a', minHeight: '100vh', color: 'var(--text-primary)' }}>
+    <div style={{ background: 'var(--color-bg-main)', minHeight: '100vh', color: 'var(--color-text-primary)' }}>
       <DashboardNavbar />
 
       <main style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 24px' }}>
@@ -184,7 +184,7 @@ export default function SkillsPage() {
         {/* Career Context Header */}
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          paddingBottom: '20px', borderBottom: '1px solid rgba(255, 158, 66, 0.15)', marginBottom: '32px'
+          paddingBottom: '20px', borderBottom: '1px solid var(--color-border-light)', marginBottom: '32px'
         }}>
           <div>
             <span className="section-label" style={{ display: 'block', marginBottom: '4px' }}>LEARNING ROADMAP</span>
@@ -193,9 +193,9 @@ export default function SkillsPage() {
                 Skills Path: {careerName || 'Career Roadmap'}
               </h1>
             </div>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '13px', margin: '6px 0 0' }}>
-              Target career context: <strong style={{ color: 'var(--accent)' }}>{careerName}</strong>. Not your target?{' '}
-              <Link href="/dashboard/career" style={{ color: 'var(--accent)', textDecoration: 'underline', fontWeight: 600 }}>
+            <p style={{ color: 'var(--color-text-secondary)', fontSize: '13px', margin: '6px 0 0' }}>
+              Target career context: <strong style={{ color: 'var(--color-primary)' }}>{careerName}</strong>. Not your target?{' '}
+              <Link href="/dashboard/career" style={{ color: 'var(--color-primary)', textDecoration: 'underline', fontWeight: 600 }}>
                 Update in Career Guidance
               </Link>
             </p>
@@ -210,8 +210,8 @@ export default function SkillsPage() {
         {/* Loading */}
         {loading && (
           <div style={{ textAlign: 'center', padding: '80px 20px' }}>
-            <div className="spinner" style={{ margin: '0 auto 24px', borderColor: 'var(--accent) transparent transparent transparent' }} />
-            <p style={{ color: 'var(--text-secondary)' }}>Mapping skill gaps and aligning learning pathway...</p>
+            <div className="spinner" style={{ margin: '0 auto 24px', borderColor: 'var(--color-primary) transparent transparent transparent' }} />
+            <p style={{ color: 'var(--color-text-secondary)' }}>Mapping skill gaps and aligning learning pathway...</p>
           </div>
         )}
 
@@ -220,7 +220,7 @@ export default function SkillsPage() {
           <div className="card" style={{ textAlign: 'center', padding: '80px 24px', maxWidth: '600px', margin: '0 auto' }}>
             <span style={{ fontSize: '48px', display: 'block', marginBottom: '16px' }}>🎯</span>
             <h3 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '8px' }}>Action Required</h3>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '24px' }}>
+            <p style={{ color: 'var(--color-text-secondary)', fontSize: '14px', marginBottom: '24px' }}>
               {error || 'Select a career recommendation path to begin dynamic skill alignment.'}
             </p>
             <Link href="/dashboard/career" className="btn-primary" style={{ padding: '10px 24px', textDecoration: 'none' }}>
@@ -239,49 +239,49 @@ export default function SkillsPage() {
               {/* Next Recommended Skill CTA Card */}
               {nextRecommended && !allCompleted && (
                 <div style={{
-                  background: 'linear-gradient(135deg, rgba(255,158,66,0.08) 0%, rgba(10,10,10,0.5) 100%)',
-                  border: '1px solid var(--accent)', padding: '24px', borderRadius: '12px',
-                  boxShadow: '0 0 15px rgba(255,158,66,0.05)', position: 'relative'
+                  background: 'linear-gradient(135deg, var(--color-primary-light) 0%, var(--color-bg-card) 100%)',
+                  border: '1px solid var(--color-primary)', padding: '24px', borderRadius: '12px',
+                  boxShadow: '0 0 15px rgba(59, 130, 246, 0.05)', position: 'relative'
                 }}>
                   <span style={{
                     position: 'absolute', top: '20px', right: '20px', fontSize: '11px', fontWeight: 700,
-                    background: 'var(--accent-glow)', color: 'var(--accent)', padding: '2px 8px', borderRadius: '4px'
+                    background: 'var(--color-primary-light)', color: 'var(--color-primary)', padding: '2px 8px', borderRadius: '4px'
                   }}>
                     TOP ACTION FOCUS
                   </span>
                   
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-                    <span style={{ color: 'var(--accent)', fontSize: '18px', fontWeight: 800 }}>⚡ Next Recommended:</span>
-                    <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#ffffff', fontFamily: 'Outfit, sans-serif' }}>
+                    <span style={{ color: 'var(--color-primary)', fontSize: '18px', fontWeight: 800 }}>⚡ Next Recommended:</span>
+                    <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: 'var(--color-text-primary)', fontFamily: 'Outfit, sans-serif' }}>
                       {nextRecommended.skill_name}
                     </h3>
                   </div>
 
-                  <p style={{ color: '#ffffff', fontSize: '13px', margin: '0 0 16px', lineHeight: '1.5', opacity: 0.9 }}>
+                  <p style={{ color: 'var(--color-text-secondary)', fontSize: '13px', margin: '0 0 16px', lineHeight: '1.5', opacity: 0.9 }}>
                     {nextRecommended.reason}
                   </p>
 
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center', marginBottom: '20px' }}>
                     <span style={{
                       padding: '2px 8px', background: DIFF_COLORS[nextRecommended.skill_difficulty]?.bg || 'rgba(255,255,255,0.03)',
-                      color: DIFF_COLORS[nextRecommended.skill_difficulty]?.tx || '#ffffff', border: `1px solid ${DIFF_COLORS[nextRecommended.skill_difficulty]?.bd || 'var(--border)'}`,
+                      color: DIFF_COLORS[nextRecommended.skill_difficulty]?.tx || 'var(--color-text-primary)', border: `1px solid ${DIFF_COLORS[nextRecommended.skill_difficulty]?.bd || 'var(--color-border-light)'}`,
                       borderRadius: '4px', fontSize: '11px', fontWeight: 600
                     }}>
                       Level: {nextRecommended.recommended_level}
                     </span>
-                    <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                    <span style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>
                       Category: {nextRecommended.skill_category}
                     </span>
                     
                     {nextRecommended.prerequisites?.length > 0 && (
                       <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginLeft: 'auto' }}>
-                        <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Prerequisites:</span>
+                        <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>Prerequisites:</span>
                         {nextRecommended.prerequisites.map((pre: string) => (
                           <span
                             key={pre} onClick={() => scrollToSkill(pre)}
                             style={{
-                              fontSize: '10px', background: 'rgba(255,255,255,0.05)', color: 'var(--accent)',
-                              padding: '1px 6px', borderRadius: '3px', border: '1px solid var(--border-dark)', cursor: 'pointer'
+                              fontSize: '10px', background: 'var(--color-primary-light)', color: 'var(--color-primary)',
+                              padding: '1px 6px', borderRadius: '3px', border: '1px solid var(--color-border-light)', cursor: 'pointer'
                             }}
                           >
                             {pre}
@@ -317,7 +317,7 @@ export default function SkillsPage() {
 
               {/* Recommended Sequenced learning order View */}
               <div className="card" style={{ padding: '24px 28px' }}>
-                <h2 style={{ fontSize: '18px', fontWeight: 700, margin: '0 0 20px', color: '#ffffff', fontFamily: 'Outfit, sans-serif' }}>
+                <h2 style={{ fontSize: '18px', fontWeight: 700, margin: '0 0 20px', color: 'var(--color-text-primary)', fontFamily: 'Outfit, sans-serif' }}>
                   Recommended Learning Path
                 </h2>
 
@@ -345,7 +345,7 @@ export default function SkillsPage() {
                         {index < recommendations.length - 1 && (
                           <div style={{
                             position: 'absolute', left: '16px', top: '32px', bottom: '0', width: '2px',
-                            background: isCompleted ? '#10b981' : 'var(--border-dark)', zIndex: 1
+                            background: isCompleted ? '#10b981' : 'var(--color-border-medium)', zIndex: 1
                           }} />
                         )}
 
@@ -354,24 +354,24 @@ export default function SkillsPage() {
                           zIndex: 2, flexShrink: 0, width: '34px', height: '34px', borderRadius: '50%',
                           display: 'flex', alignItems: 'center', justifySelf: 'center', justifyContent: 'center',
                           fontSize: '12px', fontWeight: 800,
-                          background: isCompleted ? 'rgba(16,185,129,0.15)' : isInProgress ? 'var(--accent-glow)' : 'rgba(255,255,255,0.02)',
-                          color: isCompleted ? '#10b981' : isInProgress ? 'var(--accent)' : 'var(--text-muted)',
-                          border: `2px solid ${isCompleted ? '#10b981' : isInProgress ? 'var(--accent)' : 'var(--border)'}`
+                          background: isCompleted ? 'rgba(16,185,129,0.15)' : isInProgress ? 'var(--color-primary-light)' : 'var(--color-bg-secondary)',
+                          color: isCompleted ? '#10b981' : isInProgress ? 'var(--color-primary)' : 'var(--color-text-muted)',
+                          border: `2px solid ${isCompleted ? '#10b981' : isInProgress ? 'var(--color-primary)' : 'var(--color-border-medium)'}`
                         }}>
                           {isCompleted ? '✓' : rec.priority_order}
                         </div>
 
                         {/* Main Info Card */}
                         <div style={{
-                          flex: 1, padding: '16px 20px', background: isHighlighted ? 'rgba(255,158,66,0.05)' : 'rgba(255,255,255,0.01)',
-                          border: isHighlighted ? '1.5px solid var(--accent)' : '1px solid var(--border-dark)', borderRadius: '8px',
-                          boxShadow: isHighlighted ? '0 0 10px rgba(255,158,66,0.1)' : 'none', transition: 'all 0.2s ease',
+                          flex: 1, padding: '16px 20px', background: isHighlighted ? 'var(--color-primary-light)' : 'var(--color-bg-secondary)',
+                          border: isHighlighted ? '1.5px solid var(--color-primary)' : '1px solid var(--color-border-light)', borderRadius: '8px',
+                          boxShadow: isHighlighted ? '0 0 10px rgba(59, 130, 246, 0.1)' : 'none', transition: 'all 0.2s ease',
                           display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px'
                         }}>
                           <div style={{ minWidth: 0 }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '6px' }}>
                               <h3 style={{
-                                fontSize: '15px', fontWeight: 700, margin: 0, color: isCompleted ? 'var(--text-muted)' : '#ffffff',
+                                fontSize: '15px', fontWeight: 700, margin: 0, color: isCompleted ? 'var(--color-text-muted)' : 'var(--color-text-primary)',
                                 textDecoration: isCompleted ? 'line-through' : 'none'
                               }}>
                                 {rec.skill_name}
@@ -382,23 +382,23 @@ export default function SkillsPage() {
                               }}>
                                 {rec.skill_difficulty}
                               </span>
-                              <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{rec.skill_category}</span>
+                              <span style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>{rec.skill_category}</span>
                             </div>
 
-                            <p style={{ color: 'var(--text-secondary)', fontSize: '12px', margin: '0 0 8px', lineHeight: '1.4' }}>
+                            <p style={{ color: 'var(--color-text-secondary)', fontSize: '12px', margin: '0 0 8px', lineHeight: '1.4' }}>
                               {rec.reason}
                             </p>
 
                             {/* Prerequisites links */}
                             {(rec as any).prerequisites?.length > 0 && (
                               <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '6px', fontSize: '11px', marginBottom: '8px' }}>
-                                <span style={{ color: 'var(--text-muted)' }}>Requires:</span>
+                                <span style={{ color: 'var(--color-text-muted)' }}>Requires:</span>
                                 {(rec as any).prerequisites.map((pre: string) => (
                                   <span
                                     key={pre} onClick={() => scrollToSkill(pre)}
                                     style={{
-                                      background: 'rgba(255,158,66,0.05)', color: 'var(--accent)',
-                                      padding: '1px 6px', borderRadius: '3px', border: '1px solid rgba(255,158,66,0.15)', cursor: 'pointer'
+                                      background: 'var(--color-primary-light)', color: 'var(--color-primary)',
+                                      padding: '1px 6px', borderRadius: '3px', border: '1px solid var(--color-border-light)', cursor: 'pointer'
                                     }}
                                   >
                                     {pre}
@@ -407,10 +407,10 @@ export default function SkillsPage() {
                               </div>
                             )}
 
-                            <div style={{ display: 'flex', gap: '10px', fontSize: '11px', color: 'var(--text-muted)' }}>
-                              <span>Recommended level: <strong style={{ color: '#ffffff' }}>{rec.recommended_level}</strong></span>
+                            <div style={{ display: 'flex', gap: '10px', fontSize: '11px', color: 'var(--color-text-muted)' }}>
+                              <span>Recommended level: <strong style={{ color: 'var(--color-text-primary)' }}>{rec.recommended_level}</strong></span>
                               <span>•</span>
-                              <span style={{ color: isCompleted ? '#10b981' : isInProgress ? 'var(--accent)' : 'var(--text-secondary)' }}>
+                              <span style={{ color: isCompleted ? '#10b981' : isInProgress ? 'var(--color-primary)' : 'var(--color-text-secondary)' }}>
                                 {isCompleted ? 'Completed' : isInProgress ? 'In Progress' : 'Locked'}
                               </span>
                             </div>
@@ -438,13 +438,13 @@ export default function SkillsPage() {
                                 onClick={() => handleStatusChange(rec.id, 'in_progress')}
                                 disabled={updatingId === rec.id}
                                 className="btn-outline"
-                                style={{ fontSize: '11px', padding: '6px 12px', borderColor: 'var(--accent)', color: 'var(--accent)' }}
+                                style={{ fontSize: '11px', padding: '6px 12px', borderColor: 'var(--color-primary)', color: 'var(--color-primary)' }}
                               >
                                 {updatingId === rec.id ? '...' : 'Start'}
                               </button>
                             )}
                             {isPending && !nextActionable && nextRecommended && (
-                              <span style={{ color: 'var(--text-muted)', fontSize: '11px' }}>Locked</span>
+                              <span style={{ color: 'var(--color-text-muted)', fontSize: '11px' }}>Locked</span>
                             )}
                           </div>
                         </div>
@@ -464,7 +464,7 @@ export default function SkillsPage() {
               {availableCareers.length > 1 && (
                 <div className="card" style={{ padding: '20px 24px' }}>
                   <label style={{
-                    display: 'block', fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)',
+                    display: 'block', fontSize: '11px', fontWeight: 700, color: 'var(--color-text-muted)',
                     marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em'
                   }}>
                     Switch Target Career Context
@@ -473,8 +473,8 @@ export default function SkillsPage() {
                     value={selectedCareer.id}
                     onChange={(e) => handleCareerChange(e.target.value)}
                     style={{
-                      width: '100%', padding: '10px 14px', background: 'var(--surface)',
-                      border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text-primary)',
+                      width: '100%', padding: '10px 14px', background: 'var(--color-bg-main)',
+                      border: '1px solid var(--color-border-light)', borderRadius: '6px', color: 'var(--color-text-primary)',
                       fontSize: '14px', outline: 'none', cursor: 'pointer'
                     }}
                   >
@@ -490,38 +490,38 @@ export default function SkillsPage() {
                 <span className="section-label">ROADMAP SUITABILITY METRIC</span>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '14px 0 10px' }}>
                   <div>
-                    <h3 style={{ fontSize: '24px', fontWeight: 800, margin: 0, color: '#ffffff', fontFamily: 'Inter, sans-serif' }}>
+                    <h3 style={{ fontSize: '24px', fontWeight: 800, margin: 0, color: 'var(--color-text-primary)', fontFamily: 'Inter, sans-serif' }}>
                       {progressPercent}%
                     </h3>
-                    <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Overall Completeness</span>
+                    <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>Overall Completeness</span>
                   </div>
                   {gapSummary && (
                     <div style={{ display: 'flex', gap: '16px', fontSize: '12px', textAlign: 'center' }}>
                       <div>
                         <div style={{ color: '#ef4444', fontWeight: 800, fontSize: '16px' }}>{gapSummary.missing}</div>
-                        <div style={{ color: 'var(--text-muted)', fontSize: '10px' }}>Missing</div>
+                        <div style={{ color: 'var(--color-text-muted)', fontSize: '10px' }}>Missing</div>
                       </div>
                       <div>
                         <div style={{ color: '#f59e0b', fontWeight: 800, fontSize: '16px' }}>{gapSummary.weak}</div>
-                        <div style={{ color: 'var(--text-muted)', fontSize: '10px' }}>Weak</div>
+                        <div style={{ color: 'var(--color-text-muted)', fontSize: '10px' }}>Weak</div>
                       </div>
                       <div>
                         <div style={{ color: '#10b981', fontWeight: 800, fontSize: '16px' }}>{completedCount}</div>
-                        <div style={{ color: 'var(--text-muted)', fontSize: '10px' }}>Mastered</div>
+                        <div style={{ color: 'var(--color-text-muted)', fontSize: '10px' }}>Mastered</div>
                       </div>
                     </div>
                   )}
                 </div>
 
-                <div style={{ height: '8px', background: 'var(--border-dark)', borderRadius: '4px', overflow: 'hidden' }}>
-                  <div style={{ width: `${progressPercent}%`, height: '100%', background: 'var(--accent)', borderRadius: '4px', transition: 'width 0.5s ease' }} />
+                <div style={{ height: '8px', background: 'var(--color-border-light)', borderRadius: '4px', overflow: 'hidden' }}>
+                  <div style={{ width: `${progressPercent}%`, height: '100%', background: 'var(--color-primary)', borderRadius: '4px', transition: 'width 0.5s ease' }} />
                 </div>
               </div>
 
               {/* Recently Completed Skills */}
               {recentlyCompleted.length > 0 && (
                 <div className="card" style={{ padding: '20px 24px' }}>
-                  <h3 style={{ fontSize: '14px', fontWeight: 700, margin: '0 0 12px', color: '#ffffff', fontFamily: 'Outfit, sans-serif', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  <h3 style={{ fontSize: '14px', fontWeight: 700, margin: '0 0 12px', color: 'var(--color-text-primary)', fontFamily: 'Outfit, sans-serif', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                     Recently Completed Skills
                   </h3>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
@@ -539,36 +539,36 @@ export default function SkillsPage() {
 
               {/* Current Skills Panel Grouped by Category */}
               <div className="card" style={{ padding: '24px' }}>
-                <h3 style={{ fontSize: '14px', fontWeight: 700, margin: '0 0 16px', color: '#ffffff', fontFamily: 'Outfit, sans-serif', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                <h3 style={{ fontSize: '14px', fontWeight: 700, margin: '0 0 16px', color: 'var(--color-text-primary)', fontFamily: 'Outfit, sans-serif', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                   Your Current Skills
                 </h3>
 
                 {currentSkills.length === 0 ? (
-                  <p style={{ color: 'var(--text-secondary)', fontSize: '12px', margin: 0 }}>
+                  <p style={{ color: 'var(--color-text-secondary)', fontSize: '12px', margin: 0 }}>
                     No skills mapped to your profile yet. Mark roadmaps complete or complete onboarding to populate your skills profile.
                   </p>
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
                     {Object.entries(getSkillsByCategory()).map(([category, skills]) => (
                       <div key={category}>
-                        <h4 style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                        <h4 style={{ fontSize: '12px', color: 'var(--color-text-muted)', margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                           {category}
                         </h4>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                           {skills.map((skill) => (
                             <div key={skill.id} style={{ display: 'flex', justifySelf: 'stretch', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px' }}>
-                              <span style={{ color: '#ffffff', fontWeight: 500 }}>{skill.skill_name}</span>
+                              <span style={{ color: 'var(--color-text-primary)', fontWeight: 500 }}>{skill.skill_name}</span>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 <span style={{
-                                  fontSize: '10px', color: skill.proficiency === 'Expert' ? '#50c878' : skill.proficiency === 'Intermediate' ? 'var(--accent)' : 'var(--text-secondary)',
+                                  fontSize: '10px', color: skill.proficiency === 'Expert' ? '#50c878' : skill.proficiency === 'Intermediate' ? 'var(--color-primary)' : 'var(--color-text-secondary)',
                                   background: skill.proficiency === 'Expert' ? 'rgba(80,200,120,0.08)' : 'transparent', padding: '1px 6px', borderRadius: '3px'
                                 }}>
                                   {skill.proficiency}
                                 </span>
-                                <div style={{ width: '50px', height: '4px', background: 'var(--border-dark)', borderRadius: '2px', overflow: 'hidden' }}>
+                                <div style={{ width: '50px', height: '4px', background: 'var(--color-border-light)', borderRadius: '2px', overflow: 'hidden' }}>
                                   <div style={{
                                     width: `${skill.progress_percentage || 50}%`, height: '100%',
-                                    background: skill.proficiency === 'Expert' ? '#50c878' : 'var(--accent)'
+                                    background: skill.proficiency === 'Expert' ? '#50c878' : 'var(--color-primary)'
                                   }} />
                                 </div>
                               </div>

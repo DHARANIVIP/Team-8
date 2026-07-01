@@ -12,7 +12,8 @@ import {
   getUserSkills,
   getRoadmapSummaryForCareer,
   getRecommendedCourses,
-  supabase
+  supabase,
+  findOrCreateCareerByName
 } from '../services/supabaseService.js';
 import { mongoIdToUuid } from '../services/supabaseService.js';
 import { 
@@ -182,6 +183,20 @@ router.post('/recommendations', protect, async (req, res) => {
     
     const aiRecommendations = await generateCareerRecommendations(profile, allCareers);
     
+    // Dynamically find or create each recommended career in the database
+    const enrichedRecommendations = [];
+    for (const rec of aiRecommendations) {
+      try {
+        const dbCareer = await findOrCreateCareerByName(rec.careerName);
+        if (dbCareer) {
+          rec.careerId = dbCareer.id;
+          enrichedRecommendations.push(rec);
+        }
+      } catch (err) {
+        console.error(`Failed to find or create career for recommendation ${rec.careerName}:`, err.message);
+      }
+    }
+
     // Delete ALL previous recommendations before saving new ones
     try {
       await deleteCareerRecommendations(userId);
@@ -192,7 +207,7 @@ router.post('/recommendations', protect, async (req, res) => {
 
     // Save top 5 recommendations to career_recommendations table
     const savedRecommendations = [];
-    for (const rec of aiRecommendations.slice(0, 5)) {
+    for (const rec of enrichedRecommendations.slice(0, 5)) {
       try {
         const saved = await saveCareerRecommendation(
           userId, 
@@ -210,13 +225,10 @@ router.post('/recommendations', protect, async (req, res) => {
 
     // Compute matched domains from saved recommendations
     const domainMap = {};
-    for (const rec of aiRecommendations.slice(0, 5)) {
-      const career = allCareers.find(c => c.id === rec.careerId);
-      if (career) {
-        const industry = getIndustryForCareer(career.name);
-        if (!domainMap[industry] || domainMap[industry] < rec.matchPercentage) {
-          domainMap[industry] = rec.matchPercentage;
-        }
+    for (const rec of enrichedRecommendations.slice(0, 5)) {
+      const industry = getIndustryForCareer(rec.careerName);
+      if (!domainMap[industry] || domainMap[industry] < rec.matchPercentage) {
+        domainMap[industry] = rec.matchPercentage;
       }
     }
     const matched_domains = Object.entries(domainMap).map(([name, score]) => ({ name, score }));
@@ -307,6 +319,20 @@ router.post('/refresh', protect, async (req, res) => {
     
     const aiRecommendations = await generateCareerRecommendations(profile, allCareers);
     
+    // Dynamically find or create each recommended career in the database
+    const enrichedRecommendations = [];
+    for (const rec of aiRecommendations) {
+      try {
+        const dbCareer = await findOrCreateCareerByName(rec.careerName);
+        if (dbCareer) {
+          rec.careerId = dbCareer.id;
+          enrichedRecommendations.push(rec);
+        }
+      } catch (err) {
+        console.error(`Failed to find or create career for recommendation ${rec.careerName}:`, err.message);
+      }
+    }
+
     // Delete ALL previous recommendations before saving new ones
     try {
       await deleteCareerRecommendations(userId);
@@ -317,7 +343,7 @@ router.post('/refresh', protect, async (req, res) => {
 
     // Save fresh recommendations
     const updatedCount = [];
-    for (const rec of aiRecommendations.slice(0, 5)) {
+    for (const rec of enrichedRecommendations.slice(0, 5)) {
       try {
         await saveCareerRecommendation(userId, rec.careerId, rec.matchPercentage, rec.reason);
         updatedCount.push(rec.careerId);
@@ -330,13 +356,10 @@ router.post('/refresh', protect, async (req, res) => {
 
     // Compute matched domains from saved recommendations
     const domainMap = {};
-    for (const rec of aiRecommendations.slice(0, 5)) {
-      const career = allCareers.find(c => c.id === rec.careerId);
-      if (career) {
-        const industry = getIndustryForCareer(career.name);
-        if (!domainMap[industry] || domainMap[industry] < rec.matchPercentage) {
-          domainMap[industry] = rec.matchPercentage;
-        }
+    for (const rec of enrichedRecommendations.slice(0, 5)) {
+      const industry = getIndustryForCareer(rec.careerName);
+      if (!domainMap[industry] || domainMap[industry] < rec.matchPercentage) {
+        domainMap[industry] = rec.matchPercentage;
       }
     }
     const matched_domains = Object.entries(domainMap).map(([name, score]) => ({ name, score }));

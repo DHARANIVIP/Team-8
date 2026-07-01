@@ -132,7 +132,7 @@ export default function ComparePage() {
   };
 
   return (
-    <div style={{ background: '#0a0a0a', minHeight: '100vh', color: 'var(--text-primary)' }}>
+    <div style={{ background: 'var(--color-bg-main)', minHeight: '100vh', color: 'var(--color-text-primary)' }}>
       <DashboardNavbar />
       
       <main style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 24px' }}>
@@ -140,14 +140,14 @@ export default function ComparePage() {
         {/* Header */}
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          paddingBottom: '20px', borderBottom: '1px solid rgba(255, 158, 66, 0.15)', marginBottom: '32px'
+          paddingBottom: '20px', borderBottom: '1px solid var(--color-border-light)', marginBottom: '32px'
         }}>
           <div>
             <span className="section-label" style={{ display: 'block', marginBottom: '4px' }}>CAREER INSIGHTS</span>
-            <h1 style={{ color: '#ffffff', fontWeight: 800, fontSize: '32px', margin: 0, letterSpacing: '0.5px', fontFamily: 'Outfit, sans-serif' }}>
+            <h1 style={{ color: 'var(--color-text-primary)', fontWeight: 800, fontSize: '32px', margin: 0, letterSpacing: '0.5px', fontFamily: 'Outfit, sans-serif' }}>
               Compare Career Paths
             </h1>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '14px', margin: '6px 0 0' }}>
+            <p style={{ color: 'var(--color-text-secondary)', fontSize: '14px', margin: '6px 0 0' }}>
               Side-by-side suitability, skill overlap, roadmap details, and course matches
             </p>
           </div>
@@ -160,8 +160,8 @@ export default function ComparePage() {
 
         {error && (
           <div style={{
-            padding: '16px 20px', background: 'rgba(239, 68, 68, 0.08)', border: '1px solid #ef4444',
-            color: '#ef4444', borderRadius: '8px', marginBottom: '24px', textAlign: 'center', fontSize: '14px'
+            padding: '16px 20px', background: '#FEE2E2', border: '1px solid rgba(220, 38, 38, 0.25)',
+            color: '#DC2626', borderRadius: '8px', marginBottom: '24px', textAlign: 'center', fontSize: '14px'
           }}>
             {error}
           </div>
@@ -170,8 +170,8 @@ export default function ComparePage() {
         {/* Loading Spinner */}
         {(loading || comparing) && (
           <div style={{ textAlign: 'center', padding: '80px 20px' }}>
-            <div className="spinner" style={{ margin: '0 auto 24px', borderColor: 'var(--accent) transparent transparent transparent' }} />
-            <p style={{ color: 'var(--text-secondary)' }}>
+            <div className="spinner" style={{ margin: '0 auto 24px', borderColor: 'var(--color-primary) transparent transparent transparent' }} />
+            <p style={{ color: 'var(--color-text-secondary)' }}>
               {loading ? 'Retrieving recommendations...' : 'Analyzing skill alignment and synthesizing AI comparison...'}
             </p>
           </div>
@@ -181,20 +181,20 @@ export default function ComparePage() {
         {!loading && !comparing && !results && (
           <div className="animate-slide-up">
             <div style={{
-              background: 'linear-gradient(135deg, rgba(255,158,66,0.05) 0%, rgba(10,10,10,0) 100%)',
-              border: '1px solid rgba(255,158,66,0.15)', padding: '24px 28px', borderRadius: '12px', marginBottom: '32px'
+              background: 'linear-gradient(135deg, var(--color-primary-light) 0%, var(--color-bg-main) 100%)',
+              border: '1px solid var(--color-border-medium)', padding: '24px 28px', borderRadius: '12px', marginBottom: '32px'
             }}>
-              <h2 style={{ fontSize: '18px', fontWeight: 700, margin: '0 0 8px', color: '#ffffff', fontFamily: 'Outfit, sans-serif' }}>
+              <h2 style={{ fontSize: '18px', fontWeight: 700, margin: '0 0 8px', color: 'var(--color-text-primary)', fontFamily: 'Outfit, sans-serif' }}>
                 Select Career Alternatives
               </h2>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '14px', margin: 0 }}>
+              <p style={{ color: 'var(--color-text-secondary)', fontSize: '14px', margin: 0 }}>
                 Choose 2 or 3 recommended careers from your profile to compare alignment compatibility.
               </p>
             </div>
 
             {recommended.length === 0 ? (
               <div className="card" style={{ padding: '60px 24px', textAlign: 'center' }}>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '15px', marginBottom: '20px' }}>
+                <p style={{ color: 'var(--color-text-secondary)', fontSize: '15px', marginBottom: '20px' }}>
                   No recommended careers found. You need to complete onboarding to generate matches first!
                 </p>
                 <Link href="/dashboard/career" className="btn-primary" style={{ padding: '10px 24px' }}>
@@ -216,20 +216,21 @@ export default function ComparePage() {
                         className="card"
                         style={{
                           padding: '24px', cursor: 'pointer', position: 'relative',
-                          border: isSelected ? '2px solid var(--accent)' : '1px solid var(--border)',
-                          background: isSelected ? 'rgba(255,158,66,0.03)' : 'var(--surface-alt)',
-                          boxShadow: isSelected ? '0 0 15px rgba(255,158,66,0.08)' : 'none',
+                          border: isSelected ? '2px solid var(--color-primary)' : '1px solid var(--color-border-card)',
+                          background: isSelected ? 'var(--color-primary-light)' : 'var(--color-bg-card)',
+                          boxShadow: isSelected ? '0 0 15px rgba(59, 130, 246, 0.08)' : 'none',
                           transition: 'all 0.2s ease',
-                          display: 'flex', flexDirection: 'column', height: '100%'
+                          display: 'flex', flexDirection: 'column', height: '100%',
+                          borderRadius: '12px'
                         }}
                       >
                         {/* Selector indicator */}
                         <div style={{
                           position: 'absolute', top: '20px', right: '20px', width: '20px', height: '20px',
-                          borderRadius: '4px', border: '2px solid var(--border)',
-                          background: isSelected ? 'var(--accent)' : 'transparent',
+                          borderRadius: '4px', border: '2px solid var(--color-border-medium)',
+                          background: isSelected ? 'var(--color-primary)' : 'transparent',
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          color: '#000000', fontWeight: 'bold', fontSize: '12px'
+                          color: 'var(--color-bg-main)', fontWeight: 'bold', fontSize: '12px'
                         }}>
                           {isSelected && '✓'}
                         </div>
@@ -237,33 +238,33 @@ export default function ComparePage() {
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px' }}>
                           <span style={{ fontSize: '32px' }}>{career.icon || '💼'}</span>
                           <div>
-                            <h3 style={{ fontSize: '17px', fontWeight: 700, margin: 0, color: '#ffffff', fontFamily: 'Outfit, sans-serif' }}>
+                            <h3 style={{ fontSize: '17px', fontWeight: 700, margin: 0, color: 'var(--color-text-primary)', fontFamily: 'Outfit, sans-serif' }}>
                               {career.name}
                             </h3>
                             <span style={{
-                              color: 'var(--accent)', fontSize: '12px', fontWeight: 700,
-                              background: 'var(--accent-glow)', padding: '2px 8px', borderRadius: '4px', display: 'inline-block', marginTop: '4px'
+                              color: 'var(--color-primary)', fontSize: '12px', fontWeight: 700,
+                              background: 'var(--color-primary-light)', padding: '2px 8px', borderRadius: '4px', display: 'inline-block', marginTop: '4px'
                             }}>
                               {career.matchPercentage}% Match
                             </span>
                           </div>
                         </div>
 
-                        <p style={{ color: 'var(--text-secondary)', fontSize: '13px', margin: '0 0 16px', flex: 1, lineHeight: '1.5' }}>
+                        <p style={{ color: 'var(--color-text-secondary)', fontSize: '13px', margin: '0 0 16px', flex: 1, lineHeight: '1.5' }}>
                           {career.description}
                         </p>
 
                         <div style={{
-                          borderTop: '1px solid var(--border-dark)', paddingTop: '14px',
+                          borderTop: '1px solid var(--color-border-light)', paddingTop: '14px',
                           display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '12px'
                         }}>
                           <div>
-                            <span style={{ color: 'var(--text-muted)', display: 'block' }}>AVG SALARY</span>
-                            <span style={{ color: '#ffffff', fontWeight: 600 }}>{career.salary_range}</span>
+                            <span style={{ color: 'var(--color-text-muted)', display: 'block' }}>AVG SALARY</span>
+                            <span style={{ color: 'var(--color-text-primary)', fontWeight: 600 }}>{career.salary_range}</span>
                           </div>
                           <div>
-                            <span style={{ color: 'var(--text-muted)', display: 'block' }}>GROWTH RATE</span>
-                            <span style={{ color: 'var(--accent)', fontWeight: 600 }}>{career.growth_rate}</span>
+                            <span style={{ color: 'var(--color-text-muted)', display: 'block' }}>GROWTH RATE</span>
+                            <span style={{ color: 'var(--color-primary)', fontWeight: 600 }}>{career.growth_rate}</span>
                           </div>
                         </div>
                       </div>
@@ -304,7 +305,7 @@ export default function ComparePage() {
                   return (
                     <div key={c.careerId} style={{
                       flex: '1 1 200px', display: 'flex', alignItems: 'center', gap: '14px',
-                      background: 'rgba(255,255,255,0.02)', padding: '16px 20px', borderRadius: '8px', border: '1px solid var(--border)'
+                      background: 'var(--color-bg-secondary)', padding: '16px 20px', borderRadius: '8px', border: '1px solid var(--color-border-light)'
                     }}>
                       <div style={{
                         width: '36px', height: '36px', borderRadius: '50%', background: `${placeColors[index]}20`,
@@ -314,9 +315,9 @@ export default function ComparePage() {
                         {placeLabels[index]}
                       </div>
                       <div>
-                        <h4 style={{ margin: 0, fontSize: '15px', color: '#ffffff', fontWeight: 700 }}>{c.title}</h4>
-                        <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-                          Score: <strong style={{ color: 'var(--accent)' }}>{c.overallScore}</strong> / 100
+                        <h4 style={{ margin: 0, fontSize: '15px', color: 'var(--color-text-primary)', fontWeight: 700 }}>{c.title}</h4>
+                        <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>
+                          Score: <strong style={{ color: 'var(--color-primary)' }}>{c.overallScore}</strong> / 100
                         </span>
                       </div>
                     </div>
@@ -334,122 +335,123 @@ export default function ComparePage() {
                 return (
                   <div key={item.careerId} className="card" style={{
                     padding: '24px', display: 'flex', flexDirection: 'column', gap: '22px',
-                    border: '1px solid var(--border)', background: 'var(--surface-alt)'
+                    border: '1px solid var(--color-border-card)', background: 'var(--color-bg-card)',
+                    borderRadius: '12px'
                   }}>
                     
                     {/* Header */}
-                    <div style={{ textAlign: 'center', paddingBottom: '16px', borderBottom: '1px solid var(--border-dark)' }}>
-                      <h3 style={{ fontSize: '20px', fontWeight: 800, margin: '0 0 4px', color: '#ffffff', fontFamily: 'Outfit, sans-serif' }}>
+                    <div style={{ textAlign: 'center', paddingBottom: '16px', borderBottom: '1px solid var(--color-border-light)' }}>
+                      <h3 style={{ fontSize: '20px', fontWeight: 800, margin: '0 0 4px', color: 'var(--color-text-primary)', fontFamily: 'Outfit, sans-serif' }}>
                         {item.title}
                       </h3>
-                      <span style={{ color: 'var(--text-muted)', fontSize: '13px' }}>{item.industry}</span>
+                      <span style={{ color: 'var(--color-text-muted)', fontSize: '13px' }}>{item.industry}</span>
                     </div>
 
                     {/* Compatibility Score */}
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
                       <div style={{
                         width: '90px', height: '90px', borderRadius: '50%',
-                        background: 'radial-gradient(circle, rgba(255,158,66,0.12) 0%, rgba(0,0,0,0) 80%)',
-                        border: '3px solid var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        boxShadow: '0 0 15px rgba(255,158,66,0.2)'
+                        background: 'radial-gradient(circle, var(--color-primary-light) 0%, transparent 80%)',
+                        border: '3px solid var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        boxShadow: '0 0 15px rgba(59, 130, 246, 0.2)'
                       }}>
-                        <span style={{ fontSize: '24px', fontWeight: 800, color: '#ffffff', fontFamily: 'Inter, sans-serif' }}>
+                        <span style={{ fontSize: '24px', fontWeight: 800, color: 'var(--color-text-primary)', fontFamily: 'Inter, sans-serif' }}>
                           {item.overallScore}
                         </span>
                       </div>
-                      <span style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                         Compatibility Score
                       </span>
                     </div>
 
                     {/* Skill Match Percentage */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
-                        <span style={{ color: 'var(--text-secondary)' }}>Skill Match</span>
-                        <span style={{ color: 'var(--accent)', fontWeight: 700 }}>{item.matchPercent}%</span>
+                      <div style={{ display: 'flex', justifycontent: 'space-between', fontSize: '12px' }}>
+                        <span style={{ color: 'var(--color-text-secondary)' }}>Skill Match</span>
+                        <span style={{ color: 'var(--color-primary)', fontWeight: 700 }}>{item.matchPercent}%</span>
                       </div>
-                      <div style={{ height: '6px', background: 'var(--border-dark)', borderRadius: '3px', overflow: 'hidden' }}>
-                        <div style={{ width: `${item.matchPercent}%`, height: '100%', background: 'var(--accent)', borderRadius: '3px' }} />
+                      <div style={{ height: '6px', background: 'var(--color-primary-light)', borderRadius: '3px', overflow: 'hidden' }}>
+                        <div style={{ width: `${item.matchPercent}%`, height: '100%', background: 'var(--color-primary)', borderRadius: '3px' }} />
                       </div>
                     </div>
 
                     {/* Key Stats (Salary / Growth) */}
                     <div style={{
                       display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px',
-                      background: 'rgba(255,255,255,0.02)', padding: '12px 14px', borderRadius: '6px', border: '1px solid var(--border-dark)'
+                      background: 'var(--color-bg-secondary)', padding: '12px 14px', borderRadius: '6px', border: '1px solid var(--color-border-light)'
                     }}>
                       <div>
-                        <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block' }}>AVG SALARY</span>
-                        <span style={{ fontSize: '14px', fontWeight: 700, color: '#ffffff' }}>{formatSalary(item.avgSalary)}</span>
+                        <span style={{ fontSize: '11px', color: 'var(--color-text-muted)', display: 'block' }}>AVG SALARY</span>
+                        <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--color-text-primary)' }}>{formatSalary(item.avgSalary)}</span>
                       </div>
                       <div>
-                        <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block' }}>GROWTH RATE</span>
-                        <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--accent)' }}>{item.growth}</span>
+                        <span style={{ fontSize: '11px', color: 'var(--color-text-muted)', display: 'block' }}>GROWTH RATE</span>
+                        <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--color-primary)' }}>{item.growth}</span>
                       </div>
                     </div>
 
                     {/* Expert Skills */}
                     <div>
-                      <span style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' }}>
+                      <span style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' }}>
                         Expert Skills ({item.expertSkillsUsed.length})
                       </span>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                         {item.expertSkillsUsed.length > 0 ? (
                           item.expertSkillsUsed.map(s => (
                             <span key={s} style={{
-                              fontSize: '11px', background: 'rgba(80,200,120,0.1)', color: '#50c878',
-                              border: '1px solid rgba(80,200,120,0.3)', padding: '2px 8px', borderRadius: '4px', fontWeight: 500
+                              fontSize: '11px', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981',
+                              border: '1px solid rgba(16, 185, 129, 0.3)', padding: '2px 8px', borderRadius: '4px', fontWeight: 500
                             }}>
                               {s}
                             </span>
                           ))
                         ) : (
-                          <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>None matches expert level</span>
+                          <span style={{ color: 'var(--color-text-muted)', fontSize: '12px' }}>None matches expert level</span>
                         )}
                       </div>
                     </div>
 
                     {/* Matched Skills */}
                     <div>
-                      <span style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' }}>
+                      <span style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' }}>
                         Matched Skills ({item.matchedSkills.length})
                       </span>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                         {item.matchedSkills.length > 0 ? (
                           item.matchedSkills.map(s => (
                             <span key={s.name} style={{
-                              fontSize: '11px', background: 'rgba(255,255,255,0.03)', color: '#ffffff',
-                              border: '1px solid var(--border-dark)', padding: '2px 8px', borderRadius: '4px', fontWeight: 500
+                              fontSize: '11px', background: 'var(--color-bg-secondary)', color: 'var(--color-text-primary)',
+                              border: '1px solid var(--color-border-light)', padding: '2px 8px', borderRadius: '4px', fontWeight: 500
                             }}>
-                              {s.name} <strong style={{ color: 'var(--accent)', fontSize: '10px' }}>{s.proficiency[0]}</strong>
+                              {s.name} <strong style={{ color: 'var(--color-primary)', fontSize: '10px' }}>{s.proficiency[0]}</strong>
                             </span>
                           ))
                         ) : (
-                          <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>No matches</span>
+                          <span style={{ color: 'var(--color-text-muted)', fontSize: '12px' }}>No matches</span>
                         )}
                       </div>
                     </div>
 
                     {/* Missing Skills */}
                     <div>
-                      <span style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' }}>
+                      <span style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' }}>
                         Skills to Develop ({item.missingSkills.length})
                       </span>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                         {item.missingSkills.length > 0 ? (
                           item.missingSkills.slice(0, 8).map(s => (
                             <span key={s} style={{
-                              fontSize: '11px', background: 'rgba(239,68,68,0.06)', color: '#ef4444',
-                              border: '1px solid rgba(239,68,68,0.2)', padding: '2px 8px', borderRadius: '4px', fontWeight: 500
+                              fontSize: '11px', background: '#FEE2E2', color: '#DC2626',
+                              border: '1px solid rgba(220, 38, 38, 0.2)', padding: '2px 8px', borderRadius: '4px', fontWeight: 500
                             }}>
                               {s}
                             </span>
                           ))
                         ) : (
-                          <span style={{ color: '#50c878', fontSize: '12px', fontWeight: 600 }}>✓ All skills acquired!</span>
+                          <span style={{ color: '#10b981', fontSize: '12px', fontWeight: 600 }}>✓ All skills acquired!</span>
                         )}
                         {item.missingSkills.length > 8 && (
-                          <span style={{ fontSize: '11px', color: 'var(--text-secondary)', alignSelf: 'center' }}>
+                          <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)', alignSelf: 'center' }}>
                             +{item.missingSkills.length - 8} more
                           </span>
                         )}
@@ -458,26 +460,26 @@ export default function ComparePage() {
 
                     {/* Roadmap Summary */}
                     <div style={{
-                      borderTop: '1px solid var(--border-dark)', paddingTop: '16px',
+                      borderTop: '1px solid var(--color-border-light)', paddingTop: '16px',
                       display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '12px'
                     }}>
-                      <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                         Roadmap Details
                       </span>
                       {item.roadmap ? (
-                        <div style={{ display: 'flex', justifyContent: 'space-between', color: '#ffffff' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--color-text-primary)' }}>
                           <span>⏱ {item.roadmap.duration}</span>
                           <span>📶 {item.roadmap.level}</span>
                           <span>📍 {item.roadmap.milestonesCount} milestones</span>
                         </div>
                       ) : (
-                        <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>No roadmap synced yet</span>
+                        <span style={{ color: 'var(--color-text-muted)', fontSize: '12px' }}>No roadmap synced yet</span>
                       )}
                     </div>
 
                     {/* Stored Course Recommendations */}
-                    <div style={{ borderTop: '1px solid var(--border-dark)', paddingTop: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    <div style={{ borderTop: '1px solid var(--color-border-light)', paddingTop: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                         Top Recommended Courses
                       </span>
                       {item.courses.length > 0 ? (
@@ -486,24 +488,24 @@ export default function ComparePage() {
                             <a
                               key={course.id} href={course.url || '#'} target="_blank" rel="noopener noreferrer"
                               style={{
-                                display: 'block', padding: '10px 12px', background: 'var(--surface)',
-                                border: '1px solid var(--border-dark)', borderRadius: '4px', textDecoration: 'none',
+                                display: 'block', padding: '10px 12px', background: 'var(--color-bg-secondary)',
+                                border: '1px solid var(--color-border-light)', borderRadius: '4px', textDecoration: 'none',
                                 transition: 'all 0.2s ease', cursor: 'pointer'
                               }}
                               className="course-link-hover"
                             >
-                              <span style={{ color: '#ffffff', fontSize: '12px', fontWeight: 600, display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              <span style={{ color: 'var(--color-text-primary)', fontSize: '12px', fontWeight: 600, display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                 {course.title}
                               </span>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: 'var(--text-secondary)', marginTop: '4px' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: 'var(--color-text-secondary)', marginTop: '4px' }}>
                                 <span>{course.provider}</span>
-                                <span style={{ color: 'var(--accent)' }}>{course.difficulty}</span>
+                                <span style={{ color: 'var(--color-primary)' }}>{course.difficulty}</span>
                               </div>
                             </a>
                           ))}
                         </div>
                       ) : (
-                        <span style={{ color: 'var(--text-secondary)', fontSize: '12px' }}>No courses stored for gaps</span>
+                        <span style={{ color: 'var(--color-text-secondary)', fontSize: '12px' }}>No courses stored for gaps</span>
                       )}
                     </div>
 
@@ -514,30 +516,30 @@ export default function ComparePage() {
 
             {/* AI Recommendation Summary Section */}
             <div style={{
-              background: 'linear-gradient(135deg, rgba(255,158,66,0.06) 0%, rgba(10,10,10,0.5) 100%)',
-              border: '1px solid rgba(255,158,66,0.2)', padding: '30px', borderRadius: '12px'
+              background: 'linear-gradient(135deg, var(--color-primary-light) 0%, var(--color-bg-card) 100%)',
+              border: '1px solid var(--color-border-card)', padding: '30px', borderRadius: '12px'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
                 <span style={{ fontSize: '24px' }}>🤖</span>
-                <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#ffffff', margin: 0, fontFamily: 'Outfit, sans-serif' }}>
+                <h3 style={{ fontSize: '20px', fontWeight: 800, color: 'var(--color-text-primary)', margin: 0, fontFamily: 'Outfit, sans-serif' }}>
                   AI Guidance Summary
                 </h3>
               </div>
 
               {/* Best Career Fit */}
               <div style={{ marginBottom: '24px' }}>
-                <h4 style={{ margin: '0 0 6px', fontSize: '16px', color: 'var(--accent)', fontWeight: 700 }}>
+                <h4 style={{ margin: '0 0 6px', fontSize: '16px', color: 'var(--color-primary)', fontWeight: 700 }}>
                   Recommended Focus: {results.summary.bestCareer}
                 </h4>
-                <p style={{ margin: 0, color: '#ffffff', fontSize: '14px', lineHeight: '1.6' }}>
+                <p style={{ margin: 0, color: 'var(--color-text-primary)', fontSize: '14px', lineHeight: '1.6' }}>
                   {results.summary.reason}
                 </p>
               </div>
 
               {/* Strengths & Challenges per career */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '24px', borderTop: '1px solid rgba(255,158,66,0.15)', paddingTop: '20px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '24px', borderTop: '1px solid var(--color-border-light)', paddingTop: '20px' }}>
                 <div>
-                  <h4 style={{ color: '#50c878', fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '12px' }}>
+                  <h4 style={{ color: '#10b981', fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '12px' }}>
                     ✓ Key Strengths
                   </h4>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
@@ -545,8 +547,8 @@ export default function ComparePage() {
                       const list = results.summary.strengths[item.title] || results.summary.strengths[item.careerId] || [];
                       return (
                         <div key={item.careerId}>
-                          <span style={{ fontSize: '12px', fontWeight: 600, color: '#ffffff', display: 'block', marginBottom: '4px' }}>{item.title}</span>
-                          <ul style={{ margin: 0, paddingLeft: '20px', color: 'var(--text-secondary)', fontSize: '13px' }}>
+                          <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-text-primary)', display: 'block', marginBottom: '4px' }}>{item.title}</span>
+                          <ul style={{ margin: 0, paddingLeft: '20px', color: 'var(--color-text-secondary)', fontSize: '13px' }}>
                             {list.map((str, i) => <li key={i} style={{ marginBottom: '2px' }}>{str}</li>)}
                             {list.length === 0 && <li>Acquired matching foundational skills</li>}
                           </ul>
@@ -565,8 +567,8 @@ export default function ComparePage() {
                       const list = results.summary.challenges[item.title] || results.summary.challenges[item.careerId] || [];
                       return (
                         <div key={item.careerId}>
-                          <span style={{ fontSize: '12px', fontWeight: 600, color: '#ffffff', display: 'block', marginBottom: '4px' }}>{item.title}</span>
-                          <ul style={{ margin: 0, paddingLeft: '20px', color: 'var(--text-secondary)', fontSize: '13px' }}>
+                          <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-text-primary)', display: 'block', marginBottom: '4px' }}>{item.title}</span>
+                          <ul style={{ margin: 0, paddingLeft: '20px', color: 'var(--color-text-secondary)', fontSize: '13px' }}>
                             {list.map((ch, i) => <li key={i} style={{ marginBottom: '2px' }}>{ch}</li>)}
                             {list.length === 0 && <li>Requires mastering missing technologies</li>}
                           </ul>
@@ -578,20 +580,20 @@ export default function ComparePage() {
               </div>
 
               {/* Recommended learning path */}
-              <div style={{ borderTop: '1px solid rgba(255,158,66,0.15)', paddingTop: '20px' }}>
-                <h4 style={{ color: 'var(--accent)', fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '12px' }}>
+              <div style={{ borderTop: '1px solid var(--color-border-light)', paddingTop: '20px' }}>
+                <h4 style={{ color: 'var(--color-primary)', fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '12px' }}>
                   → Recommended Step-by-Step Learning Sequence
                 </h4>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   {results.summary.recommendedPath.map((step, idx) => (
                     <div key={idx} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', fontSize: '13px' }}>
                       <span style={{
-                        flexShrink: 0, width: '22px', height: '22px', borderRadius: '50%', background: 'var(--accent)',
-                        color: '#000000', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '11px'
+                        flexShrink: 0, width: '22px', height: '22px', borderRadius: '50%', background: 'var(--color-primary)',
+                        color: 'var(--color-bg-main)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '11px'
                       }}>
                         {idx + 1}
                       </span>
-                      <p style={{ margin: 0, color: '#ffffff', paddingTop: '2px' }}>{step}</p>
+                      <p style={{ margin: 0, color: 'var(--color-text-primary)', paddingTop: '2px' }}>{step}</p>
                     </div>
                   ))}
                 </div>

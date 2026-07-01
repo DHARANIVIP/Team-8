@@ -90,10 +90,10 @@ export default function DashboardPage() {
   };
 
   const stats = [
-    { label: 'Career Paths', value: categories.length || 6, icon: '◈', color: '#ff9e42' },
-    { label: 'Skills Available', value: skillsCount || 200, icon: '◉', color: '#50c878' },
-    { label: 'Courses', value: coursesCount || 100, icon: '◎', color: '#60a5fa' },
-    { label: 'Your Skills', value: userSkillsCount, icon: '⊞', color: '#c084fc' },
+    { label: 'Career Paths', value: categories.length || 6, icon: '◈', color: '#3b82f6' },
+    { label: 'Skills Available', value: skillsCount || 200, icon: '◉', color: '#10b981' },
+    { label: 'Courses', value: coursesCount || 100, icon: '◎', color: '#6366f1' },
+    { label: 'Your Skills', value: userSkillsCount, icon: '⊞', color: '#8b5cf6' },
   ];
 
   // Determine next action based on user state
@@ -106,12 +106,12 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div style={{ background: '#0a0a0a', minHeight: '100vh' }}>
+      <div style={{ background: 'var(--color-bg-main)', minHeight: '100vh' }}>
         <DashboardNavbar />
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '80vh' }}>
           <div style={{ textAlign: 'center' }}>
             <div className="spinner" style={{ marginBottom: '24px' }} />
-            <p style={{ color: 'var(--text-secondary)' }}>Loading your dashboard...</p>
+            <p style={{ color: 'var(--color-text-secondary)' }}>Loading your dashboard...</p>
           </div>
         </div>
       </div>
@@ -119,12 +119,12 @@ export default function DashboardPage() {
   }
 
   return (
-    <div style={{ background: '#0a0a0a', minHeight: '100vh' }}>
+    <div style={{ background: 'var(--color-bg-main)', minHeight: '100vh' }}>
       <DashboardNavbar />
       <main className="page-container animate-slide-up" style={{ padding: '24px 0', display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
         {error && (
-          <div style={{ padding: '14px', background: 'rgba(239,68,68,0.06)', border: '1px solid #ef4444', color: '#ef4444', borderRadius: '6px', textAlign: 'center', fontSize: '13px' }}>
+          <div style={{ padding: '14px', background: '#FEE2E2', border: '1px solid rgba(220, 38, 38, 0.25)', color: '#DC2626', borderRadius: '8px', textAlign: 'center', fontSize: '13px' }}>
             {error}
           </div>
         )}
@@ -135,20 +135,20 @@ export default function DashboardPage() {
           <div className="card" style={{ padding: '28px', display: 'flex', alignItems: 'center', gap: '24px' }}>
             <div style={{
               width: '90px', height: '90px', borderRadius: '50%',
-              border: `4px solid ${readinessScore >= 70 ? '#50c878' : readinessScore >= 40 ? '#ff9e42' : '#ef4444'}`,
+              border: `4px solid ${readinessScore >= 70 ? '#10b981' : readinessScore >= 40 ? '#3b82f6' : '#DC2626'}`,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               flexDirection: 'column', flexShrink: 0,
-              background: `rgba(${readinessScore >= 70 ? '80,200,120' : readinessScore >= 40 ? '255,158,66' : '239,68,68'}, 0.08)`
+              background: `rgba(${readinessScore >= 70 ? '16,185,129' : readinessScore >= 40 ? '59,130,246' : '220,38,38'}, 0.08)`
             }}>
-              <span style={{ fontSize: '28px', fontWeight: 800, color: '#ffffff', fontFamily: 'Outfit, sans-serif', lineHeight: 1 }}>{readinessScore}%</span>
-              <span style={{ fontSize: '9px', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Ready</span>
+              <span style={{ fontSize: '28px', fontWeight: 800, color: 'var(--color-text-primary)', fontFamily: 'Outfit, sans-serif', lineHeight: 1 }}>{readinessScore}%</span>
+              <span style={{ fontSize: '9px', color: 'var(--color-text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Ready</span>
             </div>
             <div>
               <span className="section-label" style={{ marginBottom: '4px' }}>CAREER READINESS</span>
-              <h2 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '4px' }}>
+              <h2 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '4px', color: 'var(--color-text-primary)' }}>
                 {readinessScore >= 70 ? 'Great progress!' : readinessScore >= 40 ? 'Building momentum' : 'Just getting started'}
               </h2>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '13px', lineHeight: 1.5 }}>
+              <p style={{ color: 'var(--color-text-secondary)', fontSize: '13px', lineHeight: 1.5 }}>
                 {userSkillsCount > 0
                   ? `You have ${userSkillsCount} skills tracked. ${readinessScore < 100 ? 'Keep learning to boost your score.' : 'You\'re career-ready!'}`
                   : 'Add your skills to see your career readiness score.'}
@@ -158,13 +158,13 @@ export default function DashboardPage() {
 
           {/* Next Action CTA */}
           <Link href={nextAction.link} style={{ textDecoration: 'none' }}>
-            <div className="card card-hover" style={{ padding: '28px', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '12px', borderColor: 'rgba(255, 158, 66, 0.3)' }}>
+            <div className="card card-hover" style={{ padding: '28px', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '12px' }}>
               <span className="section-label" style={{ marginBottom: 0 }}>NEXT ACTION</span>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <span style={{ fontSize: '24px', color: 'var(--accent)' }}>{nextAction.icon}</span>
-                <h3 style={{ fontSize: '16px', fontWeight: 700, margin: 0 }}>{nextAction.title}</h3>
+                <span style={{ fontSize: '24px', color: 'var(--color-primary)' }}>{nextAction.icon}</span>
+                <h3 style={{ fontSize: '16px', fontWeight: 700, margin: 0, color: 'var(--color-text-primary)' }}>{nextAction.title}</h3>
               </div>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '13px', margin: 0 }}>{nextAction.desc}</p>
+              <p style={{ color: 'var(--color-text-secondary)', fontSize: '13px', margin: 0 }}>{nextAction.desc}</p>
               <span className="btn-primary" style={{ alignSelf: 'flex-start', marginTop: '4px', fontSize: '12px', padding: '8px 18px' }}>Get Started →</span>
             </div>
           </Link>
@@ -183,8 +183,8 @@ export default function DashboardPage() {
                 {s.icon}
               </div>
               <div>
-                <p style={{ color: 'var(--text-muted)', fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '2px' }}>{s.label}</p>
-                <p style={{ color: '#ffffff', fontSize: '22px', fontWeight: 800, lineHeight: 1, fontFamily: 'Outfit, sans-serif' }}>{s.value}</p>
+                <p style={{ color: 'var(--color-text-muted)', fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '2px' }}>{s.label}</p>
+                <p style={{ color: 'var(--color-text-primary)', fontSize: '22px', fontWeight: 800, lineHeight: 1, fontFamily: 'Outfit, sans-serif' }}>{s.value}</p>
               </div>
             </div>
           ))}
@@ -194,36 +194,36 @@ export default function DashboardPage() {
         <section className="card" style={{ padding: '24px 28px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
             <span className="section-label" style={{ marginBottom: 0 }}>AI CAREER MATCHES</span>
-            <Link href="/dashboard/career" style={{ color: 'var(--accent)', fontSize: '12px', fontWeight: 600 }}>View All →</Link>
+            <Link href="/dashboard/career" style={{ color: 'var(--color-primary)', fontSize: '12px', fontWeight: 600 }}>View All →</Link>
           </div>
           {careerRecs.length > 0 ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {careerRecs.map((rec: any, idx: number) => (
                 <div key={idx} style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  padding: '14px 18px', background: 'var(--surface-alt)', borderRadius: '6px',
-                  border: '1px solid rgba(255, 158, 66, 0.08)'
+                  padding: '14px 18px', background: 'var(--color-bg-secondary)', borderRadius: '8px',
+                  border: '1px solid var(--color-border-light)'
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                     <div style={{
                       width: '40px', height: '40px', borderRadius: '50%',
-                      border: '2px solid var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: '14px', fontWeight: 800, color: 'var(--accent)', flexShrink: 0
+                      border: '2px solid var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: '14px', fontWeight: 800, color: 'var(--color-primary)', flexShrink: 0
                     }}>
                       {rec.matchPercentage || rec.match_percentage || '?'}%
                     </div>
                     <div>
-                      <p style={{ color: '#ffffff', fontWeight: 600, fontSize: '14px', margin: 0 }}>{rec.careerName || rec.career_name || 'Career'}</p>
-                      <p style={{ color: 'var(--text-secondary)', fontSize: '12px', margin: '2px 0 0' }}>{rec.reason || 'AI-matched career'}</p>
+                      <p style={{ color: 'var(--color-text-primary)', fontWeight: 600, fontSize: '14px', margin: 0 }}>{rec.careerName || rec.career_name || 'Career'}</p>
+                      <p style={{ color: 'var(--color-text-secondary)', fontSize: '12px', margin: '2px 0 0' }}>{rec.reason || 'AI-matched career'}</p>
                     </div>
                   </div>
-                  <Link href="/dashboard/career" style={{ color: 'var(--accent)', fontSize: '13px', fontWeight: 600, whiteSpace: 'nowrap' }}>Explore →</Link>
+                  <Link href="/dashboard/career" style={{ color: 'var(--color-primary)', fontSize: '13px', fontWeight: 600, whiteSpace: 'nowrap' }}>Explore →</Link>
                 </div>
               ))}
             </div>
           ) : (
             <div style={{ textAlign: 'center', padding: '24px' }}>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '13px', marginBottom: '12px' }}>No career recommendations yet</p>
+              <p style={{ color: 'var(--color-text-secondary)', fontSize: '13px', marginBottom: '12px' }}>No career recommendations yet</p>
               <Link href="/dashboard/career" className="btn-primary" style={{ fontSize: '12px', padding: '8px 18px' }}>Get AI Career Guidance →</Link>
             </div>
           )}
@@ -235,7 +235,7 @@ export default function DashboardPage() {
           <section className="card" style={{ padding: '24px 28px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
               <span className="section-label" style={{ marginBottom: 0 }}>YOUR SKILLS</span>
-              <Link href="/dashboard/skills" style={{ color: 'var(--accent)', fontSize: '12px', fontWeight: 600 }}>Manage →</Link>
+              <Link href="/dashboard/skills" style={{ color: 'var(--color-primary)', fontSize: '12px', fontWeight: 600 }}>Manage →</Link>
             </div>
             {userProfile?.current_skills?.length > 0 ? (
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
@@ -243,11 +243,11 @@ export default function DashboardPage() {
                   <span key={s} className="skill-pill">{s}</span>
                 ))}
                 {userProfile.current_skills.length > 10 && (
-                  <span className="skill-pill" style={{ color: 'var(--accent)', borderColor: 'rgba(255,158,66,0.2)' }}>+{userProfile.current_skills.length - 10} more</span>
+                  <span className="skill-pill" style={{ color: 'var(--color-primary)', borderColor: 'var(--color-primary-light)' }}>+{userProfile.current_skills.length - 10} more</span>
                 )}
               </div>
             ) : (
-              <p style={{ color: 'var(--text-muted)', fontSize: '13px' }}>No skills added yet. <Link href="/dashboard/skills" style={{ color: 'var(--accent)' }}>Add skills →</Link></p>
+              <p style={{ color: 'var(--color-text-muted)', fontSize: '13px' }}>No skills added yet. <Link href="/dashboard/skills" style={{ color: 'var(--color-primary)' }}>Add skills →</Link></p>
             )}
           </section>
 
@@ -265,12 +265,12 @@ export default function DashboardPage() {
                 <Link key={a.title} href={a.link} style={{ textDecoration: 'none' }}>
                   <div style={{
                     display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 14px',
-                    background: 'var(--surface-alt)', borderRadius: '6px', border: '1px solid rgba(255,158,66,0.06)',
+                    background: 'var(--color-bg-secondary)', borderRadius: '8px', border: '1px solid var(--color-border-light)',
                     transition: 'all 0.2s ease'
                   }}>
-                    <span style={{ color: 'var(--accent)', fontSize: '16px' }}>{a.icon}</span>
-                    <span style={{ color: '#ffffff', fontSize: '13px', fontWeight: 500, flex: 1 }}>{a.title}</span>
-                    <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>→</span>
+                    <span style={{ color: 'var(--color-primary)', fontSize: '16px' }}>{a.icon}</span>
+                    <span style={{ color: 'var(--color-text-primary)', fontSize: '13px', fontWeight: 500, flex: 1 }}>{a.title}</span>
+                    <span style={{ color: 'var(--color-text-muted)', fontSize: '12px' }}>→</span>
                   </div>
                 </Link>
               ))}
@@ -284,12 +284,12 @@ export default function DashboardPage() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '12px' }}>
             {categories.slice(0, 3).map((c) => (
               <div key={c.id} style={{
-                background: 'var(--surface-alt)', borderRadius: '6px', padding: '18px 20px',
-                border: '1px solid rgba(255,158,66,0.08)'
+                background: 'var(--color-bg-secondary)', borderRadius: '8px', padding: '18px 20px',
+                border: '1px solid var(--color-border-light)'
               }}>
-                <p style={{ color: '#ffffff', fontWeight: 700, fontSize: '15px', marginBottom: '8px', fontFamily: 'Outfit, sans-serif' }}>{c.name}</p>
-                <div style={{ display: 'flex', gap: '12px', fontSize: '12px', color: 'var(--text-secondary)' }}>
-                  <span style={{ color: 'var(--accent)', fontWeight: 600 }}>{c.salary_range}</span>
+                <p style={{ color: 'var(--color-text-primary)', fontWeight: 700, fontSize: '15px', marginBottom: '8px', fontFamily: 'Outfit, sans-serif' }}>{c.name}</p>
+                <div style={{ display: 'flex', gap: '12px', fontSize: '12px', color: 'var(--color-text-secondary)' }}>
+                  <span style={{ color: 'var(--color-primary)', fontWeight: 600 }}>{c.salary_range}</span>
                   <span>•</span>
                   <span>{c.growth_rate} growth</span>
                   <span>•</span>

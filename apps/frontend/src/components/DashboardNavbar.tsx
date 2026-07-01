@@ -13,10 +13,10 @@ const navLinks = [
   { href: '/dashboard/roadmaps',   label: 'Roadmaps' },
 ];
 
-/* ── theme token (Orange Theme Maintained) ── */
-const ACCENT = '#ff9e42';
-const ACCENT_RGBA = 'rgba(255,158,66,0.08)';
-const ACCENT_BORDER = 'rgba(255,158,66,0.25)';
+/* ── theme tokens (Consistent Blue Theme) ── */
+const ACCENT = 'var(--color-primary)';
+const ACCENT_RGBA = 'var(--color-menu-hover-bg)';
+const ACCENT_BORDER = 'var(--color-border-card)';
 
 export default function DashboardNavbar() {
   const pathname = usePathname();
@@ -32,13 +32,13 @@ export default function DashboardNavbar() {
 
   return (
     <nav style={{
-      borderBottom: '1px solid rgba(255, 158, 66, 0.15)',
+      borderBottom: '1px solid var(--color-border-light)',
       padding: '0 24px',
       height: '58px',
       display: 'flex',
       alignItems: 'center',
-      background: 'rgba(10, 10, 10, 0.8)',
-      backdropFilter: 'blur(12px)',
+      background: 'var(--color-navbar-bg)',
+      boxShadow: '0 1px 3px rgba(0,0,0,0.02)',
       position: 'sticky',
       top: 0,
       zIndex: 100,
@@ -71,9 +71,9 @@ export default function DashboardNavbar() {
                     style={{
                       fontSize: '13px',
                       padding: '6px 14px',
-                      borderRadius: '6px',
-                      color: isActive ? '#0a0a0a' : '#cccccc',
-                      background: isActive ? ACCENT : 'transparent',
+                      borderRadius: '8px',
+                      color: isActive ? 'var(--color-primary)' : 'var(--color-menu-inactive)',
+                      background: isActive ? 'var(--color-primary-light)' : 'transparent',
                       fontWeight: 600,
                       textDecoration: 'none',
                       transition: 'all 0.2s ease',
@@ -81,13 +81,13 @@ export default function DashboardNavbar() {
                     }}
                     onMouseEnter={(e) => {
                       if (!isActive) {
-                        (e.currentTarget as HTMLElement).style.color = ACCENT;
-                        (e.currentTarget as HTMLElement).style.background = ACCENT_RGBA;
+                        (e.currentTarget as HTMLElement).style.color = 'var(--color-primary)';
+                        (e.currentTarget as HTMLElement).style.background = 'var(--color-menu-hover-bg)';
                       }
                     }}
                     onMouseLeave={(e) => {
                       if (!isActive) {
-                        (e.currentTarget as HTMLElement).style.color = '#cccccc';
+                        (e.currentTarget as HTMLElement).style.color = 'var(--color-menu-inactive)';
                         (e.currentTarget as HTMLElement).style.background = 'transparent';
                       }
                     }}
@@ -109,9 +109,9 @@ export default function DashboardNavbar() {
                   gap: '6px',
                   fontSize: '12px',
                   padding: '6px 14px',
-                  borderRadius: '6px',
-                  border: `1px solid ${ACCENT_BORDER}`,
-                  color: '#cccccc',
+                  borderRadius: '8px',
+                  border: '1px solid var(--color-border-medium)',
+                  color: 'var(--color-text-secondary)',
                   background: 'transparent',
                   fontWeight: 600,
                   textDecoration: 'none',
@@ -119,14 +119,14 @@ export default function DashboardNavbar() {
                   fontFamily: 'Outfit, sans-serif'
                 }}
                 onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLElement).style.background = ACCENT_RGBA;
-                  (e.currentTarget as HTMLElement).style.color = ACCENT;
-                  (e.currentTarget as HTMLElement).style.borderColor = ACCENT;
+                  (e.currentTarget as HTMLElement).style.background = 'var(--color-menu-hover-bg)';
+                  (e.currentTarget as HTMLElement).style.color = 'var(--color-primary)';
+                  (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-primary)';
                 }}
                 onMouseLeave={(e) => {
                   (e.currentTarget as HTMLElement).style.background = 'transparent';
-                  (e.currentTarget as HTMLElement).style.color = '#cccccc';
-                  (e.currentTarget as HTMLElement).style.borderColor = ACCENT_BORDER;
+                  (e.currentTarget as HTMLElement).style.color = 'var(--color-text-secondary)';
+                  (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-border-medium)';
                 }}
               >
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -145,9 +145,9 @@ export default function DashboardNavbar() {
                   gap: '6px',
                   fontSize: '12px',
                   padding: '6px 14px',
-                  borderRadius: '6px',
-                  border: `1px solid ${ACCENT_BORDER}`,
-                  color: '#cccccc',
+                  borderRadius: '8px',
+                  border: '1px solid var(--color-border-medium)',
+                  color: 'var(--color-text-secondary)',
                   background: 'transparent',
                   fontWeight: 600,
                   textDecoration: 'none',
@@ -155,14 +155,14 @@ export default function DashboardNavbar() {
                   fontFamily: 'Outfit, sans-serif'
                 }}
                 onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLElement).style.background = ACCENT_RGBA;
-                  (e.currentTarget as HTMLElement).style.color = ACCENT;
-                  (e.currentTarget as HTMLElement).style.borderColor = ACCENT;
+                  (e.currentTarget as HTMLElement).style.background = 'var(--color-menu-hover-bg)';
+                  (e.currentTarget as HTMLElement).style.color = 'var(--color-primary)';
+                  (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-primary)';
                 }}
                 onMouseLeave={(e) => {
                   (e.currentTarget as HTMLElement).style.background = 'transparent';
-                  (e.currentTarget as HTMLElement).style.color = '#cccccc';
-                  (e.currentTarget as HTMLElement).style.borderColor = ACCENT_BORDER;
+                  (e.currentTarget as HTMLElement).style.color = 'var(--color-text-secondary)';
+                  (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-border-medium)';
                 }}
               >
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -182,9 +182,9 @@ export default function DashboardNavbar() {
                   gap: '6px',
                   fontSize: '12px',
                   padding: '6px 14px',
-                  borderRadius: '6px',
+                  borderRadius: '8px',
                   border: '1px solid rgba(239,68,68,0.3)',
-                  color: '#ef4444',
+                  color: 'var(--color-error)',
                   background: 'transparent',
                   fontWeight: 600,
                   textDecoration: 'none',
@@ -192,8 +192,8 @@ export default function DashboardNavbar() {
                   fontFamily: 'Outfit, sans-serif'
                 }}
                 onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLElement).style.background = 'rgba(239,68,68,0.08)';
-                  (e.currentTarget as HTMLElement).style.borderColor = '#ef4444';
+                  (e.currentTarget as HTMLElement).style.background = '#FEE2E2';
+                  (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-error)';
                 }}
                 onMouseLeave={(e) => {
                   (e.currentTarget as HTMLElement).style.background = 'transparent';
@@ -221,9 +221,9 @@ export default function DashboardNavbar() {
                 gap: '6px',
                 fontSize: '12px',
                 padding: '6px 14px',
-                borderRadius: '6px',
+                borderRadius: '8px',
                 border: '1px solid rgba(239,68,68,0.3)',
-                color: '#ef4444',
+                color: 'var(--color-error)',
                 background: 'transparent',
                 fontWeight: 600,
                 textDecoration: 'none',
@@ -231,8 +231,8 @@ export default function DashboardNavbar() {
                 fontFamily: 'Outfit, sans-serif'
               }}
               onMouseEnter={(e) => {
-                (e.currentTarget as HTMLElement).style.background = 'rgba(239,68,68,0.08)';
-                (e.currentTarget as HTMLElement).style.borderColor = '#ef4444';
+                (e.currentTarget as HTMLElement).style.background = '#FEE2E2';
+                (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-error)';
               }}
               onMouseLeave={(e) => {
                 (e.currentTarget as HTMLElement).style.background = 'transparent';

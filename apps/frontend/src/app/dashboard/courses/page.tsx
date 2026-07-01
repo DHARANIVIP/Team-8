@@ -100,7 +100,7 @@ export default function CoursesPage() {
 
   // ── Render ───────────────────────────────────────────────────────────────────
   return (
-    <div style={{ background: 'var(--bg)', minHeight: '100vh', color: 'var(--text-primary)' }}>
+    <div style={{ background: 'var(--color-bg-main)', minHeight: '100vh', color: 'var(--color-text-primary)' }}>
       <DashboardNavbar />
 
       <main style={{ maxWidth: '1100px', margin: '0 auto', padding: '40px 24px' }}>
@@ -111,12 +111,12 @@ export default function CoursesPage() {
               Course Recommendations
             </h1>
             {careerName && (
-              <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 500, padding: '3px 10px', background: 'var(--accent-glow)', borderRadius: '4px', border: '1px solid var(--border)' }}>
+              <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)', fontWeight: 500, padding: '3px 10px', background: 'var(--color-primary-light)', borderRadius: '4px', border: '1px solid var(--color-border-light)' }}>
                 {careerName}
               </span>
             )}
           </div>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '14px', margin: 0 }}>
+          <p style={{ color: 'var(--color-text-secondary)', fontSize: '14px', margin: 0 }}>
             AI-curated courses to close your skill gaps and advance your career
           </p>
         </div>
@@ -124,8 +124,8 @@ export default function CoursesPage() {
         {/* Loading */}
         {loading && (
           <div style={{ textAlign: 'center', padding: '80px 20px' }}>
-            <div className="spinner" style={{ marginBottom: '24px', borderColor: 'var(--accent) transparent transparent transparent' }} />
-            <p style={{ color: 'var(--text-secondary)' }}>Loading your course recommendations...</p>
+            <div className="spinner" style={{ marginBottom: '24px', borderColor: 'var(--color-primary) transparent transparent transparent' }} />
+            <p style={{ color: 'var(--color-text-secondary)' }}>Loading your course recommendations...</p>
           </div>
         )}
 
@@ -134,7 +134,7 @@ export default function CoursesPage() {
           <div style={{ textAlign: 'center', padding: '80px 20px' }}>
             <div style={{ fontSize: '48px', marginBottom: '16px' }}>📚</div>
             <h2 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '8px' }}>Action Required</h2>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '13px', maxWidth: '440px', margin: '0 auto 24px' }}>
+            <p style={{ color: 'var(--color-text-secondary)', fontSize: '13px', maxWidth: '440px', margin: '0 auto 24px' }}>
               {error}
             </p>
             {error.includes('onboarding') && (
@@ -156,23 +156,23 @@ export default function CoursesPage() {
             {/* Skill gap context */}
             {skillGap.length > 0 && (
               <div style={{
-                padding: '20px 24px', background: 'var(--accent-glow)', border: '1px solid var(--border)',
+                padding: '20px 24px', background: 'var(--color-primary-light)', border: '1px solid var(--color-border-light)',
                 borderRadius: '8px', marginBottom: '24px',
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                  <span style={{ color: 'var(--accent)', fontSize: '14px', fontWeight: 700 }}>Why these courses?</span>
+                  <span style={{ color: 'var(--color-primary)', fontSize: '14px', fontWeight: 700 }}>Why these courses?</span>
                   {cached && (
-                    <span style={{ fontSize: '10px', color: 'var(--text-muted)', padding: '2px 8px', background: 'var(--surface)', borderRadius: '4px' }}>cached</span>
+                    <span style={{ fontSize: '10px', color: 'var(--color-text-muted)', padding: '2px 8px', background: 'var(--color-bg-secondary)', borderRadius: '4px' }}>cached</span>
                   )}
                 </div>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '13px', margin: '0 0 10px' }}>
+                <p style={{ color: 'var(--color-text-secondary)', fontSize: '13px', margin: '0 0 10px' }}>
                   These courses are recommended because you need to build skills in:
                 </p>
                 <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                   {skillGap.map((skill, i) => (
                     <span key={i} style={{
-                      padding: '4px 12px', background: 'rgba(255,158,66,0.08)', border: '1px solid var(--border)',
-                      borderRadius: '4px', fontSize: '12px', color: 'var(--accent)', fontWeight: 600,
+                      padding: '4px 12px', background: 'var(--color-primary-light)', border: '1px solid var(--color-border-light)',
+                      borderRadius: '4px', fontSize: '12px', color: 'var(--color-primary)', fontWeight: 600,
                     }}>
                       {skill}
                     </span>
@@ -185,16 +185,16 @@ export default function CoursesPage() {
             <div className="card" style={{ padding: '18px 24px', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
               <div style={{ display: 'flex', gap: '32px' }}>
                 <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: '22px', fontWeight: 800, color: 'var(--accent)' }}>{filtered.length}</div>
-                  <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Recommended</div>
+                  <div style={{ fontSize: '22px', fontWeight: 800, color: 'var(--color-primary)' }}>{filtered.length}</div>
+                  <div style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>Recommended</div>
                 </div>
                 <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: '22px', fontWeight: 800, color: 'var(--text-primary)' }}>{totalCourses}</div>
-                  <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Available</div>
+                  <div style={{ fontSize: '22px', fontWeight: 800, color: 'var(--color-text-primary)' }}>{totalCourses}</div>
+                  <div style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>Available</div>
                 </div>
                 <div style={{ textAlign: 'center' }}>
                   <div style={{ fontSize: '22px', fontWeight: 800, color: '#f59e0b' }}>{skillGap.length}</div>
-                  <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Skill Gaps</div>
+                  <div style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>Skill Gaps</div>
                 </div>
               </div>
               <button onClick={handleRefresh} disabled={generating} className="btn-outline" style={{ fontSize: '12px', padding: '8px 16px' }}>
@@ -205,8 +205,8 @@ export default function CoursesPage() {
             {/* Generating state */}
             {generating && recommendations.length === 0 && (
               <div style={{ textAlign: 'center', padding: '64px 20px' }}>
-                <div className="spinner" style={{ marginBottom: '16px', borderColor: 'var(--accent) transparent transparent transparent' }} />
-                <p style={{ color: 'var(--text-secondary)' }}>AI is analyzing your profile and selecting the best courses...</p>
+                <div className="spinner" style={{ marginBottom: '16px', borderColor: 'var(--color-primary) transparent transparent transparent' }} />
+                <p style={{ color: 'var(--color-text-secondary)' }}>AI is analyzing your profile and selecting the best courses...</p>
               </div>
             )}
 
@@ -214,7 +214,7 @@ export default function CoursesPage() {
             {recommendations.length > 0 && (
               <div className="card" style={{ marginBottom: '24px', padding: '20px 24px', display: 'flex', gap: '24px', flexWrap: 'wrap', alignItems: 'flex-start' }}>
                 <div>
-                  <p style={{ color: 'var(--text-muted)', fontSize: '10px', fontWeight: 700, marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Category</p>
+                  <p style={{ color: 'var(--color-text-muted)', fontSize: '10px', fontWeight: 700, marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Category</p>
                   <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                     {categories.map(c => (
                       <button key={c} onClick={() => setCatFilter(c)} className={catFilter === c ? 'btn-primary' : 'btn-ghost'} style={{ fontSize: '11px', padding: '5px 10px' }}>{c}</button>
@@ -222,7 +222,7 @@ export default function CoursesPage() {
                   </div>
                 </div>
                 <div>
-                  <p style={{ color: 'var(--text-muted)', fontSize: '10px', fontWeight: 700, marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Difficulty</p>
+                  <p style={{ color: 'var(--color-text-muted)', fontSize: '10px', fontWeight: 700, marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Difficulty</p>
                   <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                     {difficulties.map(d => (
                       <button key={d} onClick={() => setDiffFilter(d)} className={diffFilter === d ? 'btn-primary' : 'btn-ghost'} style={{ fontSize: '11px', padding: '5px 10px' }}>{d}</button>
@@ -230,7 +230,7 @@ export default function CoursesPage() {
                   </div>
                 </div>
                 <div>
-                  <p style={{ color: 'var(--text-muted)', fontSize: '10px', fontWeight: 700, marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Provider</p>
+                  <p style={{ color: 'var(--color-text-muted)', fontSize: '10px', fontWeight: 700, marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Provider</p>
                   <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                     {providers.map(p => (
                       <button key={p} onClick={() => setProvFilter(p)} className={provFilter === p ? 'btn-primary' : 'btn-ghost'} style={{ fontSize: '11px', padding: '5px 10px' }}>{p}</button>
@@ -256,6 +256,7 @@ export default function CoursesPage() {
                       display: 'flex',
                       flexDirection: 'column',
                       gap: '14px',
+                      borderRadius: '12px'
                     }}>
                       {/* Top row: sequence + title + badges */}
                       <div style={{ display: 'flex', alignItems: 'flex-start', gap: '14px' }}>
@@ -263,12 +264,12 @@ export default function CoursesPage() {
                           flexShrink: 0, width: '36px', height: '36px', borderRadius: '50%',
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                           fontSize: '14px', fontWeight: 700,
-                          background: 'rgba(255,158,66,0.08)', color: 'var(--accent)',
+                          background: 'var(--color-primary-light)', color: 'var(--color-primary)',
                         }}>
                           {seq}
                         </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <h3 style={{ fontSize: '17px', fontWeight: 700, margin: 0, fontFamily: 'Outfit, sans-serif', lineHeight: 1.4 }}>
+                          <h3 style={{ fontSize: '17px', fontWeight: 700, margin: 0, fontFamily: 'Outfit, sans-serif', lineHeight: 1.4, color: 'var(--color-text-primary)' }}>
                             {course.title}
                           </h3>
                           <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', marginTop: '6px' }}>
@@ -276,13 +277,13 @@ export default function CoursesPage() {
                               {course.difficulty}
                             </span>
                             {course.category && (
-                              <span style={{ padding: '3px 10px', background: 'var(--accent-glow)', border: '1px solid var(--border)', borderRadius: '4px', fontSize: '11px', color: 'var(--accent)', fontWeight: 500 }}>
+                              <span style={{ padding: '3px 10px', background: 'var(--color-primary-light)', border: '1px solid var(--color-border-light)', borderRadius: '4px', fontSize: '11px', color: 'var(--color-primary)', fontWeight: 500 }}>
                                 {course.category}
                               </span>
                             )}
-                            <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{course.provider}</span>
+                            <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>{course.provider}</span>
                             {course.rating && (
-                              <span style={{ fontSize: '12px', color: 'var(--accent)', fontWeight: 600 }}>★ {course.rating}</span>
+                              <span style={{ fontSize: '12px', color: 'var(--color-primary)', fontWeight: 600 }}>★ {course.rating}</span>
                             )}
                           </div>
                         </div>
@@ -290,13 +291,13 @@ export default function CoursesPage() {
 
                       {/* Description */}
                       {course.description && (
-                        <p style={{ color: 'var(--text-secondary)', fontSize: '13px', margin: 0, lineHeight: '1.6' }}>
+                        <p style={{ color: 'var(--color-text-secondary)', fontSize: '13px', margin: 0, lineHeight: '1.6' }}>
                           {course.description}
                         </p>
                       )}
 
                       {/* Details row */}
-                      <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', fontSize: '12px', color: 'var(--text-muted)' }}>
+                      <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', fontSize: '12px', color: 'var(--color-text-secondary)' }}>
                         {course.duration_weeks && (
                           <span>⏱ {course.duration_weeks} weeks</span>
                         )}
@@ -307,7 +308,7 @@ export default function CoursesPage() {
                           <span>🌐 {course.language}</span>
                         )}
                         {course.price && (
-                          <span style={{ color: course.price === 'Free' ? '#10b981' : 'var(--text-muted)', fontWeight: course.price === 'Free' ? 600 : 400 }}>
+                          <span style={{ color: course.price === 'Free' ? '#10b981' : 'var(--color-text-secondary)', fontWeight: course.price === 'Free' ? 600 : 400 }}>
                             {course.price}
                           </span>
                         )}
@@ -317,7 +318,7 @@ export default function CoursesPage() {
                       {course.tags && course.tags.length > 0 && (
                         <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                           {course.tags.slice(0, 6).map((tag, i) => (
-                            <span key={i} style={{ padding: '2px 8px', background: 'var(--surface-alt)', border: '1px solid var(--border-dark)', borderRadius: '3px', fontSize: '10px', color: 'var(--text-muted)' }}>
+                            <span key={i} style={{ padding: '2px 8px', background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border-light)', borderRadius: '3px', fontSize: '10px', color: 'var(--color-text-muted)' }}>
                               {tag}
                             </span>
                           ))}
@@ -327,8 +328,8 @@ export default function CoursesPage() {
                       {/* Learning outcomes */}
                       {course.learning_outcomes && course.learning_outcomes.length > 0 && (
                         <div style={{ fontSize: '12px' }}>
-                          <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>You will learn: </span>
-                          <span style={{ color: 'var(--text-secondary)' }}>
+                          <span style={{ color: 'var(--color-text-muted)', fontWeight: 600 }}>You will learn: </span>
+                          <span style={{ color: 'var(--color-text-secondary)' }}>
                             {course.learning_outcomes.slice(0, 3).join(' • ')}
                           </span>
                         </div>
@@ -337,10 +338,10 @@ export default function CoursesPage() {
                       {/* AI reason */}
                       {rec.reason && (
                         <div style={{
-                          padding: '12px 16px', background: 'var(--accent-glow)', border: '1px solid var(--border)',
-                          borderRadius: '6px', fontSize: '12px', color: 'var(--text-secondary)', lineHeight: '1.5',
+                          padding: '12px 16px', background: 'var(--color-primary-light)', border: '1px solid var(--color-border-light)',
+                          borderRadius: '6px', fontSize: '12px', color: 'var(--color-text-secondary)', lineHeight: '1.5',
                         }}>
-                          <span style={{ color: 'var(--accent)', fontWeight: 600 }}>AI Recommendation: </span>
+                          <span style={{ color: 'var(--color-primary)', fontWeight: 600 }}>AI Recommendation: </span>
                           {rec.reason}
                         </div>
                       )}
@@ -353,7 +354,7 @@ export default function CoursesPage() {
                           </a>
                         )}
                         {rec.skill_gap && (
-                          <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                          <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>
                             Addresses: {rec.skill_gap}
                           </span>
                         )}

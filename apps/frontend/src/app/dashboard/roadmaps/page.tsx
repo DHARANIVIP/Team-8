@@ -73,20 +73,21 @@ export default function RoadmapsPage() {
             flexDirection: 'column',
             gap: '12px',
             cursor: 'pointer',
+            borderRadius: '12px'
           }}
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}>
-            <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#ffffff', margin: 0, fontFamily: 'Outfit, sans-serif' }}>
+            <h3 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--color-text-primary)', margin: 0, fontFamily: 'Outfit, sans-serif' }}>
               {item.name}
             </h3>
           </div>
           
-          <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5, flexGrow: 1 }}>
+          <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', margin: 0, lineHeight: 1.5, flexGrow: 1 }}>
             {item.description}
           </p>
 
           <div style={{ display: 'flex', gap: '6px', marginTop: 'auto', paddingTop: '8px', flexWrap: 'wrap' }}>
-            <span className="badge badge-muted" style={{ fontSize: '10px', background: 'rgba(255, 158, 66, 0.05)', color: 'var(--accent)', border: '1px solid rgba(255, 158, 66, 0.2)' }}>
+            <span className="badge badge-muted" style={{ fontSize: '10px', background: 'var(--color-primary-light)', color: 'var(--color-primary)', border: '1px solid var(--color-border-light)' }}>
               {item.category}
             </span>
             <span className="badge badge-muted" style={{ fontSize: '10px' }}>
@@ -97,7 +98,7 @@ export default function RoadmapsPage() {
             </span>
           </div>
           
-          <div style={{ color: 'var(--accent)', fontSize: '12px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px', borderTop: '1px solid var(--border-dark)', paddingTop: '12px', marginTop: '8px' }}>
+          <div style={{ color: 'var(--color-primary)', fontSize: '12px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px', borderTop: '1px solid var(--color-border-light)', paddingTop: '12px', marginTop: '8px' }}>
             View Roadmap path →
           </div>
         </div>
@@ -110,19 +111,19 @@ export default function RoadmapsPage() {
   }, []);
 
   return (
-    <div style={{ background: '#0a0a0a', minHeight: '100vh', color: '#ffffff' }}>
+    <div style={{ background: 'var(--color-bg-main)', minHeight: '100vh', color: 'var(--color-text-primary)' }}>
       <DashboardNavbar />
       
       <main className="page-container animate-slide-up" style={{ padding: '24px 0' }}>
         
         {/* Header Block */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', paddingBottom: '20px', borderBottom: '1px solid rgba(255, 158, 66, 0.15)', flexWrap: 'wrap', gap: '16px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', paddingBottom: '20px', borderBottom: '1px solid var(--color-border-light)', flexWrap: 'wrap', gap: '16px' }}>
           <div>
             <span className="section-label" style={{ display: 'block', marginBottom: '2px' }}>OFFICIAL PARTNERSHIPS</span>
             <h1 style={{ fontSize: '28px', fontWeight: 700, margin: 0, letterSpacing: '-0.5px', fontFamily: 'Outfit, sans-serif' }}>
-              Learning <span style={{ color: ACCENT }}>Roadmaps</span>
+              Learning <span style={{ color: 'var(--color-primary)' }}>Roadmaps</span>
             </h1>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '13px', margin: '4px 0 0' }}>
+            <p style={{ color: 'var(--color-text-secondary)', fontSize: '13px', margin: '4px 0 0' }}>
               Curated step-by-step developer paths inspired by roadmap.sh to help you guide your learning.
             </p>
           </div>
@@ -146,7 +147,7 @@ export default function RoadmapsPage() {
                 <span className="spinner" style={{
                   width: '12px',
                   height: '12px',
-                  border: `2px solid ${ACCENT}`,
+                  border: '2px solid var(--color-primary)',
                   borderTopColor: 'transparent',
                   borderRadius: '50%',
                   display: 'inline-block',
@@ -160,12 +161,12 @@ export default function RoadmapsPage() {
 
         {error && (
           <div style={{
-            background: 'rgba(239, 68, 68, 0.06)',
-            border: '1px solid #ef4444',
+            background: '#FEE2E2',
+            border: '1px solid rgba(220, 38, 38, 0.25)',
             borderRadius: '6px',
             padding: '16px',
             marginBottom: '24px',
-            color: '#ef4444',
+            color: '#DC2626',
             fontSize: '13px',
             fontFamily: 'Outfit, sans-serif'
           }}>
@@ -178,16 +179,16 @@ export default function RoadmapsPage() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '16px' }}>
             {[1, 2, 3, 4].map((n) => (
               <div key={n} className="card" style={{ padding: '24px', height: '180px', display: 'flex', flexDirection: 'column', gap: '12px', opacity: 0.6 }}>
-                <div style={{ height: '18px', width: '60%', background: 'var(--border-dark)', borderRadius: '4px' }}></div>
-                <div style={{ height: '12px', width: '40%', background: 'var(--border-dark)', borderRadius: '4px' }}></div>
-                <div style={{ height: '36px', width: '100%', background: 'var(--border-dark)', borderRadius: '4px', marginTop: 'auto' }}></div>
+                <div style={{ height: '18px', width: '60%', background: 'var(--color-border-light)', borderRadius: '4px' }}></div>
+                <div style={{ height: '12px', width: '40%', background: 'var(--color-border-light)', borderRadius: '4px' }}></div>
+                <div style={{ height: '36px', width: '100%', background: 'var(--color-border-light)', borderRadius: '4px', marginTop: 'auto' }}></div>
               </div>
             ))}
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
             <div>
-              <h2 style={{ fontSize: '14px', fontWeight: 600, color: 'var(--accent)', borderBottom: '1px solid var(--border-dark)', paddingBottom: '8px', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '1px', fontFamily: 'Outfit, sans-serif' }}>
+              <h2 style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-primary)', borderBottom: '1px solid var(--color-border-light)', paddingBottom: '8px', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '1px', fontFamily: 'Outfit, sans-serif' }}>
                 Role-Based Roadmaps
               </h2>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '16px' }}>
@@ -196,7 +197,7 @@ export default function RoadmapsPage() {
             </div>
 
             <div>
-              <h2 style={{ fontSize: '14px', fontWeight: 600, color: 'var(--accent)', borderBottom: '1px solid var(--border-dark)', paddingBottom: '8px', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '1px', fontFamily: 'Outfit, sans-serif' }}>
+              <h2 style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-primary)', borderBottom: '1px solid var(--color-border-light)', paddingBottom: '8px', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '1px', fontFamily: 'Outfit, sans-serif' }}>
                 Skill-Based Roadmaps
               </h2>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '16px' }}>
