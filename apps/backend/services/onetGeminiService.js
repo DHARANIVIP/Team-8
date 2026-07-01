@@ -50,10 +50,10 @@ async function generateJSON(prompt, systemInstruction) {
 }
 
 /**
- * Fetch Career details according to O*NET and BLS standards.
+ * Fetch Career details according to industry standard guidelines.
  */
 export async function getCareerDetails(careerName) {
-  const systemInstruction = 'You are an O*NET and Bureau of Labor Statistics (BLS) data parser. Return only valid JSON.';
+  const systemInstruction = 'You are an industry standard career data parser. Return only valid JSON.';
   const prompt = `Provide the occupational specification for: "${careerName}".
   Return a JSON object conforming exactly to this structure:
   {
@@ -91,10 +91,10 @@ export async function getCareerDetails(careerName) {
 }
 
 /**
- * Fetch required skills for a target career according to O*NET specifications.
+ * Fetch required skills for a target career according to industry standards.
  */
 export async function getCareerSkills(careerName) {
-  const systemInstruction = 'You are an expert O*NET skills analyst. Return only valid JSON.';
+  const systemInstruction = 'You are an expert career skills analyst. Return only valid JSON.';
   const prompt = `Map the key technical and soft skills required for the career: "${careerName}".
   Return a JSON array of skill objects matching this structure:
   [

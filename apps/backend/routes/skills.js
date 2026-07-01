@@ -372,6 +372,34 @@ router.post('/matrix', async (req, res) => {
  * Workflow C: Generate ordered skill learning roadmap for a student+career
  * Deterministic gap analysis in backend, AI for ranking/explanation only
  */
+// Dynamic prerequisites helper mapping based on standard engineering stack dependencies
+function getPrerequisitesForSkill(skillName, careerSkills) {
+  const preReqMap = {
+    'react': ['javascript'],
+    'react.js': ['javascript'],
+    'node.js': ['javascript'],
+    'node': ['javascript'],
+    'machine learning': ['python'],
+    'deep learning': ['machine learning', 'python'],
+    'tensorflow': ['python', 'machine learning'],
+    'pytorch': ['python', 'machine learning'],
+    'kubernetes': ['docker'],
+    'docker': ['git'],
+    'express.js': ['javascript', 'node.js'],
+    'express': ['javascript', 'node.js'],
+    'typescript': ['javascript'],
+    'redux': ['react', 'javascript'],
+    'next.js': ['react', 'javascript'],
+    'pandas': ['python'],
+    'numpy': ['python'],
+    'scikit-learn': ['python', 'machine learning']
+  };
+  const nameLower = (skillName || '').toLowerCase().trim();
+  const possible = preReqMap[nameLower] || [];
+  const careerSkillNames = new Set((careerSkills || []).map(s => s.name?.toLowerCase().trim()));
+  return possible.filter(p => careerSkillNames.has(p));
+}
+
 router.get('/recommendation', protect, async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -381,7 +409,6 @@ router.get('/recommendation', protect, async (req, res) => {
       return res.status(400).json({ error: 'careerId query parameter is required' });
     }
 
-    // Normalize careerId to UUID format for DB lookups
     const cleanCareerId = mongoIdToUuid(careerId);
 
     // 1. Fetch student profile
@@ -399,29 +426,47 @@ router.get('/recommendation', protect, async (req, res) => {
     const { career, careerSkills, userSkills, missingSkills, weakSkills, skillsToLearn } = gapResult;
 
     if (skillsToLearn.length === 0) {
+      const completedSkills = userSkills.filter(us => us.source === 'course_completion' || us.proficiency === 'Expert');
       return res.json({
         career: career.name,
+        careerId: cleanCareerId,
         message: 'You already have all the skills for this career!',
         recommendations: [],
-        gapSummary: { missing: 0, weak: 0, total: careerSkills.length }
+        gapSummary: { missing: 0, weak: 0, total: careerSkills.length },
+        currentSkills: userSkills,
+        recentlyCompleted: completedSkills,
+        nextRecommended: null,
+        cached: true
       });
     }
 
-    // 5. Check if we have cached recommendations (unless force=true)
+    // 3. Check if we have cached recommendations (unless force=true)
     const forceRefresh = req.query.force === 'true';
     if (!forceRefresh) {
       const cached = await getSkillRecommendations(userId, cleanCareerId);
       if (cached && cached.length > 0) {
+        const enrichedCached = cached.map(r => ({
+          ...r,
+          prerequisites: getPrerequisitesForSkill(r.skill_name || '', careerSkills)
+        }));
+        
+        const completedSkills = userSkills.filter(us => us.source === 'course_completion' || us.proficiency === 'Expert');
+        const nextRec = enrichedCached.find(r => r.status === 'pending' || r.status === 'in_progress');
+
         return res.json({
           career: career.name,
-          recommendations: cached,
+          careerId: cleanCareerId,
+          recommendations: enrichedCached,
           gapSummary: { missing: missingSkills.length, weak: weakSkills.length, total: careerSkills.length },
+          currentSkills: userSkills,
+          recentlyCompleted: completedSkills,
+          nextRecommended: nextRec || null,
           cached: true
         });
       }
     }
 
-    // 6. Call AI to rank/order skills by learning sequence
+    // 4. Call AI to rank/order skills by learning sequence
     console.log(`🤖 Generating skill recommendation order for ${career.name}...`);
     const orderedRecommendations = await generateSkillRecommendationOrder(
       profile,
@@ -430,7 +475,7 @@ router.get('/recommendation', protect, async (req, res) => {
       userSkills || []
     );
 
-    // 7. Save to skill_recommendations table and return saved data (with status + enriched fields)
+    // 5. Save to skill_recommendations table and return saved data
     let savedRecs;
     try {
       await saveSkillRecommendations(userId, cleanCareerId, orderedRecommendations);
@@ -440,11 +485,23 @@ router.get('/recommendation', protect, async (req, res) => {
       savedRecs = orderedRecommendations.map(r => ({ ...r, status: 'pending' }));
     }
 
-    // 8. Return ordered skill roadmap
+    const enrichedRecs = (savedRecs || []).map(r => ({
+      ...r,
+      prerequisites: getPrerequisitesForSkill(r.skill_name || '', careerSkills)
+    }));
+
+    const completedSkills = userSkills.filter(us => us.source === 'course_completion' || us.proficiency === 'Expert');
+    const nextRec = enrichedRecs.find(r => r.status === 'pending' || r.status === 'in_progress');
+
+    // 6. Return ordered skill roadmap enriched with metadata
     res.json({
       career: career.name,
-      recommendations: savedRecs || orderedRecommendations.map(r => ({ ...r, status: 'pending' })),
+      careerId: cleanCareerId,
+      recommendations: enrichedRecs,
       gapSummary: { missing: missingSkills.length, weak: weakSkills.length, total: careerSkills.length },
+      currentSkills: userSkills,
+      recentlyCompleted: completedSkills,
+      nextRecommended: nextRec || null,
       cached: false
     });
   } catch (error) {

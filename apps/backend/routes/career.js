@@ -8,13 +8,18 @@ import {
   deleteCareerRecommendations,
   saveCareerRecommendation,
   getSkillGapAnalysis,
-  getSkillsByCareer
+  getSkillsByCareer,
+  getUserSkills,
+  getRoadmapSummaryForCareer,
+  getRecommendedCourses,
+  supabase
 } from '../services/supabaseService.js';
 import { mongoIdToUuid } from '../services/supabaseService.js';
 import { 
   generateCareerRecommendations, 
   generateSkillGapAnalysis,
-  generateLearningPath 
+  generateLearningPath,
+  generateCareerComparisonSummary
 } from '../services/geminiCareerService.js';
 
 const router = express.Router();
@@ -90,8 +95,9 @@ router.get('/analysis', protect, async (req, res) => {
       analysisDate: recommendationRows[0]?.recommended_at || new Date().toISOString()
     });
   } catch (error) {
-    console.error('❌ Failed to fetch career analysis:', error.message);
-    res.status(500).json({ error: 'Failed to fetch career analysis' });
+    const errorMsg = error?.message || (typeof error === 'string' ? error : 'Unknown error');
+    console.error('❌ Failed to fetch career analysis:', errorMsg);
+    res.status(500).json({ error: 'Failed to fetch career analysis', details: errorMsg });
   }
 });
 
@@ -139,8 +145,9 @@ router.get('/domains', protect, async (req, res) => {
       message: domains.length ? 'Domains retrieved successfully' : 'No domains found. Complete onboarding first.'
     });
   } catch (error) {
-    console.error('❌ Failed to fetch career domains:', error.message);
-    res.status(500).json({ error: 'Failed to fetch career domains' });
+    const errorMsg = error?.message || (typeof error === 'string' ? error : 'Unknown error');
+    console.error('❌ Failed to fetch career domains:', errorMsg);
+    res.status(500).json({ error: 'Failed to fetch career domains', details: errorMsg });
   }
 });
 
@@ -221,10 +228,11 @@ router.post('/recommendations', protect, async (req, res) => {
       message: 'Career recommendations generated successfully'
     });
   } catch (error) {
-    console.error('❌ Failed to generate career recommendations:', error.message);
+    const errorMsg = error?.message || (typeof error === 'string' ? error : 'Unknown error');
+    console.error('❌ Failed to generate career recommendations:', errorMsg);
     res.status(500).json({ 
       error: 'Failed to generate career recommendations',
-      details: error.message 
+      details: errorMsg 
     });
   }
 });
@@ -251,44 +259,12 @@ router.get('/:id/details', protect, async (req, res) => {
     
     // Get user profile for context
     const profile = await getUserProfile(userId);
-    
-    res.json({ 
-      career,
-      skillGap,
-      careerSkills,
-      userProfile: {
-        current_skills: profile?.current_skills || [],
-        experience_level: profile?.years_experience || 'Beginner'
-      }
-    });
-  } catch (error) {
-    console.error('❌ Failed to fetch career details:', error.message);
-    res.status(500).json({ error: 'Failed to fetch career details' });
-  }
-});
 
-/**
- * POST /api/career/:id/learning-path
- * Generate learning path for a specific career
- */
-router.post('/:id/learning-path', protect, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const userId = req.user.userId;
-    
-    const career = await getCategoryById(id);
-    if (!career) {
-      return res.status(404).json({ error: 'Career not found' });
-    }
-
-    const profile = await getUserProfile(userId);
-    const skillGap = await getSkillGapAnalysis(userId, id);
-    
-    // Generate AI-powered learning path
     const learningPath = await generateLearningPath(
-      career.name,
-      skillGap.skills?.filter(s => !s.acquired) || [],
-      profile?.years_experience
+      profile,
+      career,
+      skillGap.skillsToLearn || [],
+      skillGap.careerSkills || []
     );
     
     res.json({ 
@@ -297,8 +273,9 @@ router.post('/:id/learning-path', protect, async (req, res) => {
       readinessScore: skillGap.readiness
     });
   } catch (error) {
-    console.error('❌ Failed to generate learning path:', error.message);
-    res.status(500).json({ error: 'Failed to generate learning path' });
+    const errorMsg = error?.message || (typeof error === 'string' ? error : 'Unknown error');
+    console.error('❌ Failed to generate learning path:', errorMsg);
+    res.status(500).json({ error: 'Failed to generate learning path', details: errorMsg });
   }
 });
 
@@ -363,7 +340,6 @@ router.post('/refresh', protect, async (req, res) => {
       }
     }
     const matched_domains = Object.entries(domainMap).map(([name, score]) => ({ name, score }));
-    
     res.json({ 
       recommendations: aiRecommendations,
       matched_domains,
@@ -371,10 +347,11 @@ router.post('/refresh', protect, async (req, res) => {
       message: 'Career analysis refreshed successfully'
     });
   } catch (error) {
-    console.error('❌ Failed to refresh career analysis:', error.message);
+    const errorMsg = error?.message || (typeof error === 'string' ? error : 'Unknown error');
+    console.error('❌ Failed to refresh career analysis:', errorMsg);
     res.status(500).json({ 
       error: 'Failed to refresh career analysis',
-      details: error.message 
+      details: errorMsg 
     });
   }
 });
@@ -386,33 +363,351 @@ router.post('/refresh', protect, async (req, res) => {
 router.post('/compare', protect, async (req, res) => {
   try {
     const { careerIds } = req.body;
+    const userId = req.user.userId;
     
-    if (!careerIds || !Array.isArray(careerIds) || careerIds.length < 2) {
+    if (!careerIds || !Array.isArray(careerIds) || careerIds.length < 2 || careerIds.length > 3) {
       return res.status(400).json({ 
         error: 'Invalid request',
-        message: 'Provide at least 2 career IDs to compare' 
+        message: 'Provide exactly 2 to 3 career IDs to compare' 
       });
     }
 
-    const careers = [];
-    for (const id of careerIds.slice(0, 3)) {
-      const career = await getCategoryById(id);
+    // 1. Verify User Profile & User Skills
+    const profile = await getUserProfile(userId);
+    if (!profile) {
+      return res.status(404).json({ error: 'User profile not found. Complete onboarding first.' });
+    }
+
+    const userSkills = await getUserSkills(userId);
+    const userSkillsMap = new Map((userSkills || []).map(us => [us.skill_name?.toLowerCase(), us]));
+
+    // 2. Validate Selected Career IDs against user's career recommendations
+    const recommendations = await getCareerRecommendations(userId);
+    const recIds = new Set(recommendations.map(r => mongoIdToUuid(r.career_id)));
+    const invalidIds = careerIds.filter(id => !recIds.has(mongoIdToUuid(id)));
+    
+    if (invalidIds.length > 0) {
+      return res.status(400).json({
+        error: 'Invalid selection',
+        message: 'You may only compare careers that the AI has previously recommended for you.'
+      });
+    }
+
+    // 3. Fetch details for each career
+    const comparedCareers = [];
+    for (const id of careerIds) {
+      const career = await getCategoryById(mongoIdToUuid(id));
       if (career) {
-        careers.push(career);
+        comparedCareers.push(career);
       }
     }
 
-    if (careers.length < 2) {
+    if (comparedCareers.length < 2) {
       return res.status(404).json({ error: 'Not enough valid careers found' });
     }
 
-    res.json({ 
-      careers,
-      message: 'Career comparison data retrieved'
+    // 4. Score salary and growth rates
+    function parseAverageSalary(salaryStr) {
+      if (!salaryStr) return 1000000;
+      const matches = salaryStr.match(/\d+/g);
+      if (matches && matches.length >= 2) {
+        const min = parseFloat(matches[0]);
+        const max = parseFloat(matches[1]);
+        return ((min + max) / 2) * 100000;
+      } else if (matches && matches.length === 1) {
+        return parseFloat(matches[0]) * 100000;
+      }
+      return 1000000;
+    }
+
+    const salaries = comparedCareers.map(c => c.average_salary || parseAverageSalary(c.salary_range));
+    const minSalary = Math.min(...salaries);
+    const maxSalary = Math.max(...salaries);
+
+    const growths = comparedCareers.map(c => parseFloat(c.growth_rate) || 15);
+    const minGrowth = Math.min(...growths);
+    const maxGrowth = Math.max(...growths);
+
+    // 5. Score experience mapping
+    const expLevels = { 'Beginner': 50, 'Intermediate': 80, 'Expert': 100 };
+    const experienceMatch = expLevels[profile.years_experience] || 70;
+
+    // 6. Pre-fetch career skills and batch query courses for all missing skills at once
+    const allMissingSkillIds = [];
+    const careerSkillsMap = new Map();
+    for (const career of comparedCareers) {
+      const careerSkills = await getSkillsByCareer(career.id);
+      careerSkillsMap.set(career.id, careerSkills);
+      
+      for (const reqSkill of careerSkills) {
+        const userSkill = userSkillsMap.get(reqSkill.name?.toLowerCase());
+        if (!userSkill && reqSkill.id) {
+          allMissingSkillIds.push(reqSkill.id);
+        }
+      }
+    }
+
+    let coursesMap = new Map();
+    if (allMissingSkillIds.length > 0) {
+      try {
+        const courses = await getRecommendedCourses(allMissingSkillIds);
+        for (const course of courses || []) {
+          if (course.skill_id) {
+            if (!coursesMap.has(course.skill_id)) {
+              coursesMap.set(course.skill_id, []);
+            }
+            coursesMap.get(course.skill_id).push(course);
+          }
+        }
+      } catch (coursesErr) {
+        console.warn('⚠️ Failed to pre-fetch courses for comparison:', coursesErr.message);
+      }
+    }
+
+    // 7. Build side-by-side profiles
+    let comparisons = [];
+    for (const career of comparedCareers) {
+      const careerSkills = careerSkillsMap.get(career.id) || [];
+      
+      let matchedCount = 0;
+      const matchedSkills = [];
+      const missingSkills = [];
+      const expertSkillsUsed = [];
+      const courseSuggestions = [];
+
+      function isProficiencyAtOrAbove(userProf, reqDiff) {
+        const userLevels = { 'Beginner': 1, 'Intermediate': 2, 'Expert': 3 };
+        const reqLevels = { 'Easy': 1, 'Medium': 2, 'Hard': 3 };
+        const uVal = userLevels[userProf] || 2;
+        const rVal = reqLevels[reqDiff] || 2;
+        return uVal >= rVal;
+      }
+
+      for (const reqSkill of careerSkills) {
+        const userSkill = userSkillsMap.get(reqSkill.name?.toLowerCase());
+        if (userSkill) {
+          const satisfies = isProficiencyAtOrAbove(userSkill.proficiency, reqSkill.difficulty_level);
+          if (satisfies) {
+            matchedCount++;
+            matchedSkills.push({
+              name: reqSkill.name,
+              proficiency: userSkill.proficiency
+            });
+          } else {
+            missingSkills.push(reqSkill.name);
+          }
+
+          if (userSkill.proficiency === 'Expert' || (userSkill.progress_percentage || 0) >= 80) {
+            expertSkillsUsed.push(reqSkill.name);
+          }
+        } else {
+          missingSkills.push(reqSkill.name);
+        }
+
+        // Get courses from pre-fetched map
+        if (!userSkill && reqSkill.id) {
+          const skillCourses = coursesMap.get(reqSkill.id) || [];
+          if (skillCourses.length > 0) {
+            courseSuggestions.push(skillCourses[0]);
+          }
+        }
+      }
+
+      const matchPercent = careerSkills.length > 0 ? Math.round((matchedCount / careerSkills.length) * 100) : 0;
+
+      // Interests overlap match
+      const userInterests = profile.interests || [];
+      const careerText = `${career.name} ${career.description} ${career.industry_tags?.join(' ') || ''}`.toLowerCase();
+      const interestMatches = userInterests.filter(interest => careerText.includes(interest.toLowerCase()));
+      const interestScoreRaw = userInterests.length > 0 
+        ? Math.round((interestMatches.length / userInterests.length) * 100)
+        : 70;
+      const interestMatch = Math.max(60, interestScoreRaw);
+
+      // Normalized salary
+      const careerAvgSal = career.average_salary || parseAverageSalary(career.salary_range);
+      const salaryScore = maxSalary === minSalary ? 100 : Math.round(((careerAvgSal - minSalary) / (maxSalary - minSalary)) * 100);
+
+      // Normalized growth
+      const careerGrowth = parseFloat(career.growth_rate) || 15;
+      const growthScore = maxGrowth === minGrowth ? 100 : Math.round(((careerGrowth - minGrowth) / (maxGrowth - minGrowth)) * 100);
+
+      // Fetch roadmap summary
+      const roadmap = await getRoadmapSummaryForCareer(career.name);
+
+      comparisons.push({
+        careerId: career.id,
+        title: career.name,
+        matchPercent,
+        interestMatch,
+        salaryScore,
+        growthScore,
+        matchedSkills,
+        missingSkills,
+        expertSkillsUsed,
+        courses: courseSuggestions.slice(0, 3),
+        growth: career.growth_rate || 'N/A',
+        industry: getIndustryForCareer(career.name),
+        avgSalary: careerAvgSal,
+        roadmap
+      });
+    }
+
+    // 7. Calculate total Suitability scores using formula weights
+    comparisons = comparisons.map(c => {
+      const overallScore = Math.round(
+        (c.matchPercent * 0.40) + 
+        (experienceMatch * 0.20) + 
+        (c.interestMatch * 0.15) + 
+        (c.salaryScore * 0.15) + 
+        (c.growthScore * 0.10)
+      );
+      
+      // Remove temporary variables from clean response
+      const { interestMatch, salaryScore, growthScore, ...cleanItem } = c;
+      return {
+        ...cleanItem,
+        overallScore
+      };
+    });
+
+    // 8. Sort descending
+    comparisons.sort((a, b) => b.overallScore - a.overallScore);
+    const comparisonOrder = comparisons.map(c => c.careerId);
+
+    // 9. Generate AI Synthesis Summary via Gemini
+    const aiSummary = await generateCareerComparisonSummary(profile, comparisons);
+
+    // 10. Record this comparison in user history (non-blocking background task)
+    supabase.from('comparisons').insert({
+      user_id: mongoIdToUuid(userId),
+      career_id_1: mongoIdToUuid(careerIds[0]),
+      career_id_2: mongoIdToUuid(careerIds[1])
+    }).then(({ error }) => {
+      if (error) {
+        console.warn('⚠️ Could not save comparison to history database:', error.message);
+      }
+    }).catch(saveHistoryErr => {
+      console.warn('⚠️ Could not save comparison to history database:', saveHistoryErr.message);
+    });
+
+    res.json({
+      summary: aiSummary,
+      comparisons,
+      comparisonOrder
     });
   } catch (error) {
-    console.error('❌ Failed to compare careers:', error.message);
-    res.status(500).json({ error: 'Failed to compare careers' });
+    const errorMsg = error?.message || (typeof error === 'string' ? error : 'Unknown error');
+    console.error('❌ Failed side-by-side comparison logic:', errorMsg);
+    res.status(500).json({ error: 'Failed to perform career comparison', details: errorMsg });
+  }
+});
+
+/**
+ * GET /api/career/recommended
+ * Retrieve all AI-recommended careers for the authenticated user
+ */
+router.get('/recommended', protect, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const recommendationRows = await getCareerRecommendations(userId);
+    
+    const careers = [];
+    for (const rec of recommendationRows) {
+      const cleanId = mongoIdToUuid(rec.career_id);
+      const career = await getCategoryById(cleanId);
+      if (career) {
+        careers.push({
+          id: cleanId,
+          name: career.name,
+          description: career.description,
+          icon: career.icon || '💼',
+          salary_range: career.salary_range,
+          average_salary: career.average_salary,
+          growth_rate: career.growth_rate,
+          demand_level: career.demand_level,
+          matchPercentage: rec.match_percentage,
+          reason: rec.reason
+        });
+      }
+    }
+    
+    res.json({ careers });
+  } catch (error) {
+    const errorMsg = error?.message || (typeof error === 'string' ? error : 'Unknown error');
+    console.error('❌ Failed to fetch user recommended careers:', errorMsg);
+    res.status(500).json({ error: 'Failed to retrieve career recommendations', details: errorMsg });
+  }
+});
+
+/**
+ * GET /api/career/compare/results
+ * Get history of user comparisons
+ */
+router.get('/compare/results', protect, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { data: list, error } = await supabase
+      .from('comparisons')
+      .select('*')
+      .eq('user_id', mongoIdToUuid(userId))
+      .order('created_at', { ascending: false })
+      .limit(10);
+
+    if (error) throw error;
+
+    const enriched = [];
+    for (const comp of list || []) {
+      const c1 = await getCategoryById(comp.career_id_1).catch(() => null);
+      const c2 = await getCategoryById(comp.career_id_2).catch(() => null);
+      enriched.push({
+        id: comp.id,
+        career1: c1 ? { id: c1.id, name: c1.name } : null,
+        career2: c2 ? { id: c2.id, name: c2.name } : null,
+        createdAt: comp.created_at
+      });
+    }
+
+    res.json(enriched);
+  } catch (error) {
+    const errorMsg = error?.message || (typeof error === 'string' ? error : 'Unknown error');
+    console.error('❌ Failed to retrieve comparison history:', errorMsg);
+    res.status(500).json({ error: 'Failed to retrieve comparison history', details: errorMsg });
+  }
+});
+
+/**
+ * GET /api/career/:id
+ * Retrieve specific career by ID
+ */
+router.get('/:id', protect, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const career = await getCategoryById(mongoIdToUuid(id));
+    if (!career) {
+      return res.status(404).json({ error: 'Career not found' });
+    }
+    res.json(career);
+  } catch (error) {
+    const errorMsg = error?.message || (typeof error === 'string' ? error : 'Unknown error');
+    console.error('❌ Failed to fetch career details:', errorMsg);
+    res.status(500).json({ error: 'Failed to retrieve career path details', details: errorMsg });
+  }
+});
+
+/**
+ * GET /api/career/:id/skills
+ * Retrieve list of skills for a career by ID
+ */
+router.get('/:id/skills', protect, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const skills = await getSkillsByCareer(mongoIdToUuid(id));
+    res.json(skills || []);
+  } catch (error) {
+    const errorMsg = error?.message || (typeof error === 'string' ? error : 'Unknown error');
+    console.error('❌ Failed to fetch career skills:', errorMsg);
+    res.status(500).json({ error: 'Failed to retrieve career skills', details: errorMsg });
   }
 });
 

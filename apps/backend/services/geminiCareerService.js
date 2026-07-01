@@ -550,3 +550,79 @@ Rules:
     return generateDeterministicCourseRecommendations(allCourses, context);
   }
 }
+
+/**
+ * Generate AI-powered comparison summary for selected careers
+ */
+export async function generateCareerComparisonSummary(profile, comparisonsData) {
+  const prompt = `You are an expert career guidance counselor. Compare the following careers side-by-side for the student and provide a structured comparison summary.
+  
+Student Profile:
+- Current Skills: ${JSON.stringify(profile.current_skills || [])}
+- Interests: ${JSON.stringify(profile.interests || [])}
+- Experience Level: ${profile.years_experience || 'Beginner'}
+- Education: ${profile.education_background || 'Not specified'}
+
+Careers compared:
+${JSON.stringify(comparisonsData.map(c => ({
+  careerId: c.careerId,
+  title: c.title,
+  industry: c.industry,
+  overallScore: c.overallScore,
+  matchPercent: c.matchPercent,
+  avgSalary: c.avgSalary,
+  growth: c.growth,
+  missingSkills: c.missingSkills
+})), null, 2)}
+
+Return ONLY valid JSON conforming to this structure:
+{
+  "bestCareer": "Name of the career that is the absolute best fit",
+  "reason": "Detailed explanation matching their interests, skills and experience",
+  "strengths": {
+    "careerId_or_name": ["strength 1", "strength 2"],
+    ...
+  },
+  "challenges": {
+    "careerId_or_name": ["challenge 1", "challenge 2"],
+    ...
+  },
+  "skillsToDevelop": {
+    "careerId_or_name": ["skill 1", "skill 2"],
+    ...
+  },
+  "recommendedPath": ["Step 1", "Step 2", "Step 3"]
+}
+
+Ensure:
+- Return ONLY the JSON object, no markdown code blocks, no explanations outside the JSON.`;
+
+  try {
+    const text = await runGeminiWithRotation(prompt);
+    console.log('🤖 Gemini career comparison raw:', text.substring(0, 200));
+    const jsonMatch = text.match(/```(?:json)?\n([\s\S]*?)\n```/) || text.match(/(\{[\s\S]*\})/);
+    const jsonStr = jsonMatch ? jsonMatch[1] : text;
+    return JSON.parse(jsonStr);
+  } catch (error) {
+    console.error('❌ Gemini career comparison summary failed:', error.message);
+    // Return a structured fallback summary
+    const bestCareer = comparisonsData[0]?.title || 'Selected Careers';
+    const strengths = {};
+    const challenges = {};
+    const skillsToDevelop = {};
+    comparisonsData.forEach(c => {
+      strengths[c.careerId] = ['Strong interest alignment'];
+      challenges[c.careerId] = ['Requires learning new skills'];
+      skillsToDevelop[c.careerId] = c.missingSkills.slice(0, 3);
+    });
+    return {
+      bestCareer,
+      reason: `Based on your profile, ${bestCareer} aligns well with your compatibility score.`,
+      strengths,
+      challenges,
+      skillsToDevelop,
+      recommendedPath: [`Start by learning foundational skills for ${bestCareer}.`, 'Enroll in recommended courses.', 'Track your progress in the Skills tab.']
+    };
+  }
+}
+

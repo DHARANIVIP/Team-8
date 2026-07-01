@@ -4,8 +4,17 @@
  */
 
 import { parseResponse } from '@/lib/services/fetch-utils';
+import { getToken } from './auth-service';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') || '';
+
+function getAuthHeaders() {
+  const token = getToken();
+  return {
+    'Authorization': `Bearer ${token}`,
+    'Content-Type': 'application/json'
+  };
+}
 
 export async function getComparison(id: string) {
   try {
@@ -44,3 +53,36 @@ export async function calculateComparisonMetrics(career_id_1: string, career_id_
     throw error;
   }
 }
+
+/**
+ * Fetch AI recommended careers for the current user
+ */
+export async function getRecommendedCareers() {
+  try {
+    const response = await fetch(`${API_URL}/api/career/recommended`, {
+      headers: getAuthHeaders()
+    });
+    return await parseResponse(response);
+  } catch (error) {
+    console.error('Failed to fetch recommended careers:', error);
+    throw error;
+  }
+}
+
+/**
+ * Perform side-by-side comparison on selected careers
+ */
+export async function compareCareers(careerIds: string[]) {
+  try {
+    const response = await fetch(`${API_URL}/api/career/compare`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ careerIds })
+    });
+    return await parseResponse(response);
+  } catch (error) {
+    console.error('Failed to compare careers:', error);
+    throw error;
+  }
+}
+

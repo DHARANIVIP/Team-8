@@ -11,7 +11,7 @@ import { getCareerDetails, getCareerSkills, discoverCoursesForSkill } from './on
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
+export const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 export function mongoIdToUuid(mongoId) {
   if (!mongoId) return mongoId;
@@ -1706,3 +1706,33 @@ export async function getRecommendedCoursesForStudent(studentId) {
   }
   return data || [];
 }
+
+/**
+ * Fetch summary of a learning roadmap for a specific career path from the DB
+ */
+export async function getRoadmapSummaryForCareer(careerName) {
+  try {
+    const { data: roadmap, error: rErr } = await supabase
+      .from('roadmaps')
+      .select('*')
+      .ilike('name', careerName)
+      .maybeSingle();
+
+    if (rErr || !roadmap) return null;
+
+    const { count, error: cErr } = await supabase
+      .from('roadmap_nodes')
+      .select('id', { count: 'exact', head: true })
+      .eq('roadmap_id', roadmap.id);
+
+    return {
+      duration: roadmap.estimated_duration || '6 Months',
+      level: roadmap.difficulty_level || 'Intermediate',
+      milestonesCount: count || 0
+    };
+  } catch (error) {
+    console.warn(`⚠️ Failed to retrieve roadmap summary for ${careerName}:`, error.message);
+    return null;
+  }
+}
+
